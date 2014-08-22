@@ -225,11 +225,7 @@ Func Settings_Assoc_Create()
 	RegWrite("HKCR\Era.ModManager.Package", "", "REG_SZ", "Era II Mod Manager Package File")
 	RegWrite("HKCR\Era.ModManager.Package\shell\open\command", "", "REG_SZ", '"' & @ScriptFullPath & '" "%1"')
 	RegWrite("HKCR\Era.ModManager.Package\DefaultIcon", "", "REG_SZ", @ScriptDir & "\icons\package.ico,0")
-	Local Const $SHCNE_ASSOCCHANGED = 0x8000000
-	Local Const $SHCNF_IDLIST = 0
-	Local Const $NULL = 0
-
-	DllCall("shell32.dll", "none", "SHChangeNotify", "long", $SHCNE_ASSOCCHANGED, "int", $SHCNF_IDLIST, "ptr", 0, "ptr", 0)
+	__Settings_Assoc_Notify_System()
 EndFunc
 
 Func Settings_Assoc_Delete()
@@ -239,6 +235,10 @@ Func Settings_Assoc_Delete()
 
 	RegDelete("HKCR\.emp")
 	RegDelete("HKCR\Era.ModManager.Package")
+	__Settings_Assoc_Notify_System()
+EndFunc
+
+Func __Settings_Assoc_Notify_System()
 	Local Const $SHCNE_ASSOCCHANGED = 0x8000000
 	Local Const $SHCNF_IDLIST = 0
 	Local Const $NULL = 0
