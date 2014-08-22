@@ -48,7 +48,7 @@ Func Plugins_LoadList($sModName, ByRef $aGlobal, ByRef $aBeforeWog, ByRef $aAfte
 		Next
 	EndIf
 
-	Dim $iTotalPlugins = 0, $iTotalSections = 0
+	Local $iTotalPlugins = 0, $iTotalSections = 0
 	If IsArray($aGlobal) Then
 		$iTotalPlugins += $aGlobal[0]
 		$iTotalSections += 1
@@ -115,7 +115,7 @@ Func Plugins_Manage($sModName, $hFormParent)
 	EndIf
 
 	If IsArray($aAfterWog) Then
-		Local $iGlobal=-1
+		$iGlobal=-1
 		Local $iBeforeWog=-1
 		If IsArray($aBeforeWog) Then $iBeforeWog=$aBeforeWog[0]
 		If IsArray($aGlobal) Then $iGlobal=$aGlobal[0]

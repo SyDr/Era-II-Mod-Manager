@@ -215,3 +215,33 @@ Func Settings_Global($sAction, $sName, $vValue = "")
 	EndIf
 	Return $vTemp
 EndFunc
+
+Func Settings_Assoc_Create()
+	If Not IsAdmin() Then
+		Return ShellExecuteWait(@ScriptFullPath, '/assocset', @WorkingDir , "runas", @SW_SHOWNORMAL)
+	EndIf
+
+	RegWrite("HKCR\.emp", "", "REG_SZ", "Era.ModManager.Package")
+	RegWrite("HKCR\Era.ModManager.Package", "", "REG_SZ", "Era II Mod Manager Package File")
+	RegWrite("HKCR\Era.ModManager.Package\shell\open\command", "", "REG_SZ", '"' & @ScriptFullPath & '" "%1"')
+	RegWrite("HKCR\Era.ModManager.Package\DefaultIcon", "", "REG_SZ", @ScriptDir & "\icons\package.ico,0")
+	Local Const $SHCNE_ASSOCCHANGED = 0x8000000
+	Local Const $SHCNF_IDLIST = 0
+	Local Const $NULL = 0
+
+	DllCall("shell32.dll", "none", "SHChangeNotify", "long", $SHCNE_ASSOCCHANGED, "int", $SHCNF_IDLIST, "ptr", 0, "ptr", 0)
+EndFunc
+
+Func Settings_Assoc_Delete()
+	If Not IsAdmin() Then
+		Return ShellExecuteWait(@ScriptFullPath, '/assocdel', @WorkingDir , "runas", @SW_SHOWNORMAL)
+	EndIf
+
+	RegDelete("HKCR\.emp")
+	RegDelete("HKCR\Era.ModManager.Package")
+	Local Const $SHCNE_ASSOCCHANGED = 0x8000000
+	Local Const $SHCNF_IDLIST = 0
+	Local Const $NULL = 0
+
+	DllCall("shell32.dll", "none", "SHChangeNotify", "long", $SHCNE_ASSOCCHANGED, "int", $SHCNF_IDLIST, "ptr", 0, "ptr", 0)
+EndFunc

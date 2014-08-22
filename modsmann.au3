@@ -7,6 +7,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_requestedExecutionLevel=None
+#AutoIt3Wrapper_AU3Check_Parameters=-d -w 1 -w 2 -w 3 -w- 4 -w 6
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 
 #include <Array.au3>
@@ -69,10 +70,10 @@ Lng_LoadFile($sLanguage)
 If $CMDLine[0]>0 Then
 	If @Compiled Then
 		If $CMDLine[1] = '/assocset' Then
-			Assoc_Create()
+			Settings_Assoc_Create()
 			Exit
 		ElseIf $CMDLine[1] = '/assocdel' Then
-			Assoc_Delete()
+			Settings_Assoc_Delete()
 			Exit
 		EndIf
 	EndIf
@@ -397,9 +398,9 @@ Func SD_GUI_Settings()
 
 	If $bAssoc<>$bAssocNew Then
 		If $bAssocNew Then
-			Assoc_Create()
+			Settings_Assoc_Create()
 		Else
-			Assoc_Delete()
+			Settings_Assoc_Delete()
 		EndIf
 	EndIf
 
@@ -1154,36 +1155,6 @@ Func TreeViewGetSelectedIndex()
 	For $iCount = 0 To UBound($auTreeView, 1)-1
 		If $auTreeView[$iCount][0]=$iSelected Then Return $iCount
 	Next
-EndFunc
-
-Func Assoc_Create()
-	If Not IsAdmin() Then
-		Return ShellExecuteWait(@ScriptFullPath, '/assocset', @WorkingDir , "runas", @SW_SHOWNORMAL)
-	EndIf
-
-	RegWrite("HKCR\.emp", "", "REG_SZ", "Era.ModManager.Package")
-	RegWrite("HKCR\Era.ModManager.Package", "", "REG_SZ", "Era II Mod Manager Package File")
-	RegWrite("HKCR\Era.ModManager.Package\shell\open\command", "", "REG_SZ", '"' & @ScriptFullPath & '" "%1"')
-	RegWrite("HKCR\Era.ModManager.Package\DefaultIcon", "", "REG_SZ", @ScriptDir & "\icons\package.ico,0")
-	Dim Const $SHCNE_ASSOCCHANGED = 0x8000000
-	Dim Const $SHCNF_IDLIST = 0
-	Dim Const $NULL = 0
-
-	DllCall("shell32.dll", "none", "SHChangeNotify", "long", $SHCNE_ASSOCCHANGED, "int", $SHCNF_IDLIST, "ptr", 0, "ptr", 0)
-EndFunc
-
-Func Assoc_Delete()
-	If Not IsAdmin() Then
-		Return ShellExecuteWait(@ScriptFullPath, '/assocdel', @WorkingDir , "runas", @SW_SHOWNORMAL)
-	EndIf
-
-	RegDelete("HKCR\.emp")
-	RegDelete("HKCR\Era.ModManager.Package")
-	Dim Const $SHCNE_ASSOCCHANGED = 0x8000000
-	Dim Const $SHCNF_IDLIST = 0
-	Dim Const $NULL = 0
-
-	DllCall("shell32.dll", "none", "SHChangeNotify", "long", $SHCNE_ASSOCCHANGED, "int", $SHCNF_IDLIST, "ptr", 0, "ptr", 0)
 EndFunc
 
 Func _GUICtrlTreeView_SetIconX($hWnd, $hItem = 0, $sIconFile = "", $iIconID = 0, $iImageMode = 6, $iIconSize = 16)
