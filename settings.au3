@@ -7,36 +7,32 @@
 #include-once
 
 Func Settings_GUI($hParentGUI)
-	Local $iTotalCheck = 7
-	Local $hSingleton, $hRememberPos, $hVersion, $hIcons, $hAssoc, $hModMaker, $hSync
+	Local $iTotalCheck = 6
+	Local $hRememberPos, $hVersion, $hIcons, $hAssoc, $hModMaker, $hSync
 	Local $iBaseOffset = 8
 	Local $hGUI, $msg
 	Local $bModMaker = False, $bVersion = False, $bIcons = False
 
-
 	$hGUI = GUICreate(Lng_Get("settings.title"), 300, $iBaseOffset + $iTotalCheck*17+8, Default, Default, Default, Default, $hParentGUI)
 	GUISetState(@SW_SHOW)
 
-	$hSingleton = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.one_instance"), $iBaseOffset+1, $iBaseOffset+1+(0)*17)
-	If Settings_Get("Singleton") Then GUICtrlSetState($hSingleton, $GUI_CHECKED)
-
-	$hRememberPos = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.save_win_pos"), $iBaseOffset+1, $iBaseOffset+1+(1)*17)
+	$hRememberPos = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.save_win_pos"), $iBaseOffset+1, $iBaseOffset+1+(0)*17)
 	If Settings_Get("RememberSizePos") Then GUICtrlSetState($hRememberPos, $GUI_CHECKED)
 
-	$hVersion = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.display_version"), $iBaseOffset+1, $iBaseOffset+1+(2)*17)
+	$hVersion = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.display_version"), $iBaseOffset+1, $iBaseOffset+1+(1)*17)
 	If Settings_Get("DisplayVersion") Then GUICtrlSetState($hVersion, $GUI_CHECKED)
 
-	$hIcons = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.display_icons"), $iBaseOffset+1, $iBaseOffset+1+(3)*17)
+	$hIcons = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.display_icons"), $iBaseOffset+1, $iBaseOffset+1+(2)*17)
 	If Settings_Get("IconSize")>0 Then GUICtrlSetState($hIcons, $GUI_CHECKED)
 
-	$hAssoc = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.assoc"), $iBaseOffset+1, $iBaseOffset+1+(4)*17)
+	$hAssoc = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.assoc"), $iBaseOffset+1, $iBaseOffset+1+(3)*17)
 	If Settings_Get("Assoc") Then GUICtrlSetState($hAssoc, $GUI_CHECKED)
 	If Not @Compiled Then GUICtrlSetState($hAssoc, $GUI_DISABLE)
 
-	$hModMaker = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.modmaker_tools"), $iBaseOffset+1, $iBaseOffset+1+(5)*17)
+	$hModMaker = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.modmaker_tools"), $iBaseOffset+1, $iBaseOffset+1+(4)*17)
 	If Settings_Get("ModMaker") Then GUICtrlSetState($hModMaker, $GUI_CHECKED)
 
-	$hSync = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.sync_preset"), $iBaseOffset+1, $iBaseOffset+1+(6)*17)
+	$hSync = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.sync_preset"), $iBaseOffset+1, $iBaseOffset+1+(5)*17)
 	GUICtrlSetTip($hSync, StringFormat(Lng_Get("settings.checkbox.sync_preset.hint"), "0_O"))
 	If Settings_Get("SyncPresetWithWS") Then GUICtrlSetState($hSync, $GUI_CHECKED)
 
@@ -47,12 +43,6 @@ Func Settings_GUI($hParentGUI)
 			ContinueLoop
 		ElseIf $msg = $GUI_EVENT_CLOSE Then
 			ExitLoop
-		ElseIf $msg = $hSingleton Then
-			If BitAND(GUICtrlRead($hSingleton), $GUI_CHECKED) Then
-				Settings_Set("Singleton", True)
-			Else
-				Settings_Set("Singleton", "")
-			EndIf
 		ElseIf $msg = $hRememberPos Then
 			If BitAND(GUICtrlRead($hRememberPos), $GUI_CHECKED) Then
 				Settings_Set("RememberSizePos", True)
@@ -110,8 +100,6 @@ EndFunc
 
 Func Settings_Get($sName)
 	Switch $sName
-		Case "Singleton"
-			Return IniRead(@ScriptDir & "\settings.ini", "settings", "Singleton", True)
 		Case "Language"
 			Return IniRead(@ScriptDir & "\settings.ini", "settings", "language", "english.ini")
 		Case "Exe"
@@ -163,8 +151,6 @@ Func Settings_Set($sName, $vValue)
 			Return IniWrite(@ScriptDir & "\settings.ini", "settings", "ModMaker", $vValue)
 		Case "SyncPresetWithWS"
 			Return IniWrite(@ScriptDir & "\settings.ini", "settings", "SyncPresetWithWS", $vValue)
-		Case "Singleton"
-			Return IniWrite(@ScriptDir & "\settings.ini", "settings", "Singleton", $vValue)
 		Case "RememberSizePos"
 			Return IniWrite(@ScriptDir & "\settings.ini", "settings", "RememberSizePos", $vValue)
 		Case "DisplayVersion"
