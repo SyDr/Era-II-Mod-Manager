@@ -21,7 +21,6 @@
 #include <GuiImageList.au3>
 #include <GuiMenu.au3>
 #include <GuiTreeView.au3>
-#include <Misc.au3>
 #include <StaticConstants.au3>
 #include <TreeViewConstants.au3>
 #include <WinAPI.au3>
@@ -32,6 +31,7 @@
 #include "packed_mods.au3"
 #include "plugins.au3"
 #include "settings.au3"
+#include "startup.au3"
 
 AutoItSetOption("MustDeclareVars", 1)
 AutoItSetOption("GUIOnEventMode", 1)
@@ -39,7 +39,7 @@ AutoItSetOption("GUIResizeMode", 2+32+4+64)
 AutoItSetOption("GUICloseOnESC", 1)
 
 #Region Variables
-Global Const $_VERSION = "ver. 0.14.08"
+Global $_VERSION = "ver. 0.14.08"
 Global $hFormMain, $hTreeView
 Global $auTreeView, $auModList, $abModCompatibilityMap
 Global $sBasePath = @ScriptDir & "\..\..\Mods"
@@ -79,12 +79,7 @@ If $CMDLine[0]>0 Then
 	If Not SD_CLI_Mod_Add() Then Exit
 EndIf
 
-
-Global $hSingleton = _Singleton("EMMat." & Hex(StringToBinary(@ScriptDir)), 1)
-
-If $hSingleton = 0 Then
-	If WinActivate(StringFormat(Lng_Get("main.title"), $_VERSION)) Then Exit
-EndIf
+StartUp_CheckRunningInstance()
 
 Global $bSyncPresetWithWS = Settings_Get("SyncPresetWithWS")
 Global $bDisplayVersion = Settings_Get("DisplayVersion")
