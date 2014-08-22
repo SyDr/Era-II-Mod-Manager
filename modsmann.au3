@@ -79,11 +79,11 @@ If $CMDLine[0]>0 Then
 	If Not SD_CLI_Mod_Add() Then Exit
 EndIf
 
-Global $hSingleton = _Singleton("Era.Mod.Manager", 1)
 
-If Settings_Get("Singleton") And $hSingleton = 0 Then
-	WinActivate(StringFormat(Lng_Get("main.title"), $_VERSION))
-	Exit
+Global $hSingleton = _Singleton("EMMat." & Hex(StringToBinary(@ScriptDir)), 1)
+
+If $hSingleton = 0 Then
+	If WinActivate(StringFormat(Lng_Get("main.title"), $_VERSION)) Then Exit
 EndIf
 
 Global $bSyncPresetWithWS = Settings_Get("SyncPresetWithWS")
