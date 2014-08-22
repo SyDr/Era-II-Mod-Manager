@@ -43,21 +43,21 @@ Func PackedMod_LoadInfo($sFilePath, ByRef $sLocalName, ByRef $sLocalDesc, ByRef 
 	If $sModName = "" Then Return ""
 
 	Local $sTempDir = _TempFile()
-;~ 	RunWait(@ScriptDir & '\7z\7z.exe e "' & $sFilePath & '" -o"' & $sTempDir & '\" "Mods\' & $sModName & '\mod_info.ini"', @ScriptDir & "\7z\");, @SW_HIDE)
+	DirCreate($sTempDir)
+
 	RunWait(@ScriptDir & '\7z\7z.exe e "' & $sFilePath & '" -o"' & $sTempDir & '\" "Mods\' & $sModName & '\mod_info.ini"', @ScriptDir & "\7z\", @SW_HIDE)
 	$sLocalName = IniRead($sTempDir & "\mod_info.ini", "info", "Caption." & Lng_Get("lang.code"), IniRead($sTempDir & "\mod_info.ini", "info", "Caption", ""))
 	Local $sDescriptonFile = IniRead($sTempDir & "\mod_info.ini", "info", "Description File." & Lng_Get("lang.code"), IniRead($sTempDir & "\mod_info.ini", "info", "Description File", "Readme.txt"))
 	If $sDescriptonFile Then
-;~ 		RunWait(@ScriptDir & '\7z\7z.exe e "' & $sFilePath & '" -o"' & $sTempDir & '\" "Mods\' & $sModName & '\' & $sDescriptonFile &'"', @ScriptDir & "\7z\");, @SW_HIDE)
 		RunWait(@ScriptDir & '\7z\7z.exe e "' & $sFilePath & '" -o"' & $sTempDir & '\" "Mods\' & $sModName & '\' & $sDescriptonFile &'"', @ScriptDir & "\7z\", @SW_HIDE)
 		$sLocalDesc = FileRead($sTempDir & "\" & $sDescriptonFile)
 	EndIf
-;~ 	MsgBox(4096, Default, @error & @CRLF & $sDescriptonFile & @CRLF & $sLocalDesc & @CRLF & )
+
 	$sVersion = IniRead($sTempDir & "\mod_info.ini", "info", "Version", "0.0")
 	$sMinVersion = IniRead($sTempDir & "\mod_info.ini", "upgrade", "MinVersion", "0.0")
 	$sAuthor = IniRead($sTempDir & "\mod_info.ini", "info", "Author", "")
 	$sWebSite = IniRead($sTempDir & "\mod_info.ini", "info", "Homepage", "")
-	DirCreate($sTempDir)
+
 	Return True
 EndFunc
 
