@@ -1,3 +1,6 @@
+; Author:         Aliaksei SyDr Karalenka
+#NoTrayIcon
+
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=icons\Misc-Tools.ico
 #AutoIt3Wrapper_Outfile=modsmann.exe
@@ -5,49 +8,42 @@
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_requestedExecutionLevel=None
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
-;~ #NoTrayIcon
-#Region ;**** 参数创建于 ACNWrapper_GUI ****
-#PRE_Icon=Misc-Tools.ico
-#PRE_Compile_Both=y
-#PRE_Res_requestedExecutionLevel=None
-#EndRegion ;**** 参数创建于 ACNWrapper_GUI ****
-; AutoIt Version: 3.3.8.0
-; Author:         SyDr
 
+#include <Array.au3>
 #include <ButtonConstants.au3>
 #include <ComboConstants.au3>
+#include <Constants.au3>
+#include <Date.au3>
 #include <EditConstants.au3>
+#include <File.au3>
 #include <GUIConstantsEx.au3>
+#include <GuiDateTimePicker.au3>
+#include <GuiImageList.au3>
+#include <GuiMenu.au3>
+#include <GuiTreeView.au3>
+#include <Misc.au3>
 #include <StaticConstants.au3>
 #include <TreeViewConstants.au3>
-#include <WindowsConstants.au3>
-#include <File.au3>
-#include <Array.au3>
-#include <Date.au3>
-#include <GuiMenu.au3>
 #include <WinAPI.au3>
-#include <GuiDateTimePicker.au3>
-#include <Constants.au3>
-#include <Misc.au3>
-#include <GuiTreeView.au3>
-#include <GuiImageList.au3>
+#include <WindowsConstants.au3>
+
 #include "folder_mods.au3"
-#include "packed_mods.au3"
-#include "settings.au3"
 #include "lng.au3"
+#include "packed_mods.au3"
 #include "plugins.au3"
+#include "settings.au3"
 
 AutoItSetOption("MustDeclareVars", 1)
 AutoItSetOption("GUIOnEventMode", 1)
-;AutoItSetOption("GUIResizeMode", 2+32+4+64)
+AutoItSetOption("GUIResizeMode", 2+32+4+64)
 AutoItSetOption("GUICloseOnESC", 1)
+
 #Region Variables
-Global Const $_VERSION = "ver. 0.13.7.13.2"
-;~ Global Const $_VERSION = "TEST VERSION 008"
+Global Const $_VERSION = "ver. 0.14.08"
 Global $hFormMain, $hTreeView
 Global $auTreeView, $auModList, $abModCompatibilityMap
 Global $sBasePath = @ScriptDir & "\..\..\Mods"
-Global $sDefaultList = @ScriptDir & "\..\..\Mods\list.txt"
+Global $sDefaultList = $sBasePath & "\list.txt"
 Global $bGUINeedUpdate = False, $sMListUpdate = ""
 
 Global $hGroupModList, $hGroupPresets, $hGroupGame, $hGroupModInfo, $hSettings, $hButtonChangeLanguage, $hChangeLanguageContextMenuID
@@ -67,7 +63,7 @@ Global $bInTrack = False
 #EndRegion
 
 Global $sLanguage = Settings_Get("Language")
-If $sLanguage="" Then $sLanguage = "english.txt"
+If $sLanguage = "" Then $sLanguage = "english.txt"
 Lng_LoadFile($sLanguage)
 
 If $CMDLine[0]>0 Then
