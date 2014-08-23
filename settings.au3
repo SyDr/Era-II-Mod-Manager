@@ -8,7 +8,7 @@
 
 Func Settings_GUI($hParentGUI)
 	Local $iTotalCheck = 5
-	Local $hRememberPos, $hVersion, $hIcons, $hAssoc, $hModMaker, $hSync
+	Local $hRememberPos, $hVersion, $hIcons, $hAssoc, $hSync
 	Local $iBaseOffset = 8
 	Local $hGUI, $msg
 	Local $bVersion = False, $bIcons = False
@@ -227,5 +227,5 @@ Func __Settings_Assoc_Notify_System()
 	Local Const $SHCNF_IDLIST = 0
 	Local Const $NULL = 0
 
-	DllCall("shell32.dll", "none", "SHChangeNotify", "long", $SHCNE_ASSOCCHANGED, "int", $SHCNF_IDLIST, "ptr", 0, "ptr", 0)
+	DllCall("shell32.dll", "none", "SHChangeNotify", "long", $SHCNE_ASSOCCHANGED, "int", $SHCNF_IDLIST, "ptr", $NULL, "ptr", $NULL)
 EndFunc

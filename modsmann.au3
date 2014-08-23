@@ -7,7 +7,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_requestedExecutionLevel=None
-#AutoIt3Wrapper_AU3Check_Parameters=-d -w 1 -w 2 -w 3 -w- 4 -w 6
+#AutoIt3Wrapper_AU3Check_Parameters=-d -w 1 -w 2 -w 3 -w 4 -w 6
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 
 #include <Array.au3>
@@ -92,7 +92,8 @@ If $bRememberWindowSizePos Then SD_GUI_LoadSizePos()
 
 SD_GUI_ReCreate()
 
-Global $aWindowSize
+Global $aWindowSize, $sListFile, $sNewDate
+
 While 1
 	Sleep(50)
 	If Not $bGUINeedUpdate And Not WinActive($hFormMain) Then
@@ -101,8 +102,8 @@ While 1
 
 	If $bGUINeedUpdate And WinActive($hFormMain) Then
 		$bGUINeedUpdate = False
-		Local $sListFile = Settings_Global("Get", "List")
-		Local $sNewDate = FileGetTime($sListFile, 0, 1)
+		$sListFile = Settings_Global("Get", "List")
+		$sNewDate = FileGetTime($sListFile, 0, 1)
 		If $sNewDate<>$sMListUpdate Then SD_GUI_Update()
 		$sMListUpdate = $sNewDate
 	EndIf
@@ -590,7 +591,7 @@ Func SD_GUI_Mod_Add()
 	If UBound($aFileList, 1)=1 Then
 		ReDim $aFileList[2]
 		Local $szDrive, $szDir, $szFName, $szExt
-		Local $TestPath = _PathSplit($aFileList[0], $szDrive, $szDir, $szFName, $szExt)
+		_PathSplit($aFileList[0], $szDrive, $szDir, $szFName, $szExt)
 		$aFileList[0] = $szDrive & $szDir
 		$aFileList[1] = $szFName & $szExt
 	EndIf
@@ -1089,7 +1090,7 @@ Func TreeViewFill($hRoot, $aModList)
 		EndIf
 
 		$aTreeViewData[$iCount+1][0] = GUICtrlCreateTreeViewItem(Mod_MakeDisplayName($aModList[$iCount-1][3], _
-		$aModList[$iCount-1][2], $aModList[$iCount-1][0], $aModList[$iCount-1][8], $bDisplayVersion), $aTreeViewData[$aTreeViewData[$iCount+1][1]][0])
+		$aModList[$iCount-1][2], $aModList[$iCount-1][8], $bDisplayVersion), $aTreeViewData[$aTreeViewData[$iCount+1][1]][0])
 									   GUICtrlSetOnEvent($aTreeViewData[$iCount+1][0], "SD_GUI_Mod_Controls_Set")
 		If $aModList[$iCount-1][2] Then GUICtrlSetColor($aTreeViewData[$iCount+1][0], 0xC00000) ; Is Exist?
 		If Settings_Get("IconSize")>0 Then
@@ -1216,21 +1217,22 @@ EndFunc   ;==>WM_GETMINMAXINFO
 
 Func WM_NOTIFY($hWnd, $iMsg, $iwParam, $ilParam)
     #forceref $hWnd, $iMsg, $iwParam
-    Local $hWndFrom, $iIDFrom, $iCode, $tNMHDR, $hWndTreeview
+    Local $hWndFrom, $iCode, $tNMHDR, $hWndTreeview
     $hWndTreeview = $hTreeView
     If Not IsHWnd($hTreeView) Then $hWndTreeview = GUICtrlGetHandle($hTreeView)
 	If Not IsHWnd($hWndTreeview) Then Return $GUI_RUNDEFMSG
 
     $tNMHDR = DllStructCreate($tagNMHDR, $ilParam)
     $hWndFrom = HWnd(DllStructGetData($tNMHDR, "hWndFrom"))
-    $iIDFrom = DllStructGetData($tNMHDR, "IDFrom")
     $iCode = DllStructGetData($tNMHDR, "Code")
-    Switch $hWndFrom
+
+	Switch $hWndFrom
         Case $hWndTreeview
             Switch $iCode
                 Case $NM_DBLCLK
 					$bEnableDisable = True
             EndSwitch
-    EndSwitch
+	EndSwitch
+
     Return $GUI_RUNDEFMSG
 EndFunc   ;==>WM_NOTIFY

@@ -87,11 +87,8 @@ Func PackedMod_Deploy($sFilePath, $sAction)
 EndFunc
 
 Func PackedMod_InstallGUI_Simple($aModList, ByRef $auModList, $hFormParent = 0)
-	Local $sTargetPath  = Settings_Global("Get", "Path")
 	Local $hDesc ; Name, Author, Desc
-	;Local $hTechInfo ; Installed version, Package version, Actions
 	Local $hButtonInstall, $hButtonCancel, $hButtonClose
-	Local $iBaseOffset = 8
 	Local $hGUI, $msg
 	Local $bInstall, $bClose = False
 	Local $sAction
