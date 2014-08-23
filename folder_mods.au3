@@ -48,7 +48,7 @@ Func Mod_ListLoad()
 		$aModList[$jCount][6] = IniRead($sTargetPath & "\" & $aModList_File[$iCount] & "\mod_info.ini", "info", "Homepage", "")
 		$aModList[$jCount][7] = IniRead($sTargetPath & "\" & $aModList_File[$iCount] & "\mod_info.ini", "info", "Icon File", "")
 		$aModList[$jCount][8] = IniRead($sTargetPath & "\" & $aModList_File[$iCount] & "\mod_info.ini", "info", "Version", "0.0")
-		$aModList[$jCount][9] = IniRead($sTargetPath & "\" & $aModList_File[$iCount] & "\mod_info.ini", "info", "Priority", 0)
+		$aModList[$jCount][9] = Int(IniRead($sTargetPath & "\" & $aModList_File[$iCount] & "\mod_info.ini", "info", "Priority", 0))
 		$jCount += 1
 	Next
 
@@ -63,7 +63,7 @@ Func Mod_ListLoad()
 			$aModList[$jCount][6] = IniRead($sTargetPath & "\" & $aModList_Dir[$iCount] & "\mod_info.ini", "info", "Homepage", "")
 			$aModList[$jCount][7] = IniRead($sTargetPath & "\" & $aModList_Dir[$iCount] & "\mod_info.ini", "info", "Icon File", "")
 			$aModList[$jCount][8] = IniRead($sTargetPath & "\" & $aModList_Dir[$iCount] & "\mod_info.ini", "info", "Version", "0.0")
-			$aModList[$jCount][9] = IniRead($sTargetPath & "\" & $aModList_Dir[$iCount] & "\mod_info.ini", "info", "Priority", 0)
+			$aModList[$jCount][9] = Int(IniRead($sTargetPath & "\" & $aModList_Dir[$iCount] & "\mod_info.ini", "info", "Priority", 0))
 			$jCount += 1
 		EndIf
 	Next
@@ -157,6 +157,7 @@ Func Mod_Enable($iModIndex, ByRef $aModList)
 	If $aModList[$iModIndex][1] = "Enabled" Then Return False
 	$aModList[$iModIndex][1] = "Enabled"
 	For $iIndex = $iModIndex To 2 Step -1
+		If $aModList[$iIndex-1][1] = "Enabled" And $aModList[$iIndex-1][9] > $aModList[$iIndex][9] Then ExitLoop
 		Mod_ListSwap($iIndex, $iIndex-1, $aModList, False)
 	Next
 	Mod_ListSave($aModList)
