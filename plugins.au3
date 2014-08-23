@@ -1,10 +1,11 @@
-;AutoIt Version:	3.3.9.0 (beta)
-;Author:			SyDr
+;Author:			Aliaksei SyDr Karalenka
 
-#include <File.au3>
 #include <Array.au3>
+#include <File.au3>
 #include <GUIConstantsEx.au3>
+
 #include "settings.au3"
+
 #include-once
 
 Func Plugins_ModHavePlugins($sModName)

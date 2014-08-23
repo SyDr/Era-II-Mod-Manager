@@ -1,13 +1,11 @@
 ; Author:         Aliaksei SyDr Karalenka
 
 #include <Misc.au3>
-#include "lng.au3"
 
-Func StartUp_CheckRunningInstance()
-
+Func StartUp_CheckRunningInstance($sTitle)
 	Local $hSingleton = _Singleton("EMMat." & Hex(StringToBinary(@ScriptDir)), 1)
 
 	If $hSingleton = 0 Then
-		If WinActivate(StringFormat(Lng_Get("main.title"), $_VERSION)) Then Exit
+		If WinActivate($sTitle) Then Exit
 	EndIf
 EndFunc

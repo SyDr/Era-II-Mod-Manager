@@ -7,11 +7,11 @@
 #include-once
 
 Func Settings_GUI($hParentGUI)
-	Local $iTotalCheck = 6
+	Local $iTotalCheck = 5
 	Local $hRememberPos, $hVersion, $hIcons, $hAssoc, $hModMaker, $hSync
 	Local $iBaseOffset = 8
 	Local $hGUI, $msg
-	Local $bModMaker = False, $bVersion = False, $bIcons = False
+	Local $bVersion = False, $bIcons = False
 
 	$hGUI = GUICreate(Lng_Get("settings.title"), 300, $iBaseOffset + $iTotalCheck*17+8, Default, Default, Default, Default, $hParentGUI)
 	GUISetState(@SW_SHOW)
@@ -29,10 +29,7 @@ Func Settings_GUI($hParentGUI)
 	If Settings_Get("Assoc") Then GUICtrlSetState($hAssoc, $GUI_CHECKED)
 	If Not @Compiled Then GUICtrlSetState($hAssoc, $GUI_DISABLE)
 
-	$hModMaker = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.modmaker_tools"), $iBaseOffset+1, $iBaseOffset+1+(4)*17)
-	If Settings_Get("ModMaker") Then GUICtrlSetState($hModMaker, $GUI_CHECKED)
-
-	$hSync = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.sync_preset"), $iBaseOffset+1, $iBaseOffset+1+(5)*17)
+	$hSync = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.sync_preset"), $iBaseOffset+1, $iBaseOffset+1+(4)*17)
 	GUICtrlSetTip($hSync, StringFormat(Lng_Get("settings.checkbox.sync_preset.hint"), "0_O"))
 	If Settings_Get("SyncPresetWithWS") Then GUICtrlSetState($hSync, $GUI_CHECKED)
 
@@ -69,13 +66,6 @@ Func Settings_GUI($hParentGUI)
 			Else
 				Settings_Set("Assoc", "")
 			EndIf
-		ElseIf $msg = $hModMaker Then
-			$bModMaker = Not $bModMaker
-			If BitAND(GUICtrlRead($hModMaker), $GUI_CHECKED) Then
-				Settings_Set("ModMaker", True)
-			Else
-				Settings_Set("ModMaker", "")
-			EndIf
 		ElseIf $msg = $hSync Then
 			If BitAND(GUICtrlRead($hSync), $GUI_CHECKED) Then
 				Settings_Set("SyncPresetWithWS", True)
@@ -87,12 +77,10 @@ Func Settings_GUI($hParentGUI)
 
 	GUIDelete($hGUI)
 
-	If $bModMaker Then
+	If $bIcons Then
 		Return 1
-	ElseIf $bIcons Then
-		Return 2
 	ElseIf $bVersion Then
-		Return 3
+		Return 2
 	Else
 		Return 0
 	EndIf
@@ -130,8 +118,6 @@ Func Settings_Get($sName)
 			Local $sBrowser = IniRead(@ScriptDir & "\settings.ini", "settings", "Browser", "")
 			If $sBrowser = "" Then $sBrowser = RegRead("HKCR\http\shell\open\command", "")
 			If $sBrowser = "" Then $sBrowser = '"C:\Program Files\Internet Explorer\iexplore.exe" "%1"'
-		Case "ModMaker"
-			Return IniRead(@ScriptDir & "\settings.ini", "settings", "ModMaker", "")
 		Case "SyncPresetWithWS"
 			Return IniRead(@ScriptDir & "\settings.ini", "settings", "SyncPresetWithWS", "")
 		Case "RememberSizePos"
@@ -147,8 +133,6 @@ EndFunc
 
 Func Settings_Set($sName, $vValue)
 	Switch $sName
-		Case "ModMaker"
-			Return IniWrite(@ScriptDir & "\settings.ini", "settings", "ModMaker", $vValue)
 		Case "SyncPresetWithWS"
 			Return IniWrite(@ScriptDir & "\settings.ini", "settings", "SyncPresetWithWS", $vValue)
 		Case "RememberSizePos"
