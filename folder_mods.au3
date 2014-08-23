@@ -1,16 +1,17 @@
-;AutoIt Version:	3.3.9.0 (beta)
-;Author:			SyDr
+; Author:         Aliaksei SyDr Karalenka
 
-#include <File.au3>
 #include <Array.au3>
-#include "settings.au3"
+#include <File.au3>
+
 #include "lng.au3"
+#include "settings.au3"
+
 #include-once
 
 Func Mod_ListLoad()
 	Local $sListFile    = Settings_Global("Get", "List")
 	Local $sTargetPath  = Settings_Global("Get", "Path")
-	If StringRight($sTargetPath, 1)="\" Then $sTargetPath = StringTrimRight($sTargetPath, 1)
+	If StringRight($sTargetPath, 1) = "\" Then $sTargetPath = StringTrimRight($sTargetPath, 1)
 	$sTargetPath &= "\"
 	Local Const $iListSize = 9
 	Local $aModList_Dir, $aModList_File, $aModList[1][$iListSize]	; [][0] - dir name, [][1] - state (enabled/disabled) [][2] - do not exist,	[][3] - localized name,
@@ -36,7 +37,7 @@ Func Mod_ListLoad()
 	Local $jCount = 1
 	For $iCount = 1 To $aModList_File[0]
 		Local $iIndex = _ArraySearch($aModList, $aModList_File[$iCount], 1, 0, 0, 0, 0, 0)
-		If $iIndex>-1 Then ContinueLoop ;$aModList[$jCount][3] = $iIndex
+		If $iIndex <> -1 Then ContinueLoop ;$aModList[$jCount][3] = $iIndex
 		$aModList[$jCount][0] = $aModList_File[$iCount]
 		$aModList[$jCount][1] = "Enabled"
 		If Not FileExists($sTargetPath & "\" & $aModList_File[$iCount] & "\") Then $aModList[$jCount][2] = True
