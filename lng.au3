@@ -3,7 +3,7 @@
 #include <Array.au3>
 #include-once
 
-Local Static $__LNG_CACHED
+Global Static $__LNG_CACHED
 
 Func Lng_LoadFile($sLanguage)
 	Local $aSections = IniReadSectionNames(@ScriptDir & "\lng\" & $sLanguage)
