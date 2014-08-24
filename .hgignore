@@ -1,2 +1,5 @@
 syntax: glob
 settings.ini
+Mod Manager/
+Mod Manager_*zip
+presets/
