@@ -116,7 +116,7 @@ Func Plugins_Manage($sModName, $hFormParent)
 	EndIf
 
 	If IsArray($aAfterWog) Then
-		$iGlobal=-1
+		Local $iGlobal=-1
 		Local $iBeforeWog=-1
 		If IsArray($aBeforeWog) Then $iBeforeWog=$aBeforeWog[0]
 		If IsArray($aGlobal) Then $iGlobal=$aGlobal[0]
