@@ -101,8 +101,9 @@ Func Plugins_Manage($sModName, $hFormParent)
 		GUICtrlCreateGroup("Global", 1, $iBaseOffset + 1, 250, 17*($aGlobal[0]+1))
 	EndIf
 
+	Local $iGlobal
 	If IsArray($aBeforeWog) Then
-		Local $iGlobal=-1
+		$iGlobal = -1
 		If IsArray($aGlobal) Then $iGlobal=$aGlobal[0]
 		GUICtrlCreateGroup("BeforeWoG", 1, $iBaseOffset + 1 + 17*($iGlobal+1) + 1, 250, 17*($aBeforeWog[0]+1))
 		For $i=1 To $aBeforeWog[0]
@@ -116,7 +117,7 @@ Func Plugins_Manage($sModName, $hFormParent)
 	EndIf
 
 	If IsArray($aAfterWog) Then
-		Local $iGlobal=-1
+		$iGlobal = -1
 		Local $iBeforeWog=-1
 		If IsArray($aBeforeWog) Then $iBeforeWog=$aBeforeWog[0]
 		If IsArray($aGlobal) Then $iGlobal=$aGlobal[0]

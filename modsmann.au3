@@ -171,14 +171,15 @@ Func SD_GUI_Create()
 	$hModMoveDown =	GUICtrlCreateButton("Down", 384, 56, 89, 25)
 	$hModEnableDisable = GUICtrlCreateButton("Enable/Disable", 384, 88, 89, 25)
 	GUICtrlSetData($hModEnableDisable, Lng_Get("group.modlist.disable"))
-	$hModCompatibility = GUICtrlCreateButton("Compatibility", 384, 120, 89, 25)
-	GUICtrlSetState($hModCompatibility, $GUI_DISABLE)
- 	$hButtonMoreActions = GUICtrlCreateButton("More actions", 384, 152, 89, 25)
+
+	$hButtonMoreActions = GUICtrlCreateButton("More actions", 384, 152, 89, 25)
 	Local $hMoreActionsDummy = GUICtrlCreateDummy()
 	$hDummyF5 = GUICtrlCreateDummy()
 	$hMoreActionsContextMenuID = GUICtrlCreateContextMenu($hMoreActionsDummy)
 	$hButtonPlugins = GUICtrlCreateMenuItem("Plugins", $hMoreActionsDummy)
 	$hModWebSite = GUICtrlCreateMenuItem("Website", $hMoreActionsDummy)
+	$hModCompatibility = GUICtrlCreateMenuItem("Compatibility", $hMoreActionsDummy)
+	GUICtrlSetState($hModCompatibility, $sCompatibilityMessage <> "" ? $GUI_ENABLE : $GUI_DISABLE)
 	$hModDelete = GUICtrlCreateMenuItem("Delete", $hMoreActionsDummy)
 	GUICtrlCreateMenuItem("", $hMoreActionsDummy)
 	$hModOpenFolder = GUICtrlCreateMenuItem("Open Folder", $hMoreActionsDummy)
@@ -929,7 +930,6 @@ Func SD_GUI_Mod_Controls_Disable()
 	GUICtrlSetState($hModDelete, $GUI_DISABLE)
 	GUICtrlSetState($hButtonPlugins, $GUI_DISABLE)
 	GUICtrlSetState($hModWebSite, $GUI_DISABLE)
-	GUICtrlSetState($hButtonMoreActions, $GUI_DISABLE)
 	GUICtrlSetState($hModOpenFolder, $GUI_DISABLE)
 	GUICtrlSetState($hModReadmeC, $GUI_DISABLE)
 	GUICtrlSetState($hModInfoC, $GUI_DISABLE)
@@ -995,13 +995,6 @@ Func SD_GUI_Mod_Controls_Set()
 				GUICtrlSetState($hModDelete, $GUI_ENABLE)
 			EndIf
 
-			; More actions (2)
-			If Not $auModList[$iModIndex][2] Then
-				GUICtrlSetState($hButtonMoreActions, $GUI_ENABLE)
-			Else
-				GUICtrlSetState($hButtonMoreActions, $GUI_DISABLE)
-			EndIf
-
 			; Modmaker (settings, 2)
 			If Not $auModList[$iModIndex][2] Then
 				GUICtrlSetState($hModOpenFolder, $GUI_ENABLE)
@@ -1031,6 +1024,7 @@ Func TreeViewFill($hRoot, $aModList)
 
 	Local $iIndexToAdd = 1
 	Local $iCurrentGroup = -1, $bCurrentGroupEnabled = True
+	Local $bMasterIndex = 0
 	$sCompatibilityMessage = ""
 	GUICtrlSetState($hModCompatibility, $GUI_DISABLE)
 
@@ -1084,9 +1078,25 @@ Func TreeViewFill($hRoot, $aModList)
 											EndIf
 										  EndIf
 
+		If $bMasterIndex = 0 And $aModList[$iCount][1] = "Enabled" And Not $aModList[$iCount][2] Then
+			For $jCount = 1 To $auModList[0][0]
+				If $jCount = $iCount Then ContinueLoop
+				If $aModList[$jCount][1] = "Disabled" Or $aModList[$jCount][2] Then ContinueLoop
+				If Not $abModCompatibilityMap[$iCount][$jCount] Then
+					$bMasterIndex = $iCount
+					GUICtrlSetColor($aTreeViewData[$iIndexToAdd][0], 0x00C000) ; This is master mod
+					$sCompatibilityMessage = StringFormat(Lng_Get("message.compatibility.part1"), $aModList[$iCount][3]) & @CRLF
+					ExitLoop
+				EndIf
+			Next
+		ElseIf $bMasterIndex > 0 And $aModList[$iCount][1] = "Enabled" And Not $aModList[$iCount][2] Then
+			If Not $abModCompatibilityMap[$bMasterIndex][$iCount] Then
+				GUICtrlSetColor($aTreeViewData[$iIndexToAdd][0], 0xCC0000) ; This is slave mod
+				$sCompatibilityMessage &= $aModList[$iCount][3] & @CRLF
+			EndIf
+		EndIf
 
 		$iIndexToAdd += 1
-
 	Next
 
 	If $sCompatibilityMessage <> "" Then
@@ -1105,7 +1115,6 @@ Func TreeViewFill($hRoot, $aModList)
 		ElseIf $aTreeViewData[$iCount][1] = 0 And $aTreeViewData[$iCount][2] And $aTreeViewData[$iCount][3] > $iCurrentPriority  Then
 			$iCurrentPriority = $aTreeViewData[$iCount][3]
 		EndIf
-
 	Next
 
 ;~ 	_ArrayDisplay($aTreeViewData)
