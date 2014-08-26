@@ -183,8 +183,7 @@ Func Mod_InfoLoad($sModName, $sPreferFile = "")
 	If $sPreferFile <> "" Then $sReturn = FileRead($sTargetPath & "\" & $sModName & "\" & $sPreferFile)
 	If $sPreferFile = "" Or @error Then $sReturn = FileRead($sTargetPath & "\" & $sModName & "\Readme.txt")
 	If @error Then $sReturn = FileRead($sTargetPath & "\" & $sModName & "\Info.txt")
-	If @error Then $sReturn = Lng_Get("group.modinfo.no_info")
-	If $sReturn = "" Then $sReturn = Lng_Get("group.modinfo.no_info")
+	If @error Or $sReturn = "" Then $sReturn = Lng_Get("group.modinfo.no_info")
 	Return $sReturn
 EndFunc
 
@@ -193,7 +192,7 @@ Func Mod_GetVersion($sModName)
 	Return IniRead($sTargetPath & "\" & $sModName & "\mod_info.ini", "info", "Version", "0.0")
 EndFunc
 
-Func Mod_MakeDisplayName($sName, $bDNE, $sAuthor, $bDisplayAuthorName = True)
+Func Mod_MakeDisplayName($sName, $bDNE, $sVersion, $bDisplayVersion = True)
 	Local $sReturn = ""
 	If $bDNE Then
 		$sReturn = $sName & " " & Lng_Get("group.modlist.missing_mod")
@@ -201,6 +200,6 @@ Func Mod_MakeDisplayName($sName, $bDNE, $sAuthor, $bDisplayAuthorName = True)
 		$sReturn = $sName
 	EndIf
 
-	If $bDisplayAuthorName And $sAuthor <> "0.0" Then $sReturn &= StringFormat(" [%s]", $sAuthor)
+	If $bDisplayVersion And $sVersion <> "0.0" And $sVersion <> "" Then $sReturn &= StringFormat(" [%s]", $sVersion)
 	Return $sReturn
 EndFunc

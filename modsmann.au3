@@ -933,6 +933,7 @@ Func SD_GUI_Mod_Controls_Disable()
 	GUICtrlSetState($hModOpenFolder, $GUI_DISABLE)
 	GUICtrlSetState($hModReadmeC, $GUI_DISABLE)
 	GUICtrlSetState($hModInfoC, $GUI_DISABLE)
+	GUICtrlSetData($hModInfo, Lng_Get("group.modinfo.no_info"))
 EndFunc
 
 Func SD_GUI_Mod_Controls_Set()
