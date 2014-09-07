@@ -1,14 +1,13 @@
-; Author:         Aliaksei SyDr Karalenka
 #NoTrayIcon
-
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=icons\Misc-Tools.ico
 #AutoIt3Wrapper_Outfile=modsmann.exe
 #AutoIt3Wrapper_Compression=4
-#AutoIt3Wrapper_UseX64=n
+#AutoIt3Wrapper_UseUpx=y
 #AutoIt3Wrapper_Res_requestedExecutionLevel=None
 #AutoIt3Wrapper_AU3Check_Parameters=-d -w 1 -w 2 -w 3 -w 4 -w 6
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
+; Author:         Aliaksei SyDr Karalenka
 
 #include <Array.au3>
 #include <ButtonConstants.au3>
@@ -820,6 +819,7 @@ EndFunc
 
 Func SD_GUI_Mod_Swap($iModIndex1, $iModIndex2)
 	Mod_ListSwap($iModIndex1, $iModIndex2, $auModList)
+	Mod_CompatibilitySwap($iModIndex1, $iModIndex2, $abModCompatibilityMap)
 	TreeViewSwap($iModIndex1, $iModIndex2, $auTreeView)
 	TreeViewTryFollow($sFollowMod)
 	ControlFocus($hFormMain, "", @GUI_CtrlId)
@@ -910,9 +910,9 @@ Func TreeViewMain(ByRef $hTreeView, ByRef $auModList, ByRef $auTreeView)
 	If Not $hTreeView Then
 		$hTreeView = GUICtrlCreateTreeView(16, 24, 361, $aWindowSize[1]-40, BitOR($TVS_HASBUTTONS, $TVS_HASLINES, $TVS_FULLROWSELECT, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
 	Else
-		For $iCount = 1 To UBound($auTreeView, 1)-1
-			GUICtrlDelete($auTreeView[$iCount][0])
-		Next
+		_GUICtrlTreeView_BeginUpdate($hTreeView)
+		_GUICtrlTreeView_DeleteAll($hTreeView)
+		_GUICtrlTreeView_EndUpdate($hTreeView)
 	EndIf
 	GUICtrlSetResizing($hTreeView, 2+32+256)
 	If $hTreeView=0 Then MsgBox(4096, "Этого не должно быть", "@error:	" & @error & @CRLF & "@extended:	" & @extended)
@@ -1025,8 +1025,7 @@ Func TreeViewFill($hRoot, $aModList)
 
 	Local $iIndexToAdd = 1
 	Local $iCurrentGroup = -1, $bCurrentGroupEnabled = True
-	Local $bMasterIndex = 0
-	$sCompatibilityMessage = ""
+
 	GUICtrlSetState($hModCompatibility, $GUI_DISABLE)
 
 	For $iCount = 1 To $aModList[0][0]
@@ -1070,7 +1069,7 @@ Func TreeViewFill($hRoot, $aModList)
 
 		$aTreeViewData[$iIndexToAdd][0] = GUICtrlCreateTreeViewItem(Mod_MakeDisplayName($aModList[$iCount][3], $aModList[$iCount][2], $aModList[$iCount][8], $bDisplayVersion), $aTreeViewData[$aTreeViewData[$iIndexToAdd][1]][0])
 										  GUICtrlSetOnEvent($aTreeViewData[$iIndexToAdd][0], "SD_GUI_Mod_Controls_Set")
-										  If $aModList[$iCount][2] Then GUICtrlSetColor($aTreeViewData[$iIndexToAdd][0], 0xC00000)
+
 										  If Settings_Get("IconSize")>0 Then
 											If $aModList[$iCount][7] <> "" And FileExists($sBasePath & "\" & $aModList[$iCount][0] & "\" & $aModList[$iCount][7]) Then
 												_GUICtrlTreeView_SetIconX($aTreeViewData[0][0], $aTreeViewData[$iIndexToAdd][0], $sBasePath & "\" & $aModList[$iCount][0] & "\" & $aModList[$iCount][7], 0, 6, Settings_Get("IconSize"))
@@ -1079,54 +1078,68 @@ Func TreeViewFill($hRoot, $aModList)
 											EndIf
 										  EndIf
 
+
+		$iIndexToAdd += 1
+	Next
+
+	For $iCount = 1 To UBound($aTreeViewData, 1) - 1
+		If $aTreeViewData[$iCount][1] <> - 1 Then GUICtrlSetState($aTreeViewData[$iCount][0], $GUI_EXPAND)
+	Next
+
+	_GUICtrlTreeView_EndUpdate($hRoot)
+	TreeViewColor($aModList, $aTreeViewData)
+	Return $aTreeViewData
+EndFunc
+
+Func TreeViewColor($aModList, $auTreeView)
+	$sCompatibilityMessage = ""
+	Local $iListIndex, $bMasterIndex = 0
+
+	For $iCount = 1 To $aModList[0][0]
+		$iListIndex = TreeViewGetIndexByModIndex($iCount, $auTreeView)
+
+		GUICtrlSetColor($auTreeView[$iListIndex][0], Default)
+		If $aModList[$iCount][2] Then GUICtrlSetColor($auTreeView[$iListIndex][0], 0xC00000)
 		If $bMasterIndex = 0 And $aModList[$iCount][1] = "Enabled" And Not $aModList[$iCount][2] Then
 			For $jCount = 1 To $auModList[0][0]
 				If $jCount = $iCount Then ContinueLoop
 				If $aModList[$jCount][1] = "Disabled" Or $aModList[$jCount][2] Then ContinueLoop
 				If Not $abModCompatibilityMap[$iCount][$jCount] Then
 					$bMasterIndex = $iCount
-					GUICtrlSetColor($aTreeViewData[$iIndexToAdd][0], 0x00C000) ; This is master mod
+					GUICtrlSetColor($auTreeView[$iListIndex][0], 0x00C000) ; This is master mod
 					$sCompatibilityMessage = StringFormat(Lng_Get("message.compatibility.part1"), $aModList[$iCount][3]) & @CRLF
 					ExitLoop
 				EndIf
 			Next
 		ElseIf $bMasterIndex > 0 And $aModList[$iCount][1] = "Enabled" And Not $aModList[$iCount][2] Then
 			If Not $abModCompatibilityMap[$bMasterIndex][$iCount] Then
-				GUICtrlSetColor($aTreeViewData[$iIndexToAdd][0], 0xCC0000) ; This is slave mod
+				GUICtrlSetColor($auTreeView[$iListIndex][0], 0xCC0000) ; This is slave mod
 				$sCompatibilityMessage &= $aModList[$iCount][3] & @CRLF
 			EndIf
 		EndIf
+	Next
 
-		$iIndexToAdd += 1
+
+	Local $iCurrentPriority = -100000
+	For $iCount = UBound($auTreeView, 1) - 1 To 1 Step -1
+		If $auTreeView[$iCount][1] = 0 And $auTreeView[$iCount][2] And $auTreeView[$iCount][3] < $iCurrentPriority Then
+			GUICtrlSetColor($auTreeView[$iCount][0], 0xA00000)
+		ElseIf $auTreeView[$iCount][1] = 0 And $auTreeView[$iCount][2] And $auTreeView[$iCount][3] > $iCurrentPriority  Then
+			$iCurrentPriority = $auTreeView[$iCount][3]
+		EndIf
 	Next
 
 	If $sCompatibilityMessage <> "" Then
 		$sCompatibilityMessage &= @CRLF & Lng_Get("message.compatibility.part2")
 		GUICtrlSetState($hModCompatibility, $GUI_ENABLE)
 	EndIf
-
-	For $iCount = 1 To UBound($aTreeViewData, 1) - 1
-		If $aTreeViewData[$iCount][1] <> - 1 Then GUICtrlSetState($aTreeViewData[$iCount][0], $GUI_EXPAND)
-	Next
-
-	Local $iCurrentPriority = -100000
-	For $iCount = UBound($aTreeViewData, 1) - 1 To 1 Step -1
-		If $aTreeViewData[$iCount][1] = 0 And $aTreeViewData[$iCount][2] And $aTreeViewData[$iCount][3] < $iCurrentPriority Then
-			GUICtrlSetColor($aTreeViewData[$iCount][0], 0xA00000)
-		ElseIf $aTreeViewData[$iCount][1] = 0 And $aTreeViewData[$iCount][2] And $aTreeViewData[$iCount][3] > $iCurrentPriority  Then
-			$iCurrentPriority = $aTreeViewData[$iCount][3]
-		EndIf
-	Next
-
-;~ 	_ArrayDisplay($aTreeViewData)
-	_GUICtrlTreeView_EndUpdate($hRoot)
-	Return $aTreeViewData
 EndFunc
+
 
 Func TreeViewSwap($iModIndex1, $iModIndex2, $auTreeView)
 	_GUICtrlTreeView_BeginUpdate($auTreeView[0][0])
-	Local $iIndex1 = TreeViewGetIndexByModIndex($iModIndex1)
-	Local $iIndex2 = TreeViewGetIndexByModIndex($iModIndex2)
+	Local $iIndex1 = TreeViewGetIndexByModIndex($iModIndex1, $auTreeView)
+	Local $iIndex2 = TreeViewGetIndexByModIndex($iModIndex2, $auTreeView)
 
 	Local $vTemp
 
@@ -1146,6 +1159,8 @@ Func TreeViewSwap($iModIndex1, $iModIndex2, $auTreeView)
 	_GUICtrlTreeView_SetSelectedImageIndex($auTreeView[0][0], $auTreeView[$iIndex1][0], _GUICtrlTreeView_GetSelectedImageIndex($auTreeView[0][0], $auTreeView[$iIndex2][0]))
 	_GUICtrlTreeView_SetSelectedImageIndex($auTreeView[0][0], $auTreeView[$iIndex2][0], $vTemp)
 
+	TreeViewColor($auModList, $auTreeView)
+
 	_GUICtrlTreeView_EndUpdate($auTreeView[0][0])
 EndFunc
 
@@ -1156,7 +1171,7 @@ Func TreeViewGetSelectedIndex()
 	Next
 EndFunc
 
-Func TreeViewGetIndexByModIndex($iModIndex)
+Func TreeViewGetIndexByModIndex($iModIndex, $auTreeView)
 	For $iCount = 0 To UBound($auTreeView, 1) - 1
 		If $auTreeView[$iCount][1] > 0 And $auTreeView[$iCount][2] = $iModIndex Then Return $iCount
 	Next
@@ -1182,7 +1197,7 @@ Func TreeViewTryFollow($sModName = "WoG")
 	EndIf
 
 	GUICtrlSetState($auTreeView[1][0], $GUI_FOCUS)
-	Local $iIndex = TreeViewGetIndexByModIndex($iModIndex)
+	Local $iIndex = TreeViewGetIndexByModIndex($iModIndex, $auTreeView)
 	GUICtrlSetState($auTreeView[$iIndex][0], $GUI_FOCUS)
 	$bInTrack = False
 EndFunc
