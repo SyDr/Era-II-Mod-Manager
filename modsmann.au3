@@ -39,7 +39,7 @@ AutoItSetOption("GUIResizeMode", 2+32+4+64)
 AutoItSetOption("GUICloseOnESC", 1)
 
 #Region Variables
-Global $_VERSION = "ver. 0.14.08"
+Global $_VERSION = " [0.14.09 - Prepare for updates]"
 Global $hFormMain, $hTreeView
 Global $auTreeView, $auModList, $abModCompatibilityMap
 Global $sBasePath = @ScriptDir & "\..\..\Mods"
