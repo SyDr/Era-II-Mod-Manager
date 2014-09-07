@@ -140,6 +140,24 @@ Func Mod_ListSwap($iModIndex1, $iModIndex2, ByRef $aModList, $sUpdate = True)
 	If $sUpdate Then Mod_ListSave($aModList)
 EndFunc
 
+Func Mod_CompatibilitySwap($iModIndex1, $iModIndex2, ByRef $abModCompatibilityMap)
+	Local $vTemp
+
+	For $iCount = 1 To $abModCompatibilityMap[0][0]
+		$vTemp = $abModCompatibilityMap[$iModIndex1][$iCount]
+		$abModCompatibilityMap[$iModIndex1][$iCount] = $abModCompatibilityMap[$iModIndex2][$iCount]
+		$abModCompatibilityMap[$iModIndex2][$iCount] = $vTemp
+	Next
+
+	For $iCount = 1 To $abModCompatibilityMap[0][0]
+		$vTemp = $abModCompatibilityMap[$iCount][$iModIndex1]
+		$abModCompatibilityMap[$iCount][$iModIndex1] = $abModCompatibilityMap[$iCount][$iModIndex2]
+		$abModCompatibilityMap[$iCount][$iModIndex2] = $vTemp
+	Next
+
+EndFunc
+
+
 Func Mod_Disable($iModIndex, ByRef $aModList)
 	If $aModList[$iModIndex][1] = "Disabled" Then Return 0
 	$aModList[$iModIndex][1] = "Disabled"
