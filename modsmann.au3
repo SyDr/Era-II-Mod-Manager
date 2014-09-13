@@ -4,7 +4,7 @@
 #AutoIt3Wrapper_Outfile=modsmann.exe
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseUpx=y
-#AutoIt3Wrapper_Res_requestedExecutionLevel=None
+#AutoIt3Wrapper_Res_requestedExecutionLevel=asInvoker
 #AutoIt3Wrapper_AU3Check_Parameters=-d -w 1 -w 2 -w 3 -w 4 -w 6
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 ; Author:         Aliaksei SyDr Karalenka
@@ -61,6 +61,23 @@ Global $hDummyF5
 Global $bEnableDisable
 Global $bInTrack = False
 #EndRegion
+
+If @Compiled And @ScriptName = "installmod.exe" Then
+	Global $bUseWorkDir = FileExists(@ScriptDir & "\im_use_work_dir")
+	If $CMDLine[0] <> 1 Then
+		MsgBox(4096, "", "Usage:" & @CRLF & "installmod.exe <Mod Directory>" & @CRLF & ($bUseWorkDir ? "@WorkingDir will be used as root" : "@ScriptDir will be used as root"))
+		Exit
+	EndIf
+
+	$sBasePath = $bUseWorkDir ? (@WorkingDir & "\Mods") : (@ScriptDir & "\..\Mods")
+	$sDefaultList = $sBasePath & "\list.txt"
+
+	Settings_Global("Set", "List", $sDefaultList)
+	Settings_Global("Set", "Path", $sBasePath)
+	$auModList = Mod_ListLoad()
+	Mod_ReEnable($auModList, $CMDLine[1])
+	Exit
+EndIf
 
 Global $sLanguage = Settings_Get("Language")
 If $sLanguage = "" Then $sLanguage = "english.txt"
