@@ -91,68 +91,68 @@ EndFunc
 Func Settings_Get($sName)
 	Switch $sName
 		Case "Language"
-			Return IniRead(@ScriptDir & "\settings.ini", "settings", "language", "english.ini")
+			Return IniRead($MM_SETTINGS_PATH, "settings", "language", "english.ini")
 		Case "Exe"
-			Local $sExe = IniRead(@ScriptDir & "\settings.ini", "settings", "exe", "h3era.exe")
+			Local $sExe = IniRead($MM_SETTINGS_PATH, "settings", "exe", "h3era.exe")
 			If $sExe = "" Then $sExe = "h3era.exe"
 			Return $sExe
 		Case "Left"
-			Local $iLeft = IniRead(@ScriptDir & "\settings.ini", "settings", "left", 192)
+			Local $iLeft = IniRead($MM_SETTINGS_PATH, "settings", "left", 192)
 			If $iLeft<0 Then $iLeft = 0
 			If $iLeft>@DesktopWidth Then $iLeft = @DesktopWidth-100
 			Return $iLeft
 		Case "Top"
-			Local $iTop = IniRead(@ScriptDir & "\settings.ini", "settings", "top", 152)
+			Local $iTop = IniRead($MM_SETTINGS_PATH, "settings", "top", 152)
 			If $iTop<0 Then $iTop = 0
 			If $iTop>@DesktopWidth Then $iTop = @DesktopWidth-100
 			Return $iTop
 		Case "Width"
-			Local $iWidth = IniRead(@ScriptDir & "\settings.ini", "settings", "Width", 800)
+			Local $iWidth = IniRead($MM_SETTINGS_PATH, "settings", "Width", 800)
 			If $iWidth<800 Then $iWidth = 800
 			Return $iWidth
 		Case "Height"
-			Local $iHeight = IniRead(@ScriptDir & "\settings.ini", "settings", "Height", 475)
+			Local $iHeight = IniRead($MM_SETTINGS_PATH, "settings", "Height", 475)
 			If $iHeight<475 Then $iHeight = 475
 			Return $iHeight
 		Case "Explorer"
-			Return IniRead(@ScriptDir & "\settings.ini", "settings", "Explorer", "")
+			Return IniRead($MM_SETTINGS_PATH, "settings", "Explorer", "")
 		Case "Browser"
-			Local $sBrowser = IniRead(@ScriptDir & "\settings.ini", "settings", "Browser", "")
+			Local $sBrowser = IniRead($MM_SETTINGS_PATH, "settings", "Browser", "")
 			If $sBrowser = "" Then $sBrowser = RegRead("HKCR\http\shell\open\command", "")
 			If $sBrowser = "" Then $sBrowser = '"C:\Program Files\Internet Explorer\iexplore.exe" "%1"'
 		Case "SyncPresetWithWS"
-			Return IniRead(@ScriptDir & "\settings.ini", "settings", "SyncPresetWithWS", "")
+			Return IniRead($MM_SETTINGS_PATH, "settings", "SyncPresetWithWS", "")
 		Case "RememberSizePos"
-			Return IniRead(@ScriptDir & "\settings.ini", "settings", "RememberSizePos", True)
+			Return IniRead($MM_SETTINGS_PATH, "settings", "RememberSizePos", True)
 		Case "DisplayVersion"
-			Return IniRead(@ScriptDir & "\settings.ini", "settings", "DisplayVersion", True)
+			Return IniRead($MM_SETTINGS_PATH, "settings", "DisplayVersion", True)
 		Case "IconSize"
-			Return IniRead(@ScriptDir & "\settings.ini", "settings", "IconSize", 16)
+			Return IniRead($MM_SETTINGS_PATH, "settings", "IconSize", 16)
 		Case "Assoc"
-			Return IniRead(@ScriptDir & "\settings.ini", "settings", "Assoc", False)
+			Return IniRead($MM_SETTINGS_PATH, "settings", "Assoc", False)
 	EndSwitch
 EndFunc
 
 Func Settings_Set($sName, $vValue)
 	Switch $sName
 		Case "SyncPresetWithWS"
-			Return IniWrite(@ScriptDir & "\settings.ini", "settings", "SyncPresetWithWS", $vValue)
+			Return IniWrite($MM_SETTINGS_PATH, "settings", "SyncPresetWithWS", $vValue)
 		Case "RememberSizePos"
-			Return IniWrite(@ScriptDir & "\settings.ini", "settings", "RememberSizePos", $vValue)
+			Return IniWrite($MM_SETTINGS_PATH, "settings", "RememberSizePos", $vValue)
 		Case "DisplayVersion"
-			Return IniWrite(@ScriptDir & "\settings.ini", "settings", "DisplayVersion", $vValue)
+			Return IniWrite($MM_SETTINGS_PATH, "settings", "DisplayVersion", $vValue)
 		Case "Language"
-			Return IniWrite(@ScriptDir & "\settings.ini", "settings", "language", $vValue)
+			Return IniWrite($MM_SETTINGS_PATH, "settings", "language", $vValue)
 		Case "Exe"
-			Return IniWrite(@ScriptDir & "\settings.ini", "settings", "exe", $vValue)
+			Return IniWrite($MM_SETTINGS_PATH, "settings", "exe", $vValue)
 		Case "Left"
-			Return IniWrite(@ScriptDir & "\settings.ini", "settings", "left", $vValue)
+			Return IniWrite($MM_SETTINGS_PATH, "settings", "left", $vValue)
 		Case "Top"
-			Return IniWrite(@ScriptDir & "\settings.ini", "settings", "top", $vValue)
+			Return IniWrite($MM_SETTINGS_PATH, "settings", "top", $vValue)
 		Case "Width"
-			Return IniWrite(@ScriptDir & "\settings.ini", "settings", "Width", $vValue)
+			Return IniWrite($MM_SETTINGS_PATH, "settings", "Width", $vValue)
 		Case "Height"
-			Return IniWrite(@ScriptDir & "\settings.ini", "settings", "Height", $vValue)
+			Return IniWrite($MM_SETTINGS_PATH, "settings", "Height", $vValue)
 		Case "IconSize"
 			Local $iSize = Settings_Get("IconSize")
 			If $vValue Then
@@ -161,9 +161,9 @@ Func Settings_Set($sName, $vValue)
 			Else
 				$iSize = -Abs($iSize)
 			EndIf
-			IniWrite(@ScriptDir & "\settings.ini", "settings", "IconSize", $iSize)
+			IniWrite($MM_SETTINGS_PATH, "settings", "IconSize", $iSize)
 		Case "Assoc"
-			Return IniWrite(@ScriptDir & "\settings.ini", "settings", "Assoc", $vValue)
+			Return IniWrite($MM_SETTINGS_PATH, "settings", "Assoc", $vValue)
 	EndSwitch
 EndFunc
 

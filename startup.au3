@@ -23,13 +23,10 @@ Func StartUp_WorkAsInstallmod()
 		Exit
 	EndIf
 
-	Local $sBasePath = $bUseWorkDir ? (@WorkingDir & "\Mods") : (@ScriptDir & "\..\Mods")
-	Local $sDefaultList = $sBasePath & "\list.txt"
-
-	$MM_LIST_FILE_PATH = $sDefaultList
-	$MM_LIST_DIR_PATH = $sBasePath
+	$MM_LIST_DIR_PATH = $bUseWorkDir ? (@WorkingDir & "\Mods") : (@ScriptDir & "\..\Mods")
+	$MM_LIST_FILE_PATH = $MM_LIST_DIR_PATH & "\list.txt"
 
 	Local $auModList = Mod_ListLoad()
-	Mod_ReEnable($auModList, $CMDLine[1])
+	Mod_ReEnable($CMDLine[1])
 	Exit
 EndFunc
