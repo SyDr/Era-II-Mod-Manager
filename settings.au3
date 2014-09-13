@@ -166,16 +166,11 @@ Func Settings_Set($sName, $vValue)
 EndFunc
 
 Func Settings_Global($sAction, $sName, $vValue = "")
-	Local Static $sBasePath = @ScriptDir & "\..\.."
-	Local Static $sDefaultList = $sBasePath & "\Mods\list.txt"
+	Local Static $sDefaultList = @ScriptDir & "\..\..\Mods\list.txt"
 	Local Static $avModList
 	Local $vTemp
 	If $sAction = "Set" Then
 		Switch $sName
-			Case "Path"
-				$vTemp = $sBasePath
-				If StringRight($vValue, 1) = "\" Then $vValue = StringTrimRight($vValue, 1)
-				$sBasePath = $vValue
 			Case "List"
 				$vTemp = $sDefaultList
 				$sDefaultList = $vValue
@@ -187,8 +182,6 @@ Func Settings_Global($sAction, $sName, $vValue = "")
 		EndSwitch
 	Else
 		Switch $sName
-			Case "Path"
-				Return $sBasePath
 			Case "List"
 				Return $sDefaultList
 			Case "ModList"

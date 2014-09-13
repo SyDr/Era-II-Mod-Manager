@@ -10,7 +10,7 @@
 
 #include "folder_mods.au3"
 #include "lng.au3"
-#include "settings.au3"
+#include "data_fwd.au3"
 
 #include-once
 
@@ -63,7 +63,7 @@ Func PackedMod_LoadInfo($sFilePath, ByRef $sLocalName, ByRef $sLocalDesc, ByRef 
 EndFunc
 
 Func PackedMod_Deploy($sFilePath, $sAction)
-	Local $sTargetPath  = Settings_Global("Get", "Path") & "\.."
+	Local $sTargetPath  = $MM_LIST_DIR_PATH & "\.."
 	; Actions are Install (delete if exist, then unpack) and Upgrade (just unpack with overwrite)
 	Local $sModName = PackedMod_GetPackedName($sFilePath)
 	If $sModName = "" Then Return SetError(1, 0, False)

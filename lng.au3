@@ -1,9 +1,9 @@
 ; Author:         Aliaksei SyDr Karalenka
 
 #include <Array.au3>
-#include-once
+#include "data_fwd.au3"
 
-Global Static $__LNG_CACHED
+#include-once
 
 Func Lng_LoadFile($sLanguage)
 	Local $aSections = IniReadSectionNames(@ScriptDir & "\lng\" & $sLanguage)
@@ -27,30 +27,30 @@ Func Lng_LoadFile($sLanguage)
 
 	_ArraySort($aResult, 0, 1, $aResult[0][0])
 
-	$__LNG_CACHED = $aResult
+	$MM_LNG_CACHE = $aResult
 
 	Return 0
 EndFunc
 
 Func Lng_Get($sKeyName)
-	If Not IsArray($__LNG_CACHED) Then Return $sKeyName
-	Local $iLeft = 1, $iRight = $__LNG_CACHED[0][0], $iIndex
+	If Not IsArray($MM_LNG_CACHE) Then Return $sKeyName
+	Local $iLeft = 1, $iRight = $MM_LNG_CACHE[0][0], $iIndex
 
 	While $iLeft <= $iRight
 		$iIndex = Floor(($iLeft + $iRight) / 2)
 
-		If $sKeyName < $__LNG_CACHED[$iIndex][0] Then
+		If $sKeyName < $MM_LNG_CACHE[$iIndex][0] Then
 			$iRight = $iIndex - 1
-		ElseIf $sKeyName > $__LNG_CACHED[$iIndex][0] Then
+		ElseIf $sKeyName > $MM_LNG_CACHE[$iIndex][0] Then
 			$iLeft = $iIndex + 1
 		Else
 			$iLeft = $iRight + 1
 		EndIf
 	WEnd
 
-	If $iIndex > $__LNG_CACHED[0][0] Or $__LNG_CACHED[$iIndex][0] <> $sKeyName Then
+	If $iIndex > $MM_LNG_CACHE[0][0] Or $MM_LNG_CACHE[$iIndex][0] <> $sKeyName Then
 		Return $sKeyName ; not found
 	Else
-		Return $__LNG_CACHED[$iIndex][1]
+		Return $MM_LNG_CACHE[$iIndex][1]
 	EndIf
 EndFunc
