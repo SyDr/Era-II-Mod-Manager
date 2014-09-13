@@ -1,10 +1,12 @@
-;AutoIt Version:	3.3.9.0 (beta)
-;Author:			SyDr
+; Author:         Aliaksei SyDr Karalenka
 
 #include <File.au3>
 #include <GUIConstantsEx.au3>
+
 #include "lng.au3"
+
 #include-once
+
 
 Func Settings_GUI($hParentGUI)
 	Local $iTotalCheck = 5
@@ -163,34 +165,6 @@ Func Settings_Set($sName, $vValue)
 		Case "Assoc"
 			Return IniWrite(@ScriptDir & "\settings.ini", "settings", "Assoc", $vValue)
 	EndSwitch
-EndFunc
-
-Func Settings_Global($sAction, $sName, $vValue = "")
-	Local Static $sDefaultList = @ScriptDir & "\..\..\Mods\list.txt"
-	Local Static $avModList
-	Local $vTemp
-	If $sAction = "Set" Then
-		Switch $sName
-			Case "List"
-				$vTemp = $sDefaultList
-				$sDefaultList = $vValue
-			Case "ModList"
-				$vTemp = $avModList
-				$avModList = $vValue
-			Case Default
-				MsgBox(4096, Default, "Wrong Call!!!" & @CRLF & $sAction & @CRLF & $sName & @CRLF & $vValue)
-		EndSwitch
-	Else
-		Switch $sName
-			Case "List"
-				Return $sDefaultList
-			Case "ModList"
-				Return $avModList
-			Case Default
-				MsgBox(4096, Default, "Wrong Call!!!" & @CRLF & $sAction & @CRLF & $sName & @CRLF & $vValue)
-		EndSwitch
-	EndIf
-	Return $vTemp
 EndFunc
 
 Func Settings_Assoc_Create()

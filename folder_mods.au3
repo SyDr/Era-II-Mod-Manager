@@ -2,15 +2,14 @@
 
 #include <Array.au3>
 #include <File.au3>
+#include <StringConstants.au3>
 
 #include "data_fwd.au3"
 #include "lng.au3"
-#include "settings.au3"
 
 #include-once
 
 Func Mod_ListLoad()
-	Local $sListFile    = Settings_Global("Get", "List")
 	Local Const $iListSize = 10
 	Local $aModList_Dir, $aModList_File, $aModList[1][$iListSize]	; [][0] - dir name, [][1] - state (enabled/disabled) [][2] - do not exist,	[][3] - localized name,
 																	; [][4] - author,   [][5] - description, 			 [][6] - link, 			[][8] - icon
@@ -26,7 +25,9 @@ Func Mod_ListLoad()
 	$aModList[0][8] = "Version"
 	$aModList[0][9] = "Priority"
 
-	_FileReadToArray($sListFile, $aModList_File)
+	$MM_LIST_FILE_CONTENT = FileRead($MM_LIST_FILE_PATH)
+	$aModList_File = StringSplit($MM_LIST_FILE_CONTENT, @CRLF, $STR_ENTIRESPLIT)
+
 	_ArrayReverse($aModList_File, 1)
 	If Not IsArray($aModList_File) Then	Dim $aModList_File[1] = [0]
 	$aModList_Dir = _FileListToArray($MM_LIST_DIR_PATH, "*", 2)
@@ -83,8 +84,7 @@ Func Mod_ReEnable($aModList, $sModID)
 	If $iModIndex <> -1 Then
 		Mod_Enable($iModIndex, $aModList)
 	Else
-		Local $sTargetFile = Settings_Global("Get", "List")
-		FileWriteLine($sTargetFile, $sModID)
+		FileWriteLine($MM_LIST_FILE_PATH, $sModID)
 	EndIf
 EndFunc
 
@@ -122,10 +122,9 @@ Func Mod_CompatibilityMapLoad($aModList)
 EndFunc
 
 Func Mod_ListSave($aModList)
-	Local $sTargetFile  = Settings_Global("Get", "List")
-	If Not FileDelete($sTargetFile) And FileExists($sTargetFile) Then
+	If Not FileDelete($MM_LIST_FILE_PATH) And FileExists($MM_LIST_FILE_PATH) Then
 		MsgBox(4096, "", "Press CTRL+C to copy this message" & @CRLF & @CRLF & _
-		StringFormat(Lng_Get("list.txt"), StringFormat("FileDelete(%s)", $sTargetFile)))
+		StringFormat(Lng_Get("list.txt"), StringFormat("FileDelete(%s)", $MM_LIST_FILE_PATH)))
 		Return False
 	EndIf
 	Local $sWrite = ""
@@ -134,9 +133,9 @@ Func Mod_ListSave($aModList)
 			$sWrite &= $aModList[$iCount][0] & @CRLF
 		EndIf
 	Next
-	If Not FileWrite($sTargetFile, $sWrite) Then
+	If Not FileWrite($MM_LIST_FILE_PATH, $sWrite) Then
 		MsgBox(4096, "", "Press CTRL+C to copy this message" & @CRLF & @CRLF & _
-		StringFormat(Lng_Get("list.txt"), StringFormat("FileWrite(%s, %s", $sTargetFile, $sWrite)))
+		StringFormat(Lng_Get("list.txt"), StringFormat("FileWrite(%s, %s", $MM_LIST_FILE_PATH, $sWrite)))
 		Return False
 	EndIf
 EndFunc
