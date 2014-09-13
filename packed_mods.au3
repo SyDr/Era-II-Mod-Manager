@@ -79,13 +79,13 @@ Func PackedMod_Deploy($sFilePath, $sAction)
 	RunWait(@ScriptDir & '\7z\7z.exe x "' & $sFilePath & '"' & $sOverwrite & ' -o"' & $sTargetPath & '\', @ScriptDir & "\7z\", @SW_HIDE)
 
 	If $sAction = "Install" Then
-		Local $auModList = Mod_ListLoad()
-		Mod_ReEnable($auModList, $sModName)
+		Mod_ListLoad()
+		Mod_ReEnable($sModName)
 	EndIf
 	Return True
 EndFunc
 
-Func PackedMod_InstallGUI_Simple($aModList, ByRef $auModList, $hFormParent = 0)
+Func PackedMod_InstallGUI_Simple($aModList, $hFormParent = 0)
 	Local $hDesc ; Name, Author, Desc
 	Local $hButtonInstall, $hButtonCancel, $hButtonClose
 	Local $hGUI, $msg
@@ -108,13 +108,13 @@ Func PackedMod_InstallGUI_Simple($aModList, ByRef $auModList, $hFormParent = 0)
 
 		Local $sHelpMessage = ""
 
-		If Mod_ModIsInstalled($aModList[$iCount][1], $auModList) Then
+		If Mod_ModIsInstalled($aModList[$iCount][1]) Then
 			$sHelpMessage &= StringFormat(Lng_Get("add_new.version_installed"), $aModList[$iCount][6]) & @CRLF
 		EndIf
 
 		$sAction = "Install"
 		$sHelpMessage &= StringFormat(Lng_Get("add_new.package.install"), $aModList[$iCount][4]) & @CRLF
-		If Mod_ModIsInstalled($aModList[$iCount][1], $auModList) Then ;Mod is installed
+		If Mod_ModIsInstalled($aModList[$iCount][1]) Then ;Mod is installed
 			If $aModList[$iCount][6]>=$aModList[$iCount][4] Then ;Installed version is latest
 				If $aModList[$iCount][6]=$aModList[$iCount][4] Then
 					GUICtrlSetData($hButtonInstall, Lng_Get("add_new.reinstall")) ; reinstall
@@ -161,7 +161,7 @@ Func PackedMod_InstallGUI_Simple($aModList, ByRef $auModList, $hFormParent = 0)
 		If $bInstall Then
 			SplashTextOn("", Lng_Get("add_new.installed"), 400, 200)
 			If $sAction = "Install" Then
-				Mod_Delete(Mod_ModIsInstalled($aModList[$iCount][1], $auModList), $auModList)
+				Mod_Delete(Mod_ModIsInstalled($aModList[$iCount][1]))
 				PackedMod_Deploy($aModList[$iCount][0], "Install")
 			ElseIf $sAction = "Upgrade" Then
 				PackedMod_Deploy($aModList[$iCount][0], "Upgrade")
