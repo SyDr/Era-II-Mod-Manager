@@ -4,7 +4,8 @@
 #include <File.au3>
 #include <GUIConstantsEx.au3>
 
-#include "settings.au3"
+#include "lng.au3"
+#include "data_fwd.au3"
 
 #include-once
 
@@ -14,7 +15,7 @@ Func Plugins_ModHavePlugins($sModName)
 EndFunc
 
 Func Plugins_LoadList($sModName, ByRef $aGlobal, ByRef $aBeforeWog, ByRef $aAfterWog)
-	Local $Path = Settings_Global("Get", "Path") & "\" & $sModName
+	Local $Path = $MM_LIST_DIR_PATH & "\" & $sModName
 	If $sModName="" Or Not FileExists($Path) Then
 		Return False
 	EndIf
@@ -67,7 +68,7 @@ Func Plugins_LoadList($sModName, ByRef $aGlobal, ByRef $aBeforeWog, ByRef $aAfte
 EndFunc
 
 Func Plugins_Manage($sModName, $hFormParent)
-	Local $Path = Settings_Global("Get", "Path") & "\" & $sModName
+	Local $Path = $MM_LIST_DIR_PATH & "\" & $sModName
 	If $sModName="" Or Not FileExists($Path) Then
 		Return False
 	EndIf

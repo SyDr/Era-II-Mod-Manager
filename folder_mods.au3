@@ -3,6 +3,7 @@
 #include <Array.au3>
 #include <File.au3>
 
+#include "data_fwd.au3"
 #include "lng.au3"
 #include "settings.au3"
 
@@ -10,9 +11,6 @@
 
 Func Mod_ListLoad()
 	Local $sListFile    = Settings_Global("Get", "List")
-	Local $sTargetPath  = Settings_Global("Get", "Path")
-	If StringRight($sTargetPath, 1) = "\" Then $sTargetPath = StringTrimRight($sTargetPath, 1)
-	$sTargetPath &= "\"
 	Local Const $iListSize = 10
 	Local $aModList_Dir, $aModList_File, $aModList[1][$iListSize]	; [][0] - dir name, [][1] - state (enabled/disabled) [][2] - do not exist,	[][3] - localized name,
 																	; [][4] - author,   [][5] - description, 			 [][6] - link, 			[][8] - icon
@@ -31,7 +29,7 @@ Func Mod_ListLoad()
 	_FileReadToArray($sListFile, $aModList_File)
 	_ArrayReverse($aModList_File, 1)
 	If Not IsArray($aModList_File) Then	Dim $aModList_File[1] = [0]
-	$aModList_Dir = _FileListToArray($sTargetPath, "*", 2)
+	$aModList_Dir = _FileListToArray($MM_LIST_DIR_PATH, "*", 2)
 	If Not IsArray($aModList_Dir) Then Dim $aModList_Dir[1] = [0]
 	ReDim $aModList[1+$aModList_File[0]+$aModList_Dir[0]][$iListSize]
 
@@ -41,14 +39,14 @@ Func Mod_ListLoad()
 		If $iIndex <> -1 Then ContinueLoop ;$aModList[$jCount][3] = $iIndex
 		$aModList[$jCount][0] = $aModList_File[$iCount]
 		$aModList[$jCount][1] = "Enabled"
-		If Not FileExists($sTargetPath & "\" & $aModList_File[$iCount] & "\") Then $aModList[$jCount][2] = True
-		$aModList[$jCount][3] = IniRead($sTargetPath & "\" & $aModList_File[$iCount] & "\mod_info.ini", "info", "Caption." & Lng_Get("lang.code"), IniRead($sTargetPath & "\" & $aModList_File[$iCount] & "\mod_info.ini", "info", "Caption", $aModList[$jCount][0]))
-		$aModList[$jCount][4] = IniRead($sTargetPath & "\" & $aModList_File[$iCount] & "\mod_info.ini", "info", "Author", "")
-		$aModList[$jCount][5] = IniRead($sTargetPath & "\" & $aModList_File[$iCount] & "\mod_info.ini", "info", "Description File." & Lng_Get("lang.code"), IniRead($sTargetPath & "\" & $aModList_File[$iCount] & "\mod_info.ini", "info", "Description File", ""))
-		$aModList[$jCount][6] = IniRead($sTargetPath & "\" & $aModList_File[$iCount] & "\mod_info.ini", "info", "Homepage", "")
-		$aModList[$jCount][7] = IniRead($sTargetPath & "\" & $aModList_File[$iCount] & "\mod_info.ini", "info", "Icon File", "")
-		$aModList[$jCount][8] = IniRead($sTargetPath & "\" & $aModList_File[$iCount] & "\mod_info.ini", "info", "Version", "0.0")
-		$aModList[$jCount][9] = Int(IniRead($sTargetPath & "\" & $aModList_File[$iCount] & "\mod_info.ini", "info", "Priority", 0))
+		If Not FileExists($MM_LIST_DIR_PATH & "\" & $aModList_File[$iCount] & "\") Then $aModList[$jCount][2] = True
+		$aModList[$jCount][3] = IniRead($MM_LIST_DIR_PATH & "\" & $aModList_File[$iCount] & "\mod_info.ini", "info", "Caption." & Lng_Get("lang.code"), IniRead($MM_LIST_DIR_PATH & "\" & $aModList_File[$iCount] & "\mod_info.ini", "info", "Caption", $aModList[$jCount][0]))
+		$aModList[$jCount][4] = IniRead($MM_LIST_DIR_PATH & "\" & $aModList_File[$iCount] & "\mod_info.ini", "info", "Author", "")
+		$aModList[$jCount][5] = IniRead($MM_LIST_DIR_PATH & "\" & $aModList_File[$iCount] & "\mod_info.ini", "info", "Description File." & Lng_Get("lang.code"), IniRead($MM_LIST_DIR_PATH & "\" & $aModList_File[$iCount] & "\mod_info.ini", "info", "Description File", ""))
+		$aModList[$jCount][6] = IniRead($MM_LIST_DIR_PATH & "\" & $aModList_File[$iCount] & "\mod_info.ini", "info", "Homepage", "")
+		$aModList[$jCount][7] = IniRead($MM_LIST_DIR_PATH & "\" & $aModList_File[$iCount] & "\mod_info.ini", "info", "Icon File", "")
+		$aModList[$jCount][8] = IniRead($MM_LIST_DIR_PATH & "\" & $aModList_File[$iCount] & "\mod_info.ini", "info", "Version", "0.0")
+		$aModList[$jCount][9] = Int(IniRead($MM_LIST_DIR_PATH & "\" & $aModList_File[$iCount] & "\mod_info.ini", "info", "Priority", 0))
 		$jCount += 1
 	Next
 
@@ -57,13 +55,13 @@ Func Mod_ListLoad()
 		If @error = 6 Then
 			$aModList[$jCount][0] = $aModList_Dir[$iCount]
 			$aModList[$jCount][1] = "Disabled"
-			$aModList[$jCount][3] = IniRead($sTargetPath & "\" & $aModList_Dir[$iCount] & "\mod_info.ini", "info", "Caption." & Lng_Get("lang.code"), IniRead($sTargetPath & "\" & $aModList_Dir[$iCount] & "\mod_info.ini", "info", "Caption", $aModList[$jCount][0]))
-			$aModList[$jCount][4] = IniRead($sTargetPath & "\" & $aModList_Dir[$iCount] & "\mod_info.ini", "info", "Author", "")
-			$aModList[$jCount][5] = IniRead($sTargetPath & "\" & $aModList_Dir[$iCount] & "\mod_info.ini", "info", "Description File."  & Lng_Get("lang.code"), IniRead($sTargetPath & "\" & $aModList_Dir[$iCount] & "\mod_info.ini", "info", "Description File", ""))
-			$aModList[$jCount][6] = IniRead($sTargetPath & "\" & $aModList_Dir[$iCount] & "\mod_info.ini", "info", "Homepage", "")
-			$aModList[$jCount][7] = IniRead($sTargetPath & "\" & $aModList_Dir[$iCount] & "\mod_info.ini", "info", "Icon File", "")
-			$aModList[$jCount][8] = IniRead($sTargetPath & "\" & $aModList_Dir[$iCount] & "\mod_info.ini", "info", "Version", "0.0")
-			$aModList[$jCount][9] = Int(IniRead($sTargetPath & "\" & $aModList_Dir[$iCount] & "\mod_info.ini", "info", "Priority", 0))
+			$aModList[$jCount][3] = IniRead($MM_LIST_DIR_PATH & "\" & $aModList_Dir[$iCount] & "\mod_info.ini", "info", "Caption." & Lng_Get("lang.code"), IniRead($MM_LIST_DIR_PATH & "\" & $aModList_Dir[$iCount] & "\mod_info.ini", "info", "Caption", $aModList[$jCount][0]))
+			$aModList[$jCount][4] = IniRead($MM_LIST_DIR_PATH & "\" & $aModList_Dir[$iCount] & "\mod_info.ini", "info", "Author", "")
+			$aModList[$jCount][5] = IniRead($MM_LIST_DIR_PATH & "\" & $aModList_Dir[$iCount] & "\mod_info.ini", "info", "Description File."  & Lng_Get("lang.code"), IniRead($MM_LIST_DIR_PATH & "\" & $aModList_Dir[$iCount] & "\mod_info.ini", "info", "Description File", ""))
+			$aModList[$jCount][6] = IniRead($MM_LIST_DIR_PATH & "\" & $aModList_Dir[$iCount] & "\mod_info.ini", "info", "Homepage", "")
+			$aModList[$jCount][7] = IniRead($MM_LIST_DIR_PATH & "\" & $aModList_Dir[$iCount] & "\mod_info.ini", "info", "Icon File", "")
+			$aModList[$jCount][8] = IniRead($MM_LIST_DIR_PATH & "\" & $aModList_Dir[$iCount] & "\mod_info.ini", "info", "Version", "0.0")
+			$aModList[$jCount][9] = Int(IniRead($MM_LIST_DIR_PATH & "\" & $aModList_Dir[$iCount] & "\mod_info.ini", "info", "Priority", 0))
 			$jCount += 1
 		EndIf
 	Next
@@ -91,7 +89,6 @@ Func Mod_ReEnable($aModList, $sModID)
 EndFunc
 
 Func Mod_CompatibilityMapLoad($aModList)
-	Local $sTargetPath  = Settings_Global("Get", "Path")
 	Local $aAnswer[UBound($aModList, 1)][UBound($aModList, 1)]
 	$aAnswer[0][0] = UBound($aModList, 1) - 1
 	For $iCount = 1 To $aAnswer[0][0]
@@ -102,10 +99,10 @@ Func Mod_CompatibilityMapLoad($aModList)
 				ContinueLoop
 			EndIf
 
-			Local $sType1 = IniRead($sTargetPath & "\" & $aModList[$iCount][0] & "\mod_info.ini", "info", "Compatibility Class", "Default")
-			Local $sType2 = IniRead($sTargetPath & "\" & $aModList[$jCount][0] & "\mod_info.ini", "info", "Compatibility Class", "Default")
-			Local $i1To2  = IniRead($sTargetPath & "\" & $aModList[$iCount][0] & "\mod_info.ini", "Compatibility", $aModList[$jCount][0], 0)
-			Local $i2To1  = IniRead($sTargetPath & "\" & $aModList[$jCount][0] & "\mod_info.ini", "Compatibility", $aModList[$iCount][0], 0)
+			Local $sType1 = IniRead($MM_LIST_DIR_PATH & "\" & $aModList[$iCount][0] & "\mod_info.ini", "info", "Compatibility Class", "Default")
+			Local $sType2 = IniRead($MM_LIST_DIR_PATH & "\" & $aModList[$jCount][0] & "\mod_info.ini", "info", "Compatibility Class", "Default")
+			Local $i1To2  = IniRead($MM_LIST_DIR_PATH & "\" & $aModList[$iCount][0] & "\mod_info.ini", "Compatibility", $aModList[$jCount][0], 0)
+			Local $i2To1  = IniRead($MM_LIST_DIR_PATH & "\" & $aModList[$jCount][0] & "\mod_info.ini", "Compatibility", $aModList[$iCount][0], 0)
 			If $i1To2 == 1 Then
 				$aAnswer[$iCount][$jCount] = True
 			ElseIf $i1To2 == -1 Then
@@ -181,8 +178,7 @@ Func Mod_Disable($iModIndex, ByRef $aModList)
 EndFunc
 
 Func Mod_Delete($iModIndex, ByRef $aModList)
-	Local $sTargetPath  = Settings_Global("Get", "Path")
-	FileRecycle($sTargetPath & "\" & $aModList[$iModIndex][0])
+	FileRecycle($MM_LIST_DIR_PATH & "\" & $aModList[$iModIndex][0])
 	Mod_Disable($iModIndex, $aModList)
 EndFunc
 
@@ -211,18 +207,16 @@ Func Mod_ModIsEnabled($sModName, ByRef $aModList)
 EndFunc
 
 Func Mod_InfoLoad($sModName, $sPreferFile = "")
-	Local $sTargetPath  = Settings_Global("Get", "Path")
 	Local $sReturn
-	If $sPreferFile <> "" Then $sReturn = FileRead($sTargetPath & "\" & $sModName & "\" & $sPreferFile)
-	If $sPreferFile = "" Or @error Then $sReturn = FileRead($sTargetPath & "\" & $sModName & "\Readme.txt")
-	If @error Then $sReturn = FileRead($sTargetPath & "\" & $sModName & "\Info.txt")
+	If $sPreferFile <> "" Then $sReturn = FileRead($MM_LIST_DIR_PATH & "\" & $sModName & "\" & $sPreferFile)
+	If $sPreferFile = "" Or @error Then $sReturn = FileRead($MM_LIST_DIR_PATH & "\" & $sModName & "\Readme.txt")
+	If @error Then $sReturn = FileRead($MM_LIST_DIR_PATH & "\" & $sModName & "\Info.txt")
 	If @error Or $sReturn = "" Then $sReturn = Lng_Get("group.modinfo.no_info")
 	Return $sReturn
 EndFunc
 
 Func Mod_GetVersion($sModName)
-	Local $sTargetPath  = Settings_Global("Get", "Path")
-	Return IniRead($sTargetPath & "\" & $sModName & "\mod_info.ini", "info", "Version", "0.0")
+	Return IniRead($MM_LIST_DIR_PATH & "\" & $sModName & "\mod_info.ini", "info", "Version", "0.0")
 EndFunc
 
 Func Mod_MakeDisplayName($sName, $bDNE, $sVersion, $bDisplayVersion = True)

@@ -39,7 +39,7 @@ AutoItSetOption("GUIResizeMode", 2+32+4+64)
 AutoItSetOption("GUICloseOnESC", 1)
 
 #Region Variables
-Global $_VERSION = " [0.14.09 - Prepare for updates]"
+Global $_VERSION = " [0.14.09 - Stein um Stein]"
 Global $hFormMain, $hTreeView
 Global $auTreeView, $auModList, $abModCompatibilityMap
 Global $sBasePath = @ScriptDir & "\..\..\Mods"
@@ -73,7 +73,7 @@ If @Compiled And @ScriptName = "installmod.exe" Then
 	$sDefaultList = $sBasePath & "\list.txt"
 
 	Settings_Global("Set", "List", $sDefaultList)
-	Settings_Global("Set", "Path", $sBasePath)
+	$MM_LIST_DIR_PATH = $sBasePath
 	$auModList = Mod_ListLoad()
 	Mod_ReEnable($auModList, $CMDLine[1])
 	Exit
@@ -639,7 +639,7 @@ EndFunc
 
 Func SD_CLI_Mod_Add()
 	Settings_Global("Set", "List", $sDefaultList)
-	Settings_Global("Set", "Path", $sBasePath)
+	$MM_LIST_DIR_PATH = $sBasePath
 	$auModList = Mod_ListLoad()
 	$auModList = Mod_ListLoad()
 	Local $aModList = Mod_ListCheck($CMDLine); FilePath, ModName, ModLocalizedName, ModLocalizedDescription, Version, MinVersion, InstalledVersion, AuthorName, ModWebSite
@@ -652,7 +652,7 @@ Func SD_CLI_Mod_Add()
 ;~ 	_ArrayDisplay($aModList)
 	Local $iGUIOnEventModeState = AutoItSetOption("GUIOnEventMode", 0)
 	Settings_Global("Set", "List", $sDefaultList)
-	Settings_Global("Set", "Path", $sBasePath)
+	$MM_LIST_DIR_PATH = $sBasePath
 	Local $bResult = PackedMod_InstallGUI_Simple($aModList, $auModList, 0)
 	AutoItSetOption("GUIOnEventMode", $iGUIOnEventModeState)
 	Return $bResult
@@ -918,7 +918,7 @@ EndFunc
 
 Func TreeViewMain(ByRef $hTreeView, ByRef $auModList, ByRef $auTreeView)
 	Settings_Global("Set", "List", $sDefaultList)
-	Settings_Global("Set", "Path", $sBasePath)
+	$MM_LIST_DIR_PATH = $sBasePath
 	$auModList = Mod_ListLoad()
 	$abModCompatibilityMap = Mod_CompatibilityMapLoad($auModList)
 	;If $hTreeView Then GUICtrlDelete($hTreeView)
