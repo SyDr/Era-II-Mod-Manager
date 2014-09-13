@@ -79,9 +79,8 @@ Func PackedMod_Deploy($sFilePath, $sAction)
 	RunWait(@ScriptDir & '\7z\7z.exe x "' & $sFilePath & '"' & $sOverwrite & ' -o"' & $sTargetPath & '\', @ScriptDir & "\7z\", @SW_HIDE)
 
 	If $sAction = "Install" Then
-		ShellExecuteWait(@ScriptDir & '\..\installmod.exe', '"' & $sModName & '"', $sTargetPath & "\", "open")
-		If @error Then ShellExecuteWait(@ScriptDir & '\..\installmod.exe', '"' & $sModName & '"', $sTargetPath & "\", "runas")
-		If @error Then Return SetError(3, 0, False)
+		Local $auModList = Mod_ListLoad()
+		Mod_ReEnable($auModList, $sModName)
 	EndIf
 	Return True
 EndFunc

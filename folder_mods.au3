@@ -32,7 +32,7 @@ Func Mod_ListLoad()
 	_ArrayReverse($aModList_File, 1)
 	If Not IsArray($aModList_File) Then	Dim $aModList_File[1] = [0]
 	$aModList_Dir = _FileListToArray($sTargetPath, "*", 2)
-	If Not IsArray($aModList_Dir) Then	Dim $aModList_Dir[1] = [0]
+	If Not IsArray($aModList_Dir) Then Dim $aModList_Dir[1] = [0]
 	ReDim $aModList[1+$aModList_File[0]+$aModList_Dir[0]][$iListSize]
 
 	Local $jCount = 1
@@ -72,6 +72,22 @@ Func Mod_ListLoad()
 	$aModList[0][0] = $jCount - 1
 	;Settings_Global("Set", "ModList", $aModList)
 	Return $aModList
+EndFunc
+
+Func Mod_ReEnable($aModList, $sModID)
+	Local $iModIndex = Mod_GetIndexByID($aModList, $sModID)
+	If $iModIndex <> -1 Then
+		Mod_Disable($iModIndex, $aModList)
+		$aModList = Mod_ListLoad()
+	EndIf
+
+	$iModIndex = Mod_GetIndexByID($aModList, $sModID)
+	If $iModIndex <> -1 Then
+		Mod_Enable($iModIndex, $aModList)
+	Else
+		Local $sTargetFile = Settings_Global("Get", "List")
+		FileWriteLine($sTargetFile, $sModID)
+	EndIf
 EndFunc
 
 Func Mod_CompatibilityMapLoad($aModList)
@@ -157,7 +173,6 @@ Func Mod_CompatibilitySwap($iModIndex1, $iModIndex2, ByRef $abModCompatibilityMa
 
 EndFunc
 
-
 Func Mod_Disable($iModIndex, ByRef $aModList)
 	If $aModList[$iModIndex][1] = "Disabled" Then Return 0
 	$aModList[$iModIndex][1] = "Disabled"
@@ -220,4 +235,12 @@ Func Mod_MakeDisplayName($sName, $bDNE, $sVersion, $bDisplayVersion = True)
 
 	If $bDisplayVersion And $sVersion <> "0.0" And $sVersion <> "" Then $sReturn &= StringFormat(" [%s]", $sVersion)
 	Return $sReturn
+EndFunc
+
+Func Mod_GetIndexByID($aModList, $sModID)
+	For $iCount = 1 To $aModList[0][0]
+		If $aModList[$iCount][0] = $sModID Then Return $iCount
+	Next
+
+	Return -1
 EndFunc
