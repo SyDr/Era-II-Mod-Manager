@@ -41,7 +41,7 @@ AutoItSetOption("GUICloseOnESC", 1)
 #Region Variables
 Global $hFormMain, $hTreeView
 Global $auTreeView, $auModList, $abModCompatibilityMap
-Global $bGUINeedUpdate = False, $sMListUpdate = ""
+Global $bGUINeedUpdate = False
 
 Global $hGroupModList, $hGroupPresets, $hGroupGame, $hGroupModInfo, $hSettings, $hButtonChangeLanguage, $hChangeLanguageContextMenuID
 Global $aLanguages[1][2]
@@ -95,7 +95,7 @@ If $bRememberWindowSizePos Then SD_GUI_LoadSizePos()
 
 SD_GUI_ReCreate()
 
-Global $aWindowSize, $sListFile, $sNewDate
+Global $aWindowSize, $sNewDate
 
 While 1
 	Sleep(50)
@@ -105,10 +105,7 @@ While 1
 
 	If $bGUINeedUpdate And WinActive($hFormMain) Then
 		$bGUINeedUpdate = False
-		$sListFile = Settings_Global("Get", "List")
-		$sNewDate = FileGetTime($sListFile, 0, 1)
-		If $sNewDate<>$sMListUpdate Then SD_GUI_Update()
-		$sMListUpdate = $sNewDate
+		If $MM_LIST_FILE_CONTENT <> FileRead($MM_LIST_FILE_PATH) Then SD_GUI_Update()
 	EndIf
 
 	If $bEnableDisable Then
@@ -758,9 +755,10 @@ Func SD_GUI_Preset_Save()
 EndFunc
 
 Func Preset_Save($aModList, $sSavePath)
-	Local $sPrevPath = Settings_Global("Set", "List", $sSavePath)
+	Local $sPrevPath = $MM_LIST_FILE_PATH
+	$MM_LIST_FILE_PATH = $sSavePath
 	Mod_ListSave($aModList)
-	Settings_Global("Set", "List", $sPrevPath)
+	$MM_LIST_FILE_PATH = $sPrevPath
 EndFunc
 
 Func SD_GUI_SaveSizePos()
