@@ -39,11 +39,8 @@ AutoItSetOption("GUIResizeMode", 2+32+4+64)
 AutoItSetOption("GUICloseOnESC", 1)
 
 #Region Variables
-Global $_VERSION = " [0.14.09 - Stein um Stein]"
 Global $hFormMain, $hTreeView
 Global $auTreeView, $auModList, $abModCompatibilityMap
-Global $sBasePath = @ScriptDir & "\..\..\Mods"
-Global $sDefaultList = $sBasePath & "\list.txt"
 Global $bGUINeedUpdate = False, $sMListUpdate = ""
 
 Global $hGroupModList, $hGroupPresets, $hGroupGame, $hGroupModInfo, $hSettings, $hButtonChangeLanguage, $hChangeLanguageContextMenuID
@@ -62,21 +59,11 @@ Global $bEnableDisable
 Global $bInTrack = False
 #EndRegion
 
+$MM_LIST_DIR_PATH = @ScriptDir & "\..\..\Mods"
+$MM_LIST_FILE_PATH = $MM_LIST_DIR_PATH & "\list.txt"
+
 If @Compiled And @ScriptName = "installmod.exe" Then
-	Global $bUseWorkDir = FileExists(@ScriptDir & "\im_use_work_dir")
-	If $CMDLine[0] <> 1 Then
-		MsgBox(4096, "", "Usage:" & @CRLF & "installmod.exe <Mod Directory>" & @CRLF & ($bUseWorkDir ? "@WorkingDir will be used as root" : "@ScriptDir will be used as root"))
-		Exit
-	EndIf
-
-	$sBasePath = $bUseWorkDir ? (@WorkingDir & "\Mods") : (@ScriptDir & "\..\Mods")
-	$sDefaultList = $sBasePath & "\list.txt"
-
-	Settings_Global("Set", "List", $sDefaultList)
-	$MM_LIST_DIR_PATH = $sBasePath
-	$auModList = Mod_ListLoad()
-	Mod_ReEnable($auModList, $CMDLine[1])
-	Exit
+	StartUp_WorkAsInstallmod()
 EndIf
 
 Global $sLanguage = Settings_Get("Language")
@@ -96,7 +83,7 @@ If $CMDLine[0]>0 Then
 	If Not SD_CLI_Mod_Add() Then Exit
 EndIf
 
-StartUp_CheckRunningInstance(StringFormat(Lng_Get("main.title"), $_VERSION))
+StartUp_CheckRunningInstance(StringFormat(Lng_Get("main.title"), $MM_VERSION))
 
 Global $bSyncPresetWithWS = Settings_Get("SyncPresetWithWS")
 Global $bDisplayVersion = Settings_Get("DisplayVersion")
@@ -178,7 +165,7 @@ Func SD_GUI_ReCreate()
 EndFunc
 
 Func SD_GUI_Create()
-	$hFormMain = 	GUICreate(StringFormat(Lng_Get("main.title"), $_VERSION), 800, 455, 192, 152, BitOr($GUI_SS_DEFAULT_GUI, $WS_SIZEBOX), $WS_EX_ACCEPTFILES)
+	$hFormMain = 	GUICreate(StringFormat(Lng_Get("main.title"), $MM_VERSION), 800, 455, 192, 152, BitOr($GUI_SS_DEFAULT_GUI, $WS_SIZEBOX), $WS_EX_ACCEPTFILES)
 	GUISwitch($hFormMain)
 	$hGroupModList = GUICtrlCreateGroup("Mod load order control", 8, 8, 473, 441)
 ;~ 	$hTreeView = 	GUICtrlCreateTreeView(16, 24, 361, 417, BitOR($TVS_HASBUTTONS, $TVS_HASLINES, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
@@ -371,7 +358,7 @@ Func SD_GUI_SetLng()
 
 	GUICtrlSetData($hGroupModInfo, Lng_Get("group.modinfo.title"))
 	GUICtrlSetData($hButtonChangeLanguage, StringFormat("Language (%s)", Lng_Get("lang.name")))
-	WinSetTitle($hFormMain, "", StringFormat(Lng_Get("main.title"), $_VERSION))
+	WinSetTitle($hFormMain, "", StringFormat(Lng_Get("main.title"), $MM_VERSION))
 EndFunc
 
 Func SD_GUI_Mod_Compatibility()
@@ -421,7 +408,7 @@ Func SD_GUI_Mod_CreateModifyReadme()
 	Local $iTreeViewIndex = TreeViewGetSelectedIndex()
 	Local $iModIndex1=$auTreeView[$iTreeViewIndex][2]
 	If $iModIndex1<1 Or $iModIndex1>$auModList[0][0] Then Return -1 ; never
-	Local $sPath = $sBasePath & "\" & $auModList[$iModIndex1][0] & '\Readme.txt'
+	Local $sPath = $MM_LIST_DIR_PATH & "\" & $auModList[$iModIndex1][0] & '\Readme.txt'
 	Local $hFile = FileOpen($sPath, 1)
 	FileClose($hFile)
 	ShellExecute($sPath)
@@ -431,7 +418,7 @@ Func SD_GUI_Mod_CreateModifyModInfo()
 	Local $iTreeViewIndex = TreeViewGetSelectedIndex()
 	Local $iModIndex1=$auTreeView[$iTreeViewIndex][2]
 	If $iModIndex1<1 Or $iModIndex1>$auModList[0][0] Then Return -1 ; never
-	Local $sPath = $sBasePath & "\" & $auModList[$iModIndex1][0] & '\mod_info.ini'
+	Local $sPath = $MM_LIST_DIR_PATH & "\" & $auModList[$iModIndex1][0] & '\mod_info.ini'
 	Local $bAddInfo = Not FileExists($sPath)
 	Local $hFile = FileOpen($sPath, 1+8+32)
 	If $bAddInfo Then
@@ -469,7 +456,7 @@ Func SD_GUI_Mod_OpenFolder()
 	Local $iTreeViewIndex = TreeViewGetSelectedIndex()
 	Local $iModIndex1=$auTreeView[$iTreeViewIndex][2]
 	If $iModIndex1<1 Or $iModIndex1>$auModList[0][0] Then Return -1 ; never
-	Local $sPath = '"' & $sBasePath & "\" & $auModList[$iModIndex1][0] & '"'
+	Local $sPath = '"' & $MM_LIST_DIR_PATH & "\" & $auModList[$iModIndex1][0] & '"'
 	Local $sExplorer = Settings_Get("Explorer")
 	If $sExplorer == "" Then
 		ShellExecute($sPath)
@@ -624,7 +611,6 @@ Func SD_GUI_Mod_Add()
 		Return False
 	EndIf
 
-;~ 	_ArrayDisplay($aModList)
 	GUISetState(@SW_DISABLE, $hFormMain)
 	Local $iGUIOnEventModeState = AutoItSetOption("GUIOnEventMode", 0)
 	PackedMod_InstallGUI_Simple($aModList, $auModList, $hFormMain)
@@ -638,8 +624,6 @@ Func SD_GUI_Mod_Add()
 EndFunc
 
 Func SD_CLI_Mod_Add()
-	Settings_Global("Set", "List", $sDefaultList)
-	$MM_LIST_DIR_PATH = $sBasePath
 	$auModList = Mod_ListLoad()
 	$auModList = Mod_ListLoad()
 	Local $aModList = Mod_ListCheck($CMDLine); FilePath, ModName, ModLocalizedName, ModLocalizedDescription, Version, MinVersion, InstalledVersion, AuthorName, ModWebSite
@@ -649,12 +633,10 @@ Func SD_CLI_Mod_Add()
 		Return False
 	EndIf
 
-;~ 	_ArrayDisplay($aModList)
 	Local $iGUIOnEventModeState = AutoItSetOption("GUIOnEventMode", 0)
-	Settings_Global("Set", "List", $sDefaultList)
-	$MM_LIST_DIR_PATH = $sBasePath
 	Local $bResult = PackedMod_InstallGUI_Simple($aModList, $auModList, 0)
 	AutoItSetOption("GUIOnEventMode", $iGUIOnEventModeState)
+
 	Return $bResult
 EndFunc
 
@@ -716,7 +698,7 @@ Func Preset_Load($sLoadPath)
 		Return False
 	EndIf
 
-	Local $hList = FileOpen($sBasePath & "\list.txt", 2)
+	Local $hList = FileOpen($MM_LIST_DIR_PATH & "\list.txt", 2)
 
 	For $iCount = 1 To $asPreset[0]
 		FileWriteLine($hList, $asPreset[$iCount])
@@ -917,8 +899,6 @@ Func TreeViewDelete()
 EndFunc
 
 Func TreeViewMain(ByRef $hTreeView, ByRef $auModList, ByRef $auTreeView)
-	Settings_Global("Set", "List", $sDefaultList)
-	$MM_LIST_DIR_PATH = $sBasePath
 	$auModList = Mod_ListLoad()
 	$abModCompatibilityMap = Mod_CompatibilityMapLoad($auModList)
 	;If $hTreeView Then GUICtrlDelete($hTreeView)
@@ -1088,8 +1068,8 @@ Func TreeViewFill($hRoot, $aModList)
 										  GUICtrlSetOnEvent($aTreeViewData[$iIndexToAdd][0], "SD_GUI_Mod_Controls_Set")
 
 										  If Settings_Get("IconSize")>0 Then
-											If $aModList[$iCount][7] <> "" And FileExists($sBasePath & "\" & $aModList[$iCount][0] & "\" & $aModList[$iCount][7]) Then
-												_GUICtrlTreeView_SetIconX($aTreeViewData[0][0], $aTreeViewData[$iIndexToAdd][0], $sBasePath & "\" & $aModList[$iCount][0] & "\" & $aModList[$iCount][7], 0, 6, Settings_Get("IconSize"))
+											If $aModList[$iCount][7] <> "" And FileExists($MM_LIST_DIR_PATH & "\" & $aModList[$iCount][0] & "\" & $aModList[$iCount][7]) Then
+												_GUICtrlTreeView_SetIconX($aTreeViewData[0][0], $aTreeViewData[$iIndexToAdd][0], $MM_LIST_DIR_PATH & "\" & $aModList[$iCount][0] & "\" & $aModList[$iCount][7], 0, 6, Settings_Get("IconSize"))
 											Else
 												_GUICtrlTreeView_SetIconX($aTreeViewData[0][0], $aTreeViewData[$iIndexToAdd][0], @ScriptDir & "\icons\Folder-grey.ico", 0, 6, Settings_Get("IconSize"))
 											EndIf
