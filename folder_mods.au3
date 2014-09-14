@@ -76,7 +76,7 @@ Func Mod_ReEnable($sModID)
 	Local $iModIndex = Mod_GetIndexByID($sModID)
 	If $iModIndex <> -1 Then
 		Mod_Disable($iModIndex)
-		$MM_LIST_CONTENT = Mod_ListLoad()
+		Mod_ListLoad()
 	EndIf
 
 	$iModIndex = Mod_GetIndexByID($sModID)
