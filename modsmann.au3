@@ -35,7 +35,6 @@
 
 AutoItSetOption("MustDeclareVars", 1)
 AutoItSetOption("GUIOnEventMode", 1)
-AutoItSetOption("GUIResizeMode", 2 + 32 + 4 + 64)
 AutoItSetOption("GUICloseOnESC", 1)
 
 #Region Variables
@@ -77,7 +76,6 @@ StartUp_CheckRunningInstance(StringFormat(Lng_Get("main.title"), $MM_VERSION))
 
 Global $bSyncPresetWithWS = Settings_Get("SyncPresetWithWS")
 Global $bDisplayVersion = Settings_Get("DisplayVersion")
-Global $iWidth = 800, $iHeight = 475
 
 SD_GUI_LoadSize()
 
@@ -150,7 +148,7 @@ Func SD_GUI_ReCreate()
 EndFunc   ;==>SD_GUI_ReCreate
 
 Func SD_GUI_Create()
-	$hFormMain = GUICreate(StringFormat(Lng_Get("main.title"), $MM_VERSION), 800, 455, Default, Default, BitOR($GUI_SS_DEFAULT_GUI, $WS_SIZEBOX), $WS_EX_ACCEPTFILES)
+	$hFormMain = GUICreate(StringFormat(Lng_Get("main.title"), $MM_VERSION), 800, 455, Default, Default, BitOR($GUI_SS_DEFAULT_GUI, $WS_SIZEBOX, $WS_MAXIMIZEBOX), $WS_EX_ACCEPTFILES)
 	GUISwitch($hFormMain)
 	$hGroupModList = GUICtrlCreateGroup("Mod load order control", 8, 8, 473, 441)
 ;~ 	$hTreeView = 	GUICtrlCreateTreeView(16, 24, 361, 417, BitOR($TVS_HASBUTTONS, $TVS_HASLINES, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
@@ -215,13 +213,15 @@ Func SD_GUI_Create()
 	SD_GUI_SetResizing()
 	SD_GUI_Events_Register()
 	SD_GUI_SetLng()
-	WinMove($hFormMain, '', (@DesktopWidth - $iWidth) / 2, (@DesktopHeight - $iHeight) / 2, $iWidth, $iHeight)
+	WinMove($hFormMain, '', (@DesktopWidth - $MM_WINDOW_WIDTH) / 2, (@DesktopHeight - $MM_WINDOW_HEIGHT) / 2, $MM_WINDOW_WIDTH, $MM_WINDOW_HEIGHT)
+	If $MM_WINDOW_MAXIMIZED Then WinSetState($hFormMain, '', @SW_MAXIMIZE)
 	Local $AccelKeys[1][2] = [["{F5}", $hDummyF5]]
 	GUISetAccelerators($AccelKeys)
 	GUISetState(@SW_SHOW)
 EndFunc   ;==>SD_GUI_Create
 
 Func SD_GUI_SetResizing()
+	GUICtrlSetResizing($hTreeView, 2 + 32 + 64 + 256)
 	GUICtrlSetResizing($hGroupModList, 2 + 32 + 64 + 256)
 	GUICtrlSetResizing($hModMoveUp, 802)
 	GUICtrlSetResizing($hModMoveDown, 802)
@@ -742,15 +742,22 @@ EndFunc   ;==>Preset_Save
 
 Func SD_GUI_SaveSize()
 	Local $aPos = WinGetPos($hFormMain)
-	Settings_Set("Left", $aPos[0])
-	Settings_Set("Top", $aPos[1])
-	Settings_Set("Width", $aPos[2])
-	Settings_Set("Height", $aPos[3])
+
+	$MM_WINDOW_WIDTH = $aPos[2]
+	$MM_WINDOW_HEIGHT = $aPos[3]
+	$MM_WINDOW_MAXIMIZED = BitAND(WinGetState($hFormMain), 32)
+
+	Settings_Set("Maximized", $MM_WINDOW_MAXIMIZED)
+	If Not $MM_WINDOW_MAXIMIZED Then
+		Settings_Set("Width", $MM_WINDOW_WIDTH)
+		Settings_Set("Height", $MM_WINDOW_HEIGHT)
+	EndIf
 EndFunc   ;==>SD_GUI_SaveSize
 
 Func SD_GUI_LoadSize()
-	$iWidth = Settings_Get("Width")
-	$iHeight = Settings_Get("Height")
+	$MM_WINDOW_WIDTH = Settings_Get("Width")
+	$MM_WINDOW_HEIGHT = Settings_Get("Height")
+	$MM_WINDOW_MAXIMIZED = Settings_Get("Maximized")
 EndFunc   ;==>SD_GUI_LoadSize
 
 Func SD_GUI_Close()
