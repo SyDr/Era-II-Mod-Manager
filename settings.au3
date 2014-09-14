@@ -101,8 +101,6 @@ Func Settings_Get($sName)
 			Return $sBrowser
 		Case "SyncPresetWithWS"
 			Return IniRead($MM_SETTINGS_PATH, "settings", "SyncPresetWithWS", "")
-		Case "RememberSizePos"
-			Return IniRead($MM_SETTINGS_PATH, "settings", "RememberSizePos", True)
 		Case "DisplayVersion"
 			Return IniRead($MM_SETTINGS_PATH, "settings", "DisplayVersion", True)
 	EndSwitch
