@@ -9,8 +9,8 @@
 
 
 Func Settings_GUI($hParentGUI)
-	Local $iTotalCheck = 3
-	Local $hRememberPos, $hVersion, $hSync
+	Local $iTotalCheck = 2
+	Local $hVersion, $hSync
 	Local $iBaseOffset = 8
 	Local $hGUI, $msg
 	Local $bVersion = False, $bIcons = False
@@ -18,13 +18,10 @@ Func Settings_GUI($hParentGUI)
 	$hGUI = GUICreate(Lng_Get("settings.title"), 300, $iBaseOffset + $iTotalCheck*17+8, Default, Default, Default, Default, $hParentGUI)
 	GUISetState(@SW_SHOW)
 
-	$hRememberPos = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.save_win_pos"), $iBaseOffset+1, $iBaseOffset+1+(0)*17)
-	If Settings_Get("RememberSizePos") Then GUICtrlSetState($hRememberPos, $GUI_CHECKED)
-
-	$hVersion = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.display_version"), $iBaseOffset+1, $iBaseOffset+1+(1)*17)
+	$hVersion = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.display_version"), $iBaseOffset+1, $iBaseOffset+1+(0)*17)
 	If Settings_Get("DisplayVersion") Then GUICtrlSetState($hVersion, $GUI_CHECKED)
 
-	$hSync = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.sync_preset"), $iBaseOffset+1, $iBaseOffset+1+(2)*17)
+	$hSync = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.sync_preset"), $iBaseOffset+1, $iBaseOffset+1+(1)*17)
 	GUICtrlSetTip($hSync, StringFormat(Lng_Get("settings.checkbox.sync_preset.hint"), "0_O"))
 	If Settings_Get("SyncPresetWithWS") Then GUICtrlSetState($hSync, $GUI_CHECKED)
 
@@ -35,12 +32,6 @@ Func Settings_GUI($hParentGUI)
 			ContinueLoop
 		ElseIf $msg = $GUI_EVENT_CLOSE Then
 			ExitLoop
-		ElseIf $msg = $hRememberPos Then
-			If BitAND(GUICtrlRead($hRememberPos), $GUI_CHECKED) Then
-				Settings_Set("RememberSizePos", True)
-			Else
-				Settings_Set("RememberSizePos", "")
-			EndIf
 		ElseIf $msg = $hVersion Then
 			$bVersion = Not $bVersion
 			If BitAND(GUICtrlRead($hVersion), $GUI_CHECKED) Then
@@ -71,23 +62,13 @@ EndFunc
 Func Settings_Get($sName)
 	Switch $sName
 		Case "Language"
-			Local $sLanguage = IniRead($MM_SETTINGS_PATH, "settings", "language", "english.ini")
+			Local $sLanguage = IniRead($MM_SETTINGS_PATH, "settings", "Language", "english.ini")
 			If $sLanguage = "" Then $sLanguage = "english.ini"
 			Return $sLanguage
 		Case "Exe"
-			Local $sExe = IniRead($MM_SETTINGS_PATH, "settings", "exe", "h3era.exe")
+			Local $sExe = IniRead($MM_SETTINGS_PATH, "settings", "Exe", "h3era.exe")
 			If $sExe = "" Then $sExe = "h3era.exe"
 			Return $sExe
-		Case "Left"
-			Local $iLeft = IniRead($MM_SETTINGS_PATH, "settings", "left", 192)
-			If $iLeft<0 Then $iLeft = 0
-			If $iLeft>@DesktopWidth Then $iLeft = @DesktopWidth-100
-			Return $iLeft
-		Case "Top"
-			Local $iTop = IniRead($MM_SETTINGS_PATH, "settings", "top", 152)
-			If $iTop<0 Then $iTop = 0
-			If $iTop>@DesktopWidth Then $iTop = @DesktopWidth-100
-			Return $iTop
 		Case "Width"
 			Local $iWidth = IniRead($MM_SETTINGS_PATH, "settings", "Width", 800)
 			If $iWidth<800 Then $iWidth = 800
@@ -115,18 +96,12 @@ Func Settings_Set($sName, $vValue)
 	Switch $sName
 		Case "SyncPresetWithWS"
 			Return IniWrite($MM_SETTINGS_PATH, "settings", "SyncPresetWithWS", $vValue)
-		Case "RememberSizePos"
-			Return IniWrite($MM_SETTINGS_PATH, "settings", "RememberSizePos", $vValue)
 		Case "DisplayVersion"
 			Return IniWrite($MM_SETTINGS_PATH, "settings", "DisplayVersion", $vValue)
 		Case "Language"
-			Return IniWrite($MM_SETTINGS_PATH, "settings", "language", $vValue)
+			Return IniWrite($MM_SETTINGS_PATH, "settings", "Language", $vValue)
 		Case "Exe"
-			Return IniWrite($MM_SETTINGS_PATH, "settings", "exe", $vValue)
-		Case "Left"
-			Return IniWrite($MM_SETTINGS_PATH, "settings", "left", $vValue)
-		Case "Top"
-			Return IniWrite($MM_SETTINGS_PATH, "settings", "top", $vValue)
+			Return IniWrite($MM_SETTINGS_PATH, "settings", "Exe", $vValue)
 		Case "Width"
 			Return IniWrite($MM_SETTINGS_PATH, "settings", "Width", $vValue)
 		Case "Height"
