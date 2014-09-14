@@ -1007,13 +1007,12 @@ Func TreeViewFill($hRoot)
 			$aTreeViewData[$iIndexToAdd][0] = GUICtrlCreateTreeViewItem($sText, $aTreeViewData[0][0])
 											  GUICtrlSetColor($aTreeViewData[$iIndexToAdd][0], 0x0000C0)
 											  GUICtrlSetOnEvent($aTreeViewData[$iIndexToAdd][0], "SD_GUI_Mod_Controls_Disable")
-											  If Settings_Get("IconSize") > 0 Then
-												  If $bEnabled Then
-													  _GUICtrlTreeView_SetIconX($aTreeViewData[0][0], $aTreeViewData[$iIndexToAdd][0], @ScriptDir & "\icons\Sign-Select.ico", 0, 6, Settings_Get("IconSize"))
-												  Else
-													  _GUICtrlTreeView_SetIconX($aTreeViewData[0][0], $aTreeViewData[$iIndexToAdd][0], @ScriptDir & "\icons\Sign-Stop.ico", 0, 6, Settings_Get("IconSize"))
-												  EndIf
-											  EndIf
+			If $bEnabled Then
+				_GUICtrlTreeView_SetIcon($aTreeViewData[0][0], $aTreeViewData[$iIndexToAdd][0], @ScriptDir & "\icons\Sign-Select.ico", 0, 6)
+			Else
+				_GUICtrlTreeView_SetIcon($aTreeViewData[0][0], $aTreeViewData[$iIndexToAdd][0], @ScriptDir & "\icons\Sign-Stop.ico", 0, 6)
+			EndIf
+
 			$aTreeViewData[$iIndexToAdd][1] = 0
 			$aTreeViewData[$iIndexToAdd][2] = $bEnabled
 			$aTreeViewData[$iIndexToAdd][3] = $iPriority
@@ -1030,15 +1029,11 @@ Func TreeViewFill($hRoot)
 
 		$aTreeViewData[$iIndexToAdd][0] = GUICtrlCreateTreeViewItem(Mod_MakeDisplayName($MM_LIST_CONTENT[$iCount][3], $MM_LIST_CONTENT[$iCount][2], $MM_LIST_CONTENT[$iCount][8], $bDisplayVersion), $aTreeViewData[$aTreeViewData[$iIndexToAdd][1]][0])
 										  GUICtrlSetOnEvent($aTreeViewData[$iIndexToAdd][0], "SD_GUI_Mod_Controls_Set")
-
-										  If Settings_Get("IconSize")>0 Then
-											If $MM_LIST_CONTENT[$iCount][7] <> "" And FileExists($MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iCount][0] & "\" & $MM_LIST_CONTENT[$iCount][7]) Then
-												_GUICtrlTreeView_SetIconX($aTreeViewData[0][0], $aTreeViewData[$iIndexToAdd][0], $MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iCount][0] & "\" & $MM_LIST_CONTENT[$iCount][7], 0, 6, Settings_Get("IconSize"))
-											Else
-												_GUICtrlTreeView_SetIconX($aTreeViewData[0][0], $aTreeViewData[$iIndexToAdd][0], @ScriptDir & "\icons\Folder-grey.ico", 0, 6, Settings_Get("IconSize"))
-											EndIf
-										  EndIf
-
+		If $MM_LIST_CONTENT[$iCount][7] <> "" And FileExists($MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iCount][0] & "\" & $MM_LIST_CONTENT[$iCount][7]) Then
+			_GUICtrlTreeView_SetIcon($aTreeViewData[0][0], $aTreeViewData[$iIndexToAdd][0], $MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iCount][0] & "\" & $MM_LIST_CONTENT[$iCount][7], 0, 6)
+		Else
+			_GUICtrlTreeView_SetIcon($aTreeViewData[0][0], $aTreeViewData[$iIndexToAdd][0], @ScriptDir & "\icons\Folder-grey.ico", 0, 6)
+		EndIf
 
 		$iIndexToAdd += 1
 	Next
@@ -1162,68 +1157,6 @@ Func TreeViewTryFollow($sModName = "WoG")
 	GUICtrlSetState($auTreeView[$iIndex][0], $GUI_FOCUS)
 	$bInTrack = False
 EndFunc
-
-Func _GUICtrlTreeView_SetIconX($hWnd, $hItem = 0, $sIconFile = "", $iIconID = 0, $iImageMode = 6, $iIconSize = 16)
-
-	If $hItem = 0 Then $hItem = 0x00000000
-
-	If $hItem <> 0x00000000 And Not IsHWnd($hItem) Then $hItem = _GUICtrlTreeView_GetItemHandle($hWnd, $hItem)
-	If $hItem = 0x00000000 Or $sIconFile = "" Then Return SetError(1, 1, False)
-
-	If Not IsHWnd($hWnd) Then $hWnd = GUICtrlGetHandle($hWnd)
-
-	Local $tTVITEM = DllStructCreate($tagTVITEMEX)
-
-	Local $tIcon = DllStructCreate("handle")
-	Local $i_count = DllCall("shell32.dll", "uint", "ExtractIconExW", "wstr", $sIconFile, "int", $iIconID, _
-			"handle", 0, "struct*", $tIcon, "uint", 1)
-	If @error Then Return SetError(@error, @extended, 0)
-	If $i_count[0] = 0 Then Return 0
-
-	Local $hImageList = _SendMessage($hWnd, $TVM_GETIMAGELIST, 0, 0, 0, "wparam", "lparam", "handle")
-	If $hImageList = 0x00000000 Then
-		$hImageList = DllCall("comctl32.dll", "handle", "ImageList_Create", "int", $iIconSize, "int", $iIconSize, "uint", 0x0021, "int", 0, "int", 1)
-		If @error Then Return SetError(@error, @extended, 0)
-		$hImageList = $hImageList[0]
-		If $hImageList = 0 Then Return SetError(1, 1, False)
-
-		_SendMessage($hWnd, $TVM_SETIMAGELIST, 0, $hImageList, 0, "wparam", "handle")
-	EndIf
-
-	Local $hIcon = DllStructGetData($tIcon, 1)
-	Local $i_icon = DllCall("comctl32.dll", "int", "ImageList_AddIcon", "handle", $hImageList, "handle", $hIcon)
-	$i_icon = $i_icon[0]
-	If @error Then
-		Local $iError = @error, $iExtended = @extended
-		DllCall("user32.dll", "int", "DestroyIcon", "handle", $hIcon)
-		; No @error test because results are unimportant.
-		Return SetError($iError, $iExtended, 0)
-	EndIf
-
-	DllCall("user32.dll", "int", "DestroyIcon", "handle", $hIcon)
-	; No @error test because results are unimportant.
-
-	Local $iMask = BitOR($TVIF_IMAGE, $TVIF_SELECTEDIMAGE)
-
-	If BitAND($iImageMode, 2) Then
-		DllStructSetData($tTVITEM, "Image", $i_icon)
-		If Not BitAND($iImageMode, 4) Then $iMask = $TVIF_IMAGE
-	EndIf
-
-	If BitAND($iImageMode, 4) Then
-		DllStructSetData($tTVITEM, "SelectedImage", $i_icon)
-		If Not BitAND($iImageMode, 2) Then
-			$iMask = $TVIF_SELECTEDIMAGE
-		Else
-			$iMask = BitOR($TVIF_IMAGE, $TVIF_SELECTEDIMAGE)
-		EndIf
-	EndIf
-
-	DllStructSetData($tTVITEM, "Mask", $iMask)
-	DllStructSetData($tTVITEM, "hItem", $hItem)
-
-	Return __GUICtrlTreeView_SetItem($hWnd, $tTVITEM)
-EndFunc   ;==>_GUICtrlTreeView_SetIcon
 
 Func WM_GETMINMAXINFO($hwnd, $Msg, $wParam, $lParam)
     #forceref $hwnd, $Msg, $wParam, $lParam

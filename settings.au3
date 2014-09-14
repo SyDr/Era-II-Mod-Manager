@@ -9,8 +9,8 @@
 
 
 Func Settings_GUI($hParentGUI)
-	Local $iTotalCheck = 4
-	Local $hRememberPos, $hVersion, $hIcons, $hAssoc, $hSync
+	Local $iTotalCheck = 3
+	Local $hRememberPos, $hVersion, $hSync
 	Local $iBaseOffset = 8
 	Local $hGUI, $msg
 	Local $bVersion = False, $bIcons = False
@@ -24,10 +24,7 @@ Func Settings_GUI($hParentGUI)
 	$hVersion = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.display_version"), $iBaseOffset+1, $iBaseOffset+1+(1)*17)
 	If Settings_Get("DisplayVersion") Then GUICtrlSetState($hVersion, $GUI_CHECKED)
 
-	$hIcons = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.display_icons"), $iBaseOffset+1, $iBaseOffset+1+(2)*17)
-	If Settings_Get("IconSize")>0 Then GUICtrlSetState($hIcons, $GUI_CHECKED)
-
-	$hSync = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.sync_preset"), $iBaseOffset+1, $iBaseOffset+1+(3)*17)
+	$hSync = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.sync_preset"), $iBaseOffset+1, $iBaseOffset+1+(2)*17)
 	GUICtrlSetTip($hSync, StringFormat(Lng_Get("settings.checkbox.sync_preset.hint"), "0_O"))
 	If Settings_Get("SyncPresetWithWS") Then GUICtrlSetState($hSync, $GUI_CHECKED)
 
@@ -50,19 +47,6 @@ Func Settings_GUI($hParentGUI)
 				Settings_Set("DisplayVersion", True)
 			Else
 				Settings_Set("DisplayVersion", "")
-			EndIf
-		ElseIf $msg = $hIcons Then
-			$bIcons = Not $bIcons
-			If BitAND(GUICtrlRead($hIcons), $GUI_CHECKED) Then
-				Settings_Set("IconSize", True)
-			Else
-				Settings_Set("IconSize", False)
-			EndIf
-		ElseIf $msg = $hAssoc Then
-			If BitAND(GUICtrlRead($hAssoc), $GUI_CHECKED) Then
-				Settings_Set("Assoc", True)
-			Else
-				Settings_Set("Assoc", "")
 			EndIf
 		ElseIf $msg = $hSync Then
 			If BitAND(GUICtrlRead($hSync), $GUI_CHECKED) Then
@@ -124,8 +108,6 @@ Func Settings_Get($sName)
 			Return IniRead($MM_SETTINGS_PATH, "settings", "RememberSizePos", True)
 		Case "DisplayVersion"
 			Return IniRead($MM_SETTINGS_PATH, "settings", "DisplayVersion", True)
-		Case "IconSize"
-			Return IniRead($MM_SETTINGS_PATH, "settings", "IconSize", 16)
 	EndSwitch
 EndFunc
 
@@ -149,14 +131,5 @@ Func Settings_Set($sName, $vValue)
 			Return IniWrite($MM_SETTINGS_PATH, "settings", "Width", $vValue)
 		Case "Height"
 			Return IniWrite($MM_SETTINGS_PATH, "settings", "Height", $vValue)
-		Case "IconSize"
-			Local $iSize = Settings_Get("IconSize")
-			If $vValue Then
-				$iSize = Abs($iSize)
-				If $iSize = 0 Then $iSize = 16
-			Else
-				$iSize = -Abs($iSize)
-			EndIf
-			IniWrite($MM_SETTINGS_PATH, "settings", "IconSize", $iSize)
 	EndSwitch
 EndFunc
