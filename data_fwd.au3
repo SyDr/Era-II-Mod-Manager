@@ -6,6 +6,7 @@ Global $MM_LIST_DIR_PATH = @ScriptDir & "\..\..\Mods"
 Global $MM_LIST_FILE_PATH = $MM_LIST_DIR_PATH & "\list.txt"
 
 Global $MM_SETTINGS_PATH = @ScriptDir & "\settings.ini"
+Global $MM_SETTINGS_LANGUAGE = "english.ini"
 
 
 Global $MM_LNG_CACHE ; lng.au3

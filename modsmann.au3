@@ -63,20 +63,13 @@ If @Compiled And @ScriptName = "installmod.exe" Then
 	StartUp_WorkAsInstallmod()
 EndIf
 
-Global $sLanguage = Settings_Get("Language")
-If $sLanguage = "" Then $sLanguage = "english.txt"
-Lng_LoadFile($sLanguage)
+If $CMDLine[0] > 0 And $CMDLine[1] = '/assocdel' Then
+	StartUp_Assoc_Delete()
+EndIf
 
-If $CMDLine[0]>0 Then
-	If @Compiled Then
-		If $CMDLine[1] = '/assocset' Then
-			Settings_Assoc_Create()
-			Exit
-		ElseIf $CMDLine[1] = '/assocdel' Then
-			Settings_Assoc_Delete()
-			Exit
-		EndIf
-	EndIf
+$MM_SETTINGS_LANGUAGE = Settings_Get("Language")
+
+If $CMDLine[0] > 0 Then
 	If Not SD_CLI_Mod_Add() Then Exit
 EndIf
 
@@ -130,18 +123,17 @@ Func SD_GUI_Language_Change()
 	Next
 
 	If $iIndex = -1 Then Return False
-	$sLanguage = $aLanguages[$iIndex][1]
+	$MM_SETTINGS_LANGUAGE = $aLanguages[$iIndex][1]
 
-	Local $sLoaded = Lng_LoadFile($sLanguage)
+	Local $sIsLoaded = Lng_Load()
 	If @error Then
-		MsgBox(64+4096, "", $sLoaded, Default, $hFormMain)
+		MsgBox(64+4096, "", $sIsLoaded, Default, $hFormMain)
 	Else
-		Settings_Set("Language", $sLanguage)
+		Settings_Set("Language", $MM_SETTINGS_LANGUAGE)
 	EndIf
 
 	SD_GUI_SetLng()
 	SD_GUI_Update()
-	Return $sLanguage
 EndFunc
 
 Func SD_GUI_ReCreate()
@@ -370,7 +362,6 @@ EndFunc
 
 Func SD_GUI_Settings()
 	GUISetState(@SW_DISABLE, $hFormMain)
-	Local $bAssoc = Settings_Get("Assoc")
 	Local $iGUIOnEventModeState = AutoItSetOption("GUIOnEventMode", 0)
 	Local $iResult = Settings_GUI($hFormMain)
 	AutoItSetOption("GUIOnEventMode", $iGUIOnEventModeState)
@@ -380,15 +371,6 @@ Func SD_GUI_Settings()
 	$bRememberWindowSizePos = Settings_Get("RememberSizePos")
 	$bDisplayVersion = Settings_Get("DisplayVersion")
 	$bSyncPresetWithWS = Settings_Get("SyncPresetWithWS")
-	Local $bAssocNew = Settings_Get("Assoc")
-
-	If $bAssoc<>$bAssocNew Then
-		If $bAssocNew Then
-			Settings_Assoc_Create()
-		Else
-			Settings_Assoc_Delete()
-		EndIf
-	EndIf
 
 	If $iResult = 1 Then ; Icons
 		TreeViewDelete()

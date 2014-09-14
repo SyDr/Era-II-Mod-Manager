@@ -9,7 +9,7 @@
 
 
 Func Settings_GUI($hParentGUI)
-	Local $iTotalCheck = 5
+	Local $iTotalCheck = 4
 	Local $hRememberPos, $hVersion, $hIcons, $hAssoc, $hSync
 	Local $iBaseOffset = 8
 	Local $hGUI, $msg
@@ -27,11 +27,7 @@ Func Settings_GUI($hParentGUI)
 	$hIcons = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.display_icons"), $iBaseOffset+1, $iBaseOffset+1+(2)*17)
 	If Settings_Get("IconSize")>0 Then GUICtrlSetState($hIcons, $GUI_CHECKED)
 
-	$hAssoc = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.assoc"), $iBaseOffset+1, $iBaseOffset+1+(3)*17)
-	If Settings_Get("Assoc") Then GUICtrlSetState($hAssoc, $GUI_CHECKED)
-	If Not @Compiled Then GUICtrlSetState($hAssoc, $GUI_DISABLE)
-
-	$hSync = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.sync_preset"), $iBaseOffset+1, $iBaseOffset+1+(4)*17)
+	$hSync = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.sync_preset"), $iBaseOffset+1, $iBaseOffset+1+(3)*17)
 	GUICtrlSetTip($hSync, StringFormat(Lng_Get("settings.checkbox.sync_preset.hint"), "0_O"))
 	If Settings_Get("SyncPresetWithWS") Then GUICtrlSetState($hSync, $GUI_CHECKED)
 
@@ -91,7 +87,9 @@ EndFunc
 Func Settings_Get($sName)
 	Switch $sName
 		Case "Language"
-			Return IniRead($MM_SETTINGS_PATH, "settings", "language", "english.ini")
+			Local $sLanguage = IniRead($MM_SETTINGS_PATH, "settings", "language", "english.ini")
+			If $sLanguage = "" Then $sLanguage = "english.ini"
+			Return $sLanguage
 		Case "Exe"
 			Local $sExe = IniRead($MM_SETTINGS_PATH, "settings", "exe", "h3era.exe")
 			If $sExe = "" Then $sExe = "h3era.exe"
@@ -128,8 +126,6 @@ Func Settings_Get($sName)
 			Return IniRead($MM_SETTINGS_PATH, "settings", "DisplayVersion", True)
 		Case "IconSize"
 			Return IniRead($MM_SETTINGS_PATH, "settings", "IconSize", 16)
-		Case "Assoc"
-			Return IniRead($MM_SETTINGS_PATH, "settings", "Assoc", False)
 	EndSwitch
 EndFunc
 
@@ -162,37 +158,5 @@ Func Settings_Set($sName, $vValue)
 				$iSize = -Abs($iSize)
 			EndIf
 			IniWrite($MM_SETTINGS_PATH, "settings", "IconSize", $iSize)
-		Case "Assoc"
-			Return IniWrite($MM_SETTINGS_PATH, "settings", "Assoc", $vValue)
 	EndSwitch
-EndFunc
-
-Func Settings_Assoc_Create()
-	If Not IsAdmin() Then
-		Return ShellExecuteWait(@ScriptFullPath, '/assocset', @WorkingDir , "runas", @SW_SHOWNORMAL)
-	EndIf
-
-	RegWrite("HKCR\.emp", "", "REG_SZ", "Era.ModManager.Package")
-	RegWrite("HKCR\Era.ModManager.Package", "", "REG_SZ", "Era II Mod Manager Package File")
-	RegWrite("HKCR\Era.ModManager.Package\shell\open\command", "", "REG_SZ", '"' & @ScriptFullPath & '" "%1"')
-	RegWrite("HKCR\Era.ModManager.Package\DefaultIcon", "", "REG_SZ", @ScriptDir & "\icons\package.ico,0")
-	__Settings_Assoc_Notify_System()
-EndFunc
-
-Func Settings_Assoc_Delete()
-	If Not IsAdmin() Then
-		Return ShellExecuteWait(@ScriptFullPath, '/assocdel', @WorkingDir , "runas", @SW_SHOWNORMAL)
-	EndIf
-
-	RegDelete("HKCR\.emp")
-	RegDelete("HKCR\Era.ModManager.Package")
-	__Settings_Assoc_Notify_System()
-EndFunc
-
-Func __Settings_Assoc_Notify_System()
-	Local Const $SHCNE_ASSOCCHANGED = 0x8000000
-	Local Const $SHCNF_IDLIST = 0
-	Local Const $NULL = 0
-
-	DllCall("shell32.dll", "none", "SHChangeNotify", "long", $SHCNE_ASSOCCHANGED, "int", $SHCNF_IDLIST, "ptr", $NULL, "ptr", $NULL)
 EndFunc

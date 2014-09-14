@@ -5,15 +5,15 @@
 
 #include-once
 
-Func Lng_LoadFile($sLanguage)
-	Local $aSections = IniReadSectionNames(@ScriptDir & "\lng\" & $sLanguage)
-	If @error Then Return SetError(1, @extended, "Can't read " & @ScriptDir & "\lng\" & $sLanguage)
+Func Lng_Load()
+	Local $aSections = IniReadSectionNames(@ScriptDir & "\lng\" & $MM_SETTINGS_LANGUAGE)
+	If @error Then Return SetError(1, @extended, "Can't read " & @ScriptDir & "\lng\" & $MM_SETTINGS_LANGUAGE)
 
 	Local $aResult[1][2] = [[0, 0]]
 
 	For $iCount = 1 To $aSections[0]
-		Local $aTmp = IniReadSection(@ScriptDir & "\lng\" & $sLanguage, $aSections[$iCount])
-		If @error Then Return SetError(2, @extended, "Can't read " & @ScriptDir & "\lng\" & $sLanguage)
+		Local $aTmp = IniReadSection(@ScriptDir & "\lng\" & $MM_SETTINGS_LANGUAGE, $aSections[$iCount])
+		If @error Then Return SetError(2, @extended, "Can't read " & @ScriptDir & "\lng\" & $MM_SETTINGS_LANGUAGE)
 
 		ReDim $aResult[UBound($aResult, 1) + $aTmp[0][0]][2]
 
@@ -29,11 +29,18 @@ Func Lng_LoadFile($sLanguage)
 
 	$MM_LNG_CACHE = $aResult
 
-	Return 0
+	Return SetError(0, 0, "") ; everething ok
 EndFunc
 
 Func Lng_Get($sKeyName)
-	If Not IsArray($MM_LNG_CACHE) Then Return $sKeyName
+	If Not IsArray($MM_LNG_CACHE) Then
+		Lng_Load()
+	EndIf
+
+	If Not IsArray($MM_LNG_CACHE) Then
+		Return $sKeyName
+	EndIf
+
 	Local $iLeft = 1, $iRight = $MM_LNG_CACHE[0][0], $iIndex
 
 	While $iLeft <= $iRight
