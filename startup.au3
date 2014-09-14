@@ -26,7 +26,7 @@ Func StartUp_WorkAsInstallmod()
 	$MM_LIST_DIR_PATH = $bUseWorkDir ? (@WorkingDir & "\Mods") : (@ScriptDir & "\..\Mods")
 	$MM_LIST_FILE_PATH = $MM_LIST_DIR_PATH & "\list.txt"
 
-	Local $auModList = Mod_ListLoad()
+	Mod_ListLoad()
 	Mod_ReEnable($CMDLine[1])
 	Exit
 EndFunc

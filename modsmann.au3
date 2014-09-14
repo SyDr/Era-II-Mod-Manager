@@ -5,7 +5,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseUpx=y
 #AutoIt3Wrapper_Res_requestedExecutionLevel=asInvoker
-#AutoIt3Wrapper_AU3Check_Parameters=-d -w 1 -w 2 -w 3 -w 4 -w 6
+#AutoIt3Wrapper_AU3Check_Parameters=-d -w 1 -w 2 -w 3 -w 4 -w 5 -w 6 -w 7
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 ; Author:         Aliaksei SyDr Karalenka
 
@@ -519,6 +519,7 @@ Func SD_GUI_Game_Shortcut_Create()
 EndFunc
 
 Func SD_GUI_Mod_AddByDnD($hwnd, $msg, $wParam, $lParam)
+	#forceref $hwnd, $Msg, $wParam, $lParam
 	Local $aRet = DllCall("shell32.dll", "int", "DragQueryFile", "int", $wParam, "int", -1, "ptr", 0, "int", 0)
     If @error Then Return SetError(1, 0, 0)
     Local $aDroppedFiles[$aRet[0]+1], $i, $tBuffer = DllStructCreate("char[256]")
@@ -1255,7 +1256,7 @@ Func WM_GETMINMAXINFO($hwnd, $Msg, $wParam, $lParam)
 EndFunc   ;==>WM_GETMINMAXINFO
 
 Func WM_NOTIFY($hWnd, $iMsg, $iwParam, $ilParam)
-    #forceref $hWnd, $iMsg, $iwParam
+    #forceref $hWnd, $iMsg, $iwParam, $ilParam
     Local $hWndFrom, $iCode, $tNMHDR, $hWndTreeview
     $hWndTreeview = $hTreeView
     If Not IsHWnd($hTreeView) Then $hWndTreeview = GUICtrlGetHandle($hTreeView)
