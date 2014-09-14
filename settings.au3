@@ -35,13 +35,13 @@ Func Settings_GUI($hParentGUI)
 		ElseIf $msg = $hVersion Then
 			$bVersion = Not $bVersion
 			If BitAND(GUICtrlRead($hVersion), $GUI_CHECKED) Then
-				Settings_Set("DisplayVersion", True)
+				Settings_Set("DisplayVersion", "1")
 			Else
 				Settings_Set("DisplayVersion", "")
 			EndIf
 		ElseIf $msg = $hSync Then
 			If BitAND(GUICtrlRead($hSync), $GUI_CHECKED) Then
-				Settings_Set("SyncPresetWithWS", True)
+				Settings_Set("SyncPresetWithWS", "1")
 			Else
 				Settings_Set("SyncPresetWithWS", "")
 			EndIf
@@ -77,6 +77,8 @@ Func Settings_Get($sName)
 			Local $iHeight = IniRead($MM_SETTINGS_PATH, "settings", "Height", 475)
 			If $iHeight < 475 Then $iHeight = 475
 			Return $iHeight
+		Case "Maximized"
+			Return Int(IniRead($MM_SETTINGS_PATH, "settings", "Maximized", "")) <> 0
 		Case "Explorer"
 			Return IniRead($MM_SETTINGS_PATH, "settings", "Explorer", "")
 		Case "Browser"
@@ -106,5 +108,7 @@ Func Settings_Set($sName, $vValue)
 			Return IniWrite($MM_SETTINGS_PATH, "settings", "Width", $vValue)
 		Case "Height"
 			Return IniWrite($MM_SETTINGS_PATH, "settings", "Height", $vValue)
+		Case "Maximized"
+			Return IniWrite($MM_SETTINGS_PATH, "settings", "Maximized", $vValue)
 	EndSwitch
 EndFunc   ;==>Settings_Set
