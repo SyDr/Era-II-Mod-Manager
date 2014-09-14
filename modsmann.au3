@@ -77,9 +77,9 @@ StartUp_CheckRunningInstance(StringFormat(Lng_Get("main.title"), $MM_VERSION))
 
 Global $bSyncPresetWithWS = Settings_Get("SyncPresetWithWS")
 Global $bDisplayVersion = Settings_Get("DisplayVersion")
-Global $bRememberWindowSizePos = Settings_Get("RememberSizePos")
-Global $iLeft = 192, $iTop = 152, $iWidth=800, $iHeight=475
-If $bRememberWindowSizePos Then SD_GUI_LoadSizePos()
+Global $iWidth=800, $iHeight=475
+
+SD_GUI_LoadSize()
 
 ;CheckForEraVersion()
 
@@ -138,8 +138,7 @@ EndFunc
 
 Func SD_GUI_ReCreate()
 	If IsHWnd($hFormMain) Then
-		If $bRememberWindowSizePos Then SD_GUI_SaveSizePos()
-		If $bRememberWindowSizePos Then SD_GUI_LoadSizePos()
+		SD_GUI_SaveSize()
 
 		$hTreeView = 0
 		SD_GUI_Events_UnRegister()
@@ -151,7 +150,7 @@ Func SD_GUI_ReCreate()
 EndFunc
 
 Func SD_GUI_Create()
-	$hFormMain = 	GUICreate(StringFormat(Lng_Get("main.title"), $MM_VERSION), 800, 455, 192, 152, BitOr($GUI_SS_DEFAULT_GUI, $WS_SIZEBOX), $WS_EX_ACCEPTFILES)
+	$hFormMain = 	GUICreate(StringFormat(Lng_Get("main.title"), $MM_VERSION), 800, 455, Default, Default, BitOr($GUI_SS_DEFAULT_GUI, $WS_SIZEBOX), $WS_EX_ACCEPTFILES)
 	GUISwitch($hFormMain)
 	$hGroupModList = GUICtrlCreateGroup("Mod load order control", 8, 8, 473, 441)
 ;~ 	$hTreeView = 	GUICtrlCreateTreeView(16, 24, 361, 417, BitOR($TVS_HASBUTTONS, $TVS_HASLINES, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
@@ -174,6 +173,7 @@ Func SD_GUI_Create()
 	$hModOpenFolder = GUICtrlCreateMenuItem("Open Folder", $hMoreActionsDummy)
 	$hModInfoC = GUICtrlCreateMenuItem("mod_info.ini", $hMoreActionsDummy)
 	$hModReadmeC = GUICtrlCreateMenuItem("Create Readme",$hMoreActionsDummy)
+	GUICtrlCreateGroup("", -99, -99, 1, 1)
 
 	$hModAdd = GUICtrlCreateButton("Add new", 384, 455-32-8-32, 89, 25)
 	$hSettings = GUICtrlCreateButton("Settings", 384, 455-32-8, 89, 25)
@@ -211,11 +211,11 @@ Func SD_GUI_Create()
 	Next
 
 	SD_GUI_Mod_Controls_Disable()
-	TreeViewTryFollow("") ; Workaround : if Mod is already selected, no SD_GUI_Mod_Controls_Set is called
+;~ 	TreeViewTryFollow("") ; Workaround : if Mod is already selected, no SD_GUI_Mod_Controls_Set is called
 	SD_GUI_SetResizing()
 	SD_GUI_Events_Register()
 	SD_GUI_SetLng()
-	WinMove($hFormMain, '', $iLeft, $iTop, $iWidth, $iHeight)
+	WinMove($hFormMain, '', (@DesktopWidth - $iWidth) / 2, (@DesktopHeight - $iHeight) / 2, $iWidth, $iHeight)
 	Local $AccelKeys[1][2] = [["{F5}", $hDummyF5]]
 	GUISetAccelerators($AccelKeys)
 	GUISetState(@SW_SHOW)
@@ -228,14 +228,14 @@ Func SD_GUI_SetResizing()
 	GUICtrlSetResizing($hModEnableDisable, 802)
 	GUICtrlSetResizing($hModCompatibility, 802)
 	GUICtrlSetResizing($hButtonMoreActions, 802)
-	GUICtrlSetResizing($hModAdd, 802)
+	GUICtrlSetResizing($hModAdd, 2+64+256+512)
 	GUICtrlSetResizing($hModOpenFolder, 802)
 	GUICtrlSetResizing($hModInfoC, 802)
 	GUICtrlSetResizing($hModReadmeC, 802)
 	GUICtrlSetResizing($hGroupPresets, 4+32+256+512)
 	GUICtrlSetResizing($hLabelPreset, 4+32+256+512)
 	GUICtrlSetResizing($hPreset, 4+32+256+512)
-	GUICtrlSetResizing($hSettings, 802)
+	GUICtrlSetResizing($hSettings, 2+64+256+512)
 	GUICtrlSetResizing($hPresetSave, 4+32+256+512)
 	GUICtrlSetResizing($hPresetLoad, 4+32+256+512)
 	GUICtrlSetResizing($hPresetDelete, 4+32+256+512)
@@ -368,7 +368,6 @@ Func SD_GUI_Settings()
 	GUISetState(@SW_ENABLE, $hFormMain)
 	GUISetState(@SW_RESTORE, $hFormMain)
 
-	$bRememberWindowSizePos = Settings_Get("RememberSizePos")
 	$bDisplayVersion = Settings_Get("DisplayVersion")
 	$bSyncPresetWithWS = Settings_Get("SyncPresetWithWS")
 
@@ -741,7 +740,7 @@ Func Preset_Save($sSavePath)
 	$MM_LIST_FILE_PATH = $sPrevPath
 EndFunc
 
-Func SD_GUI_SaveSizePos()
+Func SD_GUI_SaveSize()
 	Local $aPos = WinGetPos($hFormMain)
 	Settings_Set("Left", $aPos[0])
 	Settings_Set("Top", $aPos[1])
@@ -749,15 +748,13 @@ Func SD_GUI_SaveSizePos()
 	Settings_Set("Height", $aPos[3])
 EndFunc
 
-Func SD_GUI_LoadSizePos()
-	$iLeft = Settings_Get("Left")
-	$iTop = Settings_Get("Top")
+Func SD_GUI_LoadSize()
 	$iWidth = Settings_Get("Width")
 	$iHeight = Settings_Get("Height")
 EndFunc
 
 Func SD_GUI_Close()
-	If $bRememberWindowSizePos Then SD_GUI_SaveSizePos()
+	SD_GUI_SaveSize()
  	Exit
 EndFunc
 
