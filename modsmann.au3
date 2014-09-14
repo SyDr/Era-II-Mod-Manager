@@ -624,7 +624,6 @@ Func SD_GUI_Game_Exe_Run()
 	EndIf
 
 	Run('"' & @ScriptDir & '\..\..\' & GUICtrlRead($hComboExe) & '"', @ScriptDir & "\..\..\")
-	;MsgBox(4096, @error, @ScriptDir & '\..\..\"' & GUICtrlRead($hComboExe) & '"')
 	If @error Then Run('"' & GUICtrlRead($hComboExe) & '"', @ScriptDir & "\..\..\")
 	Settings_Set("Exe", GUICtrlRead($hComboExe))
 EndFunc   ;==>SD_GUI_Game_Exe_Run
@@ -771,7 +770,7 @@ Func SD_GUI_Mod_Website()
 	If $iModIndex1 < 1 Or $iModIndex1 > $MM_LIST_CONTENT[0][0] Then Return -1 ; never
 
 	Local $sBrowser = Settings_Get("Browser")
-	Run(StringReplace($sBrowser, "%1", $MM_LIST_CONTENT[$iModIndex1][6]))
+	If $sBrowser <> "" Then ShellExecute($sBrowser, $MM_LIST_CONTENT[$iModIndex1][6])
 EndFunc   ;==>SD_GUI_Mod_Website
 
 Func SD_GUI_PresetChange()

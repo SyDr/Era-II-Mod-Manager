@@ -82,9 +82,23 @@ Func Settings_Get($sName)
 		Case "Explorer"
 			Return IniRead($MM_SETTINGS_PATH, "settings", "Explorer", "")
 		Case "Browser"
-			Local $sBrowser = IniRead($MM_SETTINGS_PATH, "settings", "Browser", "")
-			If $sBrowser = "" Then $sBrowser = RegRead("HKCR\http\shell\open\command", "")
-			If $sBrowser = "" Then $sBrowser = '"C:\Program Files\Internet Explorer\iexplore.exe" "%1"'
+			Local $sBrowser = RegRead("HKCR\http\shell\open\command", "")
+
+			If $sBrowser = "" Then
+				Local $htm = RegRead("HKCR\.htm", "")
+				$sBrowser = RegRead("HKCR\" & $htm & "\shell\open\command", "")
+			EndIf
+
+			If $sBrowser = "" Then
+				Local $html = RegRead("HKCR\.html", "")
+				$sBrowser = RegRead("HKCR\" & $html & "\shell\open\command", "")
+			EndIf
+
+			If $sBrowser <> "" Then
+				$sBrowser = StringLeft($sBrowser, StringInStr($sBrowser, '"', 0, 2))
+			EndIf
+
+			Return $sBrowser
 		Case "SyncPresetWithWS"
 			Return IniRead($MM_SETTINGS_PATH, "settings", "SyncPresetWithWS", "")
 		Case "RememberSizePos"
