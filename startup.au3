@@ -30,3 +30,21 @@ Func StartUp_WorkAsInstallmod()
 	Mod_ReEnable($CMDLine[1])
 	Exit
 EndFunc
+
+Func StartUp_Assoc_Delete()
+	If Not IsAdmin() Then
+		Exit ShellExecuteWait(@ScriptFullPath, '/assocdel', @WorkingDir , "runas", @SW_SHOWNORMAL)
+	EndIf
+
+	RegDelete("HKCR\.emp")
+	RegDelete("HKCR\Era.ModManager.Package")
+	__StartUp_Assoc_Notify_System()
+	Exit
+EndFunc
+
+Func __StartUp_Assoc_Notify_System()
+	Local Const $SHCNE_ASSOCCHANGED = 0x8000000
+	Local Const $SHCNF_IDLIST = 0
+
+	DllCall("shell32.dll", "none", "SHChangeNotify", "long", $SHCNE_ASSOCCHANGED, "int", $SHCNF_IDLIST, "ptr", Null, "ptr", Null)
+EndFunc
