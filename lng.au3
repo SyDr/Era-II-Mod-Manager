@@ -30,7 +30,7 @@ Func Lng_Load()
 	$MM_LNG_CACHE = $aResult
 
 	Return SetError(0, 0, "") ; everething ok
-EndFunc
+EndFunc   ;==>Lng_Load
 
 Func Lng_Get($sKeyName)
 	If Not IsArray($MM_LNG_CACHE) Then
@@ -60,4 +60,4 @@ Func Lng_Get($sKeyName)
 	Else
 		Return $MM_LNG_CACHE[$iIndex][1]
 	EndIf
-EndFunc
+EndFunc   ;==>Lng_Get

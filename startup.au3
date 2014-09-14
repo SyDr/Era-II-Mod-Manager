@@ -14,7 +14,7 @@ Func StartUp_CheckRunningInstance($sTitle)
 	If $hSingleton = 0 Then
 		If WinActivate($sTitle) Then Exit
 	EndIf
-EndFunc
+EndFunc   ;==>StartUp_CheckRunningInstance
 
 Func StartUp_WorkAsInstallmod()
 	Local $bUseWorkDir = FileExists(@ScriptDir & "\im_use_work_dir")
@@ -29,22 +29,22 @@ Func StartUp_WorkAsInstallmod()
 	Mod_ListLoad()
 	Mod_ReEnable($CMDLine[1])
 	Exit
-EndFunc
+EndFunc   ;==>StartUp_WorkAsInstallmod
 
 Func StartUp_Assoc_Delete()
 	If Not IsAdmin() Then
-		Exit ShellExecuteWait(@ScriptFullPath, '/assocdel', @WorkingDir , "runas", @SW_SHOWNORMAL)
+		Exit ShellExecuteWait(@ScriptFullPath, '/assocdel', @WorkingDir, "runas", @SW_SHOWNORMAL)
 	EndIf
 
 	RegDelete("HKCR\.emp")
 	RegDelete("HKCR\Era.ModManager.Package")
 	__StartUp_Assoc_Notify_System()
 	Exit
-EndFunc
+EndFunc   ;==>StartUp_Assoc_Delete
 
 Func __StartUp_Assoc_Notify_System()
 	Local Const $SHCNE_ASSOCCHANGED = 0x8000000
 	Local Const $SHCNF_IDLIST = 0
 
 	DllCall("shell32.dll", "none", "SHChangeNotify", "long", $SHCNE_ASSOCCHANGED, "int", $SHCNF_IDLIST, "ptr", Null, "ptr", Null)
-EndFunc
+EndFunc   ;==>__StartUp_Assoc_Notify_System

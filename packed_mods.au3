@@ -16,12 +16,12 @@
 
 Func PackedMod_IsPackedMod($sFilePath)
 	Local $sModName = PackedMod_GetPackedName($sFilePath)
-	If $sModName<>"" Then
+	If $sModName <> "" Then
 		Return $sModName
 	Else
 		Return False
 	EndIf
-EndFunc
+EndFunc   ;==>PackedMod_IsPackedMod
 
 Func PackedMod_GetPackedName($sFilePath)
 	If StringInStr(FileGetAttrib($sFilePath), "D") Then Return ""
@@ -37,7 +37,7 @@ Func PackedMod_GetPackedName($sFilePath)
 	WEnd
 
 	Return $sModName
-EndFunc
+EndFunc   ;==>PackedMod_GetPackedName
 
 Func PackedMod_LoadInfo($sFilePath, ByRef $sLocalName, ByRef $sLocalDesc, ByRef $sVersion, ByRef $sMinVersion, ByRef $sAuthor, ByRef $sWebSite)
 	Local $sModName = PackedMod_GetPackedName($sFilePath)
@@ -50,7 +50,7 @@ Func PackedMod_LoadInfo($sFilePath, ByRef $sLocalName, ByRef $sLocalDesc, ByRef 
 	$sLocalName = IniRead($sTempDir & "\mod_info.ini", "info", "Caption." & Lng_Get("lang.code"), IniRead($sTempDir & "\mod_info.ini", "info", "Caption", ""))
 	Local $sDescriptonFile = IniRead($sTempDir & "\mod_info.ini", "info", "Description File." & Lng_Get("lang.code"), IniRead($sTempDir & "\mod_info.ini", "info", "Description File", "Readme.txt"))
 	If $sDescriptonFile Then
-		RunWait(@ScriptDir & '\7z\7z.exe e "' & $sFilePath & '" -o"' & $sTempDir & '\" "Mods\' & $sModName & '\' & $sDescriptonFile &'"', @ScriptDir & "\7z\", @SW_HIDE)
+		RunWait(@ScriptDir & '\7z\7z.exe e "' & $sFilePath & '" -o"' & $sTempDir & '\" "Mods\' & $sModName & '\' & $sDescriptonFile & '"', @ScriptDir & "\7z\", @SW_HIDE)
 		$sLocalDesc = FileRead($sTempDir & "\" & $sDescriptonFile)
 	EndIf
 
@@ -60,10 +60,10 @@ Func PackedMod_LoadInfo($sFilePath, ByRef $sLocalName, ByRef $sLocalDesc, ByRef 
 	$sWebSite = IniRead($sTempDir & "\mod_info.ini", "info", "Homepage", "")
 
 	Return True
-EndFunc
+EndFunc   ;==>PackedMod_LoadInfo
 
 Func PackedMod_Deploy($sFilePath, $sAction)
-	Local $sTargetPath  = $MM_LIST_DIR_PATH & "\.."
+	Local $sTargetPath = $MM_LIST_DIR_PATH & "\.."
 	; Actions are Install (delete if exist, then unpack) and Upgrade (just unpack with overwrite)
 	Local $sModName = PackedMod_GetPackedName($sFilePath)
 	If $sModName = "" Then Return SetError(1, 0, False)
@@ -83,7 +83,7 @@ Func PackedMod_Deploy($sFilePath, $sAction)
 		Mod_ReEnable($sModName)
 	EndIf
 	Return True
-EndFunc
+EndFunc   ;==>PackedMod_Deploy
 
 Func PackedMod_InstallGUI_Simple($aModList, $hFormParent = 0)
 	Local $hDesc ; Name, Author, Desc
@@ -95,7 +95,7 @@ Func PackedMod_InstallGUI_Simple($aModList, $hFormParent = 0)
 	$hGUI = GUICreate(Lng_Get("add_new.title"), 450, 370, Default, Default, Default, Default, $hFormParent)
 	GUISetState(@SW_SHOW)
 
-	$hDesc = GUICtrlCreateEdit("", 8, 8, 450-8, 300, $ES_READONLY)
+	$hDesc = GUICtrlCreateEdit("", 8, 8, 450 - 8, 300, $ES_READONLY)
 	$hButtonInstall = GUICtrlCreateButton(Lng_Get("add_new.install"), 8, 340, 136, 25)
 	$hButtonCancel = GUICtrlCreateButton(Lng_Get("add_new.next_mod"), 158, 340, 136, 25)
 	$hButtonClose = GUICtrlCreateButton(Lng_Get("add_new.close"), 308, 340, 136, 25)
@@ -115,22 +115,22 @@ Func PackedMod_InstallGUI_Simple($aModList, $hFormParent = 0)
 		$sAction = "Install"
 		$sHelpMessage &= StringFormat(Lng_Get("add_new.package.install"), $aModList[$iCount][4]) & @CRLF
 		If Mod_ModIsInstalled($aModList[$iCount][1]) Then ;Mod is installed
-			If $aModList[$iCount][6]>=$aModList[$iCount][4] Then ;Installed version is latest
-				If $aModList[$iCount][6]=$aModList[$iCount][4] Then
+			If $aModList[$iCount][6] >= $aModList[$iCount][4] Then ;Installed version is latest
+				If $aModList[$iCount][6] = $aModList[$iCount][4] Then
 					GUICtrlSetData($hButtonInstall, Lng_Get("add_new.reinstall")) ; reinstall
 					GUICtrlSetState($hButtonInstall, $GUI_ENABLE)
-					GUICtrlSetData($hButtonCancel,  Lng_Get("add_new.next_mod"))
+					GUICtrlSetData($hButtonCancel, Lng_Get("add_new.next_mod"))
 				Else
 					GUICtrlSetData($hButtonInstall, Lng_Get("add_new.install")) ; install old
 					GUICtrlSetState($hButtonInstall, $GUI_ENABLE)
 					GUICtrlSetData($hButtonCancel, Lng_Get("add_new.next_mod"))
 				EndIf
-			ElseIf $aModList[$iCount][6]<$aModList[$iCount][4] Then ;Old version installed
+			ElseIf $aModList[$iCount][6] < $aModList[$iCount][4] Then ;Old version installed
 				GUICtrlSetData($hButtonInstall, Lng_Get("add_new.install"))
 				GUICtrlSetState($hButtonInstall, $GUI_ENABLE)
 				GUICtrlSetData($hButtonCancel, Lng_Get("add_new.dont_install"))
 			EndIf
-		Else  ;None installed
+		Else ;None installed
 			GUICtrlSetData($hButtonInstall, Lng_Get("add_new.install"))
 			GUICtrlSetState($hButtonInstall, $GUI_ENABLE)
 			GUICtrlSetData($hButtonCancel, Lng_Get("add_new.dont_install"))
@@ -174,4 +174,4 @@ Func PackedMod_InstallGUI_Simple($aModList, $hFormParent = 0)
 
 	GUIDelete($hGUI)
 	Return Not $bClose
-EndFunc
+EndFunc   ;==>PackedMod_InstallGUI_Simple

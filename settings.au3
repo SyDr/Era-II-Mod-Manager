@@ -15,13 +15,13 @@ Func Settings_GUI($hParentGUI)
 	Local $hGUI, $msg
 	Local $bVersion = False, $bIcons = False
 
-	$hGUI = GUICreate(Lng_Get("settings.title"), 300, $iBaseOffset + $iTotalCheck*17+8, Default, Default, Default, Default, $hParentGUI)
+	$hGUI = GUICreate(Lng_Get("settings.title"), 300, $iBaseOffset + $iTotalCheck * 17 + 8, Default, Default, Default, Default, $hParentGUI)
 	GUISetState(@SW_SHOW)
 
-	$hVersion = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.display_version"), $iBaseOffset+1, $iBaseOffset+1+(0)*17)
+	$hVersion = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.display_version"), $iBaseOffset + 1, $iBaseOffset + 1 + (0) * 17)
 	If Settings_Get("DisplayVersion") Then GUICtrlSetState($hVersion, $GUI_CHECKED)
 
-	$hSync = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.sync_preset"), $iBaseOffset+1, $iBaseOffset+1+(1)*17)
+	$hSync = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.sync_preset"), $iBaseOffset + 1, $iBaseOffset + 1 + (1) * 17)
 	GUICtrlSetTip($hSync, StringFormat(Lng_Get("settings.checkbox.sync_preset.hint"), "0_O"))
 	If Settings_Get("SyncPresetWithWS") Then GUICtrlSetState($hSync, $GUI_CHECKED)
 
@@ -57,7 +57,7 @@ Func Settings_GUI($hParentGUI)
 	Else
 		Return 0
 	EndIf
-EndFunc
+EndFunc   ;==>Settings_GUI
 
 Func Settings_Get($sName)
 	Switch $sName
@@ -71,11 +71,11 @@ Func Settings_Get($sName)
 			Return $sExe
 		Case "Width"
 			Local $iWidth = IniRead($MM_SETTINGS_PATH, "settings", "Width", 800)
-			If $iWidth<800 Then $iWidth = 800
+			If $iWidth < 800 Then $iWidth = 800
 			Return $iWidth
 		Case "Height"
 			Local $iHeight = IniRead($MM_SETTINGS_PATH, "settings", "Height", 475)
-			If $iHeight<475 Then $iHeight = 475
+			If $iHeight < 475 Then $iHeight = 475
 			Return $iHeight
 		Case "Explorer"
 			Return IniRead($MM_SETTINGS_PATH, "settings", "Explorer", "")
@@ -90,7 +90,7 @@ Func Settings_Get($sName)
 		Case "DisplayVersion"
 			Return IniRead($MM_SETTINGS_PATH, "settings", "DisplayVersion", True)
 	EndSwitch
-EndFunc
+EndFunc   ;==>Settings_Get
 
 Func Settings_Set($sName, $vValue)
 	Switch $sName
@@ -107,4 +107,4 @@ Func Settings_Set($sName, $vValue)
 		Case "Height"
 			Return IniWrite($MM_SETTINGS_PATH, "settings", "Height", $vValue)
 	EndSwitch
-EndFunc
+EndFunc   ;==>Settings_Set
