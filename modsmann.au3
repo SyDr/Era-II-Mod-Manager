@@ -828,6 +828,7 @@ EndFunc   ;==>SD_GUI_Mod_Delete
 
 Func SD_GUI_Mod_EnableDisable()
 	Local $iTreeViewIndex = TreeViewGetSelectedIndex()
+	If $auTreeView[$iTreeViewIndex][1] == 0 Then Return
 	Local $iModIndex = $auTreeView[$iTreeViewIndex][2]
 
 	If $iModIndex < 1 Then Return
