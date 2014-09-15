@@ -32,6 +32,7 @@
 #include "plugins.au3"
 #include "settings.au3"
 #include "startup.au3"
+#include "utils.au3"
 
 AutoItSetOption("MustDeclareVars", 1)
 AutoItSetOption("GUIOnEventMode", 1)
@@ -769,8 +770,7 @@ Func SD_GUI_Mod_Website()
 	Local $iModIndex1 = $auTreeView[$iTreeViewIndex][2]
 	If $iModIndex1 < 1 Or $iModIndex1 > $MM_LIST_CONTENT[0][0] Then Return -1 ; never
 
-	Local $sBrowser = Settings_Get("Browser")
-	If $sBrowser <> "" Then ShellExecute($sBrowser, $MM_LIST_CONTENT[$iModIndex1][6])
+	Utils_LaunchInBrowser($MM_LIST_CONTENT[$iModIndex1][6])
 EndFunc   ;==>SD_GUI_Mod_Website
 
 Func SD_GUI_PresetChange()
