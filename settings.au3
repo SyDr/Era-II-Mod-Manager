@@ -81,24 +81,6 @@ Func Settings_Get($sName)
 			Return Int(IniRead($MM_SETTINGS_PATH, "settings", "Maximized", "")) <> 0
 		Case "Explorer"
 			Return IniRead($MM_SETTINGS_PATH, "settings", "Explorer", "")
-		Case "Browser"
-			Local $sBrowser = RegRead("HKCR\http\shell\open\command", "")
-
-			If $sBrowser = "" Then
-				Local $htm = RegRead("HKCR\.htm", "")
-				$sBrowser = RegRead("HKCR\" & $htm & "\shell\open\command", "")
-			EndIf
-
-			If $sBrowser = "" Then
-				Local $html = RegRead("HKCR\.html", "")
-				$sBrowser = RegRead("HKCR\" & $html & "\shell\open\command", "")
-			EndIf
-
-			If $sBrowser <> "" Then
-				$sBrowser = StringLeft($sBrowser, StringInStr($sBrowser, '"', 0, 2))
-			EndIf
-
-			Return $sBrowser
 		Case "SyncPresetWithWS"
 			Return IniRead($MM_SETTINGS_PATH, "settings", "SyncPresetWithWS", "")
 		Case "DisplayVersion"
