@@ -149,7 +149,7 @@ Func SD_GUI_ReCreate()
 EndFunc   ;==>SD_GUI_ReCreate
 
 Func SD_GUI_Create()
-	$hFormMain = GUICreate(StringFormat(Lng_Get("main.title"), $MM_VERSION), 800, 455, Default, Default, BitOR($GUI_SS_DEFAULT_GUI, $WS_SIZEBOX, $WS_MAXIMIZEBOX), $WS_EX_ACCEPTFILES)
+	$hFormMain = GUICreate(StringFormat(Lng_Get("main.title"), $MM_VERSION), $MM_WINDOW_MIN_WIDTH, $MM_WINDOW_MIN_HEIGHT - 20, Default, Default, BitOR($GUI_SS_DEFAULT_GUI, $WS_SIZEBOX, $WS_MAXIMIZEBOX), $WS_EX_ACCEPTFILES)
 	GUISwitch($hFormMain)
 	$hGroupModList = GUICtrlCreateGroup("Mod load order control", 8, 8, 473, 441)
 ;~ 	$hTreeView = 	GUICtrlCreateTreeView(16, 24, 361, 417, BitOR($TVS_HASBUTTONS, $TVS_HASLINES, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
@@ -1164,7 +1164,7 @@ EndFunc   ;==>TreeViewTryFollow
 
 Func WM_GETMINMAXINFO($hwnd, $msg, $wParam, $lParam)
 	#forceref $hwnd, $Msg, $wParam, $lParam
-	Local $GUIMINWID = 816, $GUIMINHT = 492 ; set your restrictions here
+	Local $GUIMINWID = $MM_WINDOW_MIN_WIDTH + 16, $GUIMINHT = $MM_WINDOW_MIN_HEIGHT + 16 ; set your restrictions here
 	Local $GUIMAXWID = 10000, $GUIMAXHT = 10000
 	Local $tagMaxinfo = DllStructCreate("int;int;int;int;int;int;int;int;int;int", $lParam)
 	DllStructSetData($tagMaxinfo, 7, $GUIMINWID) ; min X
