@@ -19,7 +19,7 @@ EndFunc   ;==>StartUp_CheckRunningInstance
 Func StartUp_WorkAsInstallmod()
 	Local $bUseWorkDir = FileExists(@ScriptDir & "\im_use_work_dir")
 	If $CMDLine[0] <> 1 Then
-		MsgBox(4096, "", "Usage:" & @CRLF & "installmod.exe <Mod Directory>" & @CRLF & ($bUseWorkDir ? "@WorkingDir will be used as root" : "@ScriptDir will be used as root"))
+		MsgBox($MB_SYSTEMMODAL, "", "Usage:" & @CRLF & "installmod.exe <Mod Directory>" & @CRLF & ($bUseWorkDir ? "@WorkingDir will be used as root" : "@ScriptDir will be used as root"))
 		Exit
 	EndIf
 
