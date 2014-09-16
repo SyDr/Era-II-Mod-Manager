@@ -13,7 +13,7 @@ Func Settings_GUI($hParentGUI)
 	Local $hVersion, $hSync
 	Local $iBaseOffset = 8
 	Local $hGUI, $msg
-	Local $bVersion = False, $bIcons = False
+	Local $bVersion = False
 
 	$hGUI = GUICreate(Lng_Get("settings.title"), 300, $iBaseOffset + $iTotalCheck * 17 + 8, Default, Default, Default, Default, $hParentGUI)
 	GUISetState(@SW_SHOW)
@@ -50,10 +50,8 @@ Func Settings_GUI($hParentGUI)
 
 	GUIDelete($hGUI)
 
-	If $bIcons Then
+	If $bVersion Then
 		Return 1
-	ElseIf $bVersion Then
-		Return 2
 	Else
 		Return 0
 	EndIf
@@ -79,8 +77,6 @@ Func Settings_Get($sName)
 			Return $iHeight
 		Case "Maximized"
 			Return Int(IniRead($MM_SETTINGS_PATH, "settings", "Maximized", "")) <> 0
-		Case "Explorer"
-			Return IniRead($MM_SETTINGS_PATH, "settings", "Explorer", "")
 		Case "SyncPresetWithWS"
 			Return IniRead($MM_SETTINGS_PATH, "settings", "SyncPresetWithWS", "")
 		Case "DisplayVersion"
