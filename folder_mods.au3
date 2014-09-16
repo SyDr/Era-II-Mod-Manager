@@ -11,9 +11,7 @@
 
 Func Mod_ListLoad()
 	Local Const $iListSize = 10
-	Local $aModList_Dir, $aModList_File, $aModList[1][$iListSize] ; [][0] - dir name, [][1] - state (enabled/disabled) [][2] - do not exist,	[][3] - localized name,
-	; [][4] - author,   [][5] - description, 			 [][6] - link, 			[][8] - icon
-	; [][9] - version,	[][10] - priority
+	Local $aModList_Dir, $aModList_File, $aModList[1][$iListSize]
 
 	$aModList[0][1] = "Enabled/Disabled"
 	$aModList[0][2] = "True, if not exist"
@@ -71,6 +69,28 @@ Func Mod_ListLoad()
 	$aModList[0][0] = $jCount - 1
 	$MM_LIST_CONTENT = $aModList
 EndFunc   ;==>Mod_ListLoad
+
+Func Mod_ListIsActual()
+	Local $bActual = True
+	Local $sListFile = $MM_LIST_FILE_CONTENT
+	Local $aModList = $MM_LIST_CONTENT
+
+	Mod_ListLoad()
+	If $aModList[0][0] <> $MM_LIST_CONTENT[0][0] Then
+		$bActual = False
+	Else
+		For $iCount = 1 To $aModList[0][0]
+			If $aModList[$iCount][0] <> $MM_LIST_CONTENT[$iCount][0] Then
+				$bActual = False
+				ExitLoop
+			EndIf
+		Next
+	EndIf
+
+	$MM_LIST_FILE_CONTENT = $sListFile
+	$MM_LIST_CONTENT = $aModList
+	Return $bActual
+EndFunc
 
 Func Mod_ReEnable($sModID)
 	Local $iModIndex = Mod_GetIndexByID($sModID)
