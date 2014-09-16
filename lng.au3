@@ -1,21 +1,23 @@
 ; Author:         Aliaksei SyDr Karalenka
 
 #include <Array.au3>
+
+#include "data_fwd.au3"
+
 #include-once
 
-Global Static $__LNG_CACHED
 
-Func Lng_LoadFile($sLanguage)
-	Local $aSections = IniReadSectionNames(@ScriptDir & "\lng\" & $sLanguage)
-	If @error Then Return SetError(1, @extended, "Can't read " & @ScriptDir & "\lng\" & $sLanguage)
+Func Lng_Load()
+	Local $aSections = IniReadSectionNames(@ScriptDir & "\lng\" & $MM_SETTINGS_LANGUAGE)
+	If @error Then Return SetError(1, @extended, "Can't read " & @ScriptDir & "\lng\" & $MM_SETTINGS_LANGUAGE)
 
 	Local $aResult[1][2] = [[0, 0]]
 
 	For $iCount = 1 To $aSections[0]
-		Local $aTmp = IniReadSection(@ScriptDir & "\lng\" & $sLanguage, $aSections[$iCount])
-		If @error Then Return SetError(2, @extended, "Can't read " & @ScriptDir & "\lng\" & $sLanguage)
+		Local $aTmp = IniReadSection(@ScriptDir & "\lng\" & $MM_SETTINGS_LANGUAGE, $aSections[$iCount])
+		If @error Then Return SetError(2, @extended, "Can't read " & @ScriptDir & "\lng\" & $MM_SETTINGS_LANGUAGE)
 
-		ReDim $aResult[UBound($aResult, 1) + $aTmp[0][0]][2]
+		ReDim $aResult[UBound($aResult, $UBOUND_ROWS) + $aTmp[0][0]][2]
 
 		For $jCount = 1 To $aTmp[0][0]
 			$aResult[$aResult[0][0] + $jCount][0] = $aTmp[$jCount][0]
@@ -27,30 +29,37 @@ Func Lng_LoadFile($sLanguage)
 
 	_ArraySort($aResult, 0, 1, $aResult[0][0])
 
-	$__LNG_CACHED = $aResult
+	$MM_LNG_CACHE = $aResult
 
-	Return 0
-EndFunc
+	Return SetError(0, 0, "") ; everething ok
+EndFunc   ;==>Lng_Load
 
 Func Lng_Get($sKeyName)
-	If Not IsArray($__LNG_CACHED) Then Return $sKeyName
-	Local $iLeft = 1, $iRight = $__LNG_CACHED[0][0], $iIndex
+	If Not IsArray($MM_LNG_CACHE) Then
+		Lng_Load()
+	EndIf
+
+	If Not IsArray($MM_LNG_CACHE) Then
+		Return $sKeyName
+	EndIf
+
+	Local $iLeft = 1, $iRight = $MM_LNG_CACHE[0][0], $iIndex
 
 	While $iLeft <= $iRight
 		$iIndex = Floor(($iLeft + $iRight) / 2)
 
-		If $sKeyName < $__LNG_CACHED[$iIndex][0] Then
+		If $sKeyName < $MM_LNG_CACHE[$iIndex][0] Then
 			$iRight = $iIndex - 1
-		ElseIf $sKeyName > $__LNG_CACHED[$iIndex][0] Then
+		ElseIf $sKeyName > $MM_LNG_CACHE[$iIndex][0] Then
 			$iLeft = $iIndex + 1
 		Else
 			$iLeft = $iRight + 1
 		EndIf
 	WEnd
 
-	If $iIndex > $__LNG_CACHED[0][0] Or $__LNG_CACHED[$iIndex][0] <> $sKeyName Then
+	If $iIndex > $MM_LNG_CACHE[0][0] Or $MM_LNG_CACHE[$iIndex][0] <> $sKeyName Then
 		Return $sKeyName ; not found
 	Else
-		Return $__LNG_CACHED[$iIndex][1]
+		Return $MM_LNG_CACHE[$iIndex][1]
 	EndIf
-EndFunc
+EndFunc   ;==>Lng_Get
