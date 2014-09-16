@@ -1,9 +1,11 @@
 ; Author:         Aliaksei SyDr Karalenka
 
 #include <Array.au3>
+
 #include "data_fwd.au3"
 
 #include-once
+
 
 Func Lng_Load()
 	Local $aSections = IniReadSectionNames(@ScriptDir & "\lng\" & $MM_SETTINGS_LANGUAGE)
@@ -15,7 +17,7 @@ Func Lng_Load()
 		Local $aTmp = IniReadSection(@ScriptDir & "\lng\" & $MM_SETTINGS_LANGUAGE, $aSections[$iCount])
 		If @error Then Return SetError(2, @extended, "Can't read " & @ScriptDir & "\lng\" & $MM_SETTINGS_LANGUAGE)
 
-		ReDim $aResult[UBound($aResult, 1) + $aTmp[0][0]][2]
+		ReDim $aResult[UBound($aResult, $UBOUND_ROWS) + $aTmp[0][0]][2]
 
 		For $jCount = 1 To $aTmp[0][0]
 			$aResult[$aResult[0][0] + $jCount][0] = $aTmp[$jCount][0]

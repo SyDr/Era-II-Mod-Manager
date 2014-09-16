@@ -1,6 +1,6 @@
 ; Author:         Aliaksei SyDr Karalenka
 
-#include <File.au3>
+;~ #include <File.au3>
 #include <GUIConstantsEx.au3>
 
 #include "lng.au3"
@@ -10,42 +10,42 @@
 
 Func Settings_GUI($hParentGUI)
 	Local $iTotalCheck = 2
-	Local $hVersion, $hSync
 	Local $iBaseOffset = 8
-	Local $hGUI, $msg
 	Local $bVersion = False
 
-	$hGUI = GUICreate(Lng_Get("settings.title"), 300, $iBaseOffset + $iTotalCheck * 17 + 8, Default, Default, Default, Default, $hParentGUI)
-	GUISetState(@SW_SHOW)
+	Local $hGUI = GUICreate(Lng_Get("settings.title"), 300, 2 * $iBaseOffset + $iTotalCheck * 17, Default, Default, Default, Default, $hParentGUI)
 
-	$hVersion = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.display_version"), $iBaseOffset + 1, $iBaseOffset + 1 + (0) * 17)
+	Local $hVersion = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.display_version"), $iBaseOffset + 1, $iBaseOffset + 1 + (0) * 17)
 	If Settings_Get("DisplayVersion") Then GUICtrlSetState($hVersion, $GUI_CHECKED)
 
-	$hSync = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.sync_preset"), $iBaseOffset + 1, $iBaseOffset + 1 + (1) * 17)
+	Local $hSync = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.sync_preset"), $iBaseOffset + 1, $iBaseOffset + 1 + (1) * 17)
 	GUICtrlSetTip($hSync, StringFormat(Lng_Get("settings.checkbox.sync_preset.hint"), "0_O"))
 	If Settings_Get("SyncPresetWithWS") Then GUICtrlSetState($hSync, $GUI_CHECKED)
 
+	GUISetState(@SW_SHOW)
+
+
 	While True
-		Sleep(30)
-		$msg = GUIGetMsg()
-		If $msg = 0 Then
-			ContinueLoop
-		ElseIf $msg = $GUI_EVENT_CLOSE Then
-			ExitLoop
-		ElseIf $msg = $hVersion Then
-			$bVersion = Not $bVersion
-			If BitAND(GUICtrlRead($hVersion), $GUI_CHECKED) Then
-				Settings_Set("DisplayVersion", "1")
-			Else
-				Settings_Set("DisplayVersion", "")
-			EndIf
-		ElseIf $msg = $hSync Then
-			If BitAND(GUICtrlRead($hSync), $GUI_CHECKED) Then
-				Settings_Set("SyncPresetWithWS", "1")
-			Else
-				Settings_Set("SyncPresetWithWS", "")
-			EndIf
-		EndIf
+		Sleep(50)
+
+        Switch GUIGetMsg()
+            Case $GUI_EVENT_CLOSE
+                ExitLoop
+			Case $hVersion
+				$bVersion = Not $bVersion
+
+				If BitAND(GUICtrlRead($hVersion), $GUI_CHECKED) Then
+					Settings_Set("DisplayVersion", "1")
+				Else
+					Settings_Set("DisplayVersion", "")
+				EndIf
+			Case $hSync
+				If BitAND(GUICtrlRead($hSync), $GUI_CHECKED) Then
+					Settings_Set("SyncPresetWithWS", "1")
+				Else
+					Settings_Set("SyncPresetWithWS", "")
+				EndIf
+        EndSwitch
 	WEnd
 
 	GUIDelete($hGUI)

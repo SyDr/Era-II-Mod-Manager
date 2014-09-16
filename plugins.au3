@@ -1,6 +1,6 @@
 ;Author:			Aliaksei SyDr Karalenka
 
-#include <Array.au3>
+;~ #include <Array.au3>
 #include <File.au3>
 #include <GUIConstantsEx.au3>
 
@@ -8,6 +8,7 @@
 #include "data_fwd.au3"
 
 #include-once
+
 
 Func Plugins_ModHavePlugins($sModName)
 	Local $aGlobal, $aBeforeWog, $aAfterWog
@@ -134,7 +135,8 @@ Func Plugins_Manage($sModName, $hFormParent)
 	EndIf
 
 	While 1
-		Sleep(10)
+		Sleep(50)
+
 		$msg = GUIGetMsg()
 		If $msg = 0 Then ContinueLoop
 		If $msg = $GUI_EVENT_CLOSE Then ExitLoop
@@ -152,6 +154,7 @@ Func Plugins_Manage($sModName, $hFormParent)
 						$hNames[$i] = $hNames[$i] & ".off"
 						GUICtrlSetData($hCheckboxes[$i], $hNames[$i])
 					EndIf
+
 					ExitLoop
 				EndIf
 			Next

@@ -2,12 +2,13 @@
 
 #include <Array.au3>
 #include <File.au3>
-#include <StringConstants.au3>
+;~ #include <StringConstants.au3>
 
 #include "data_fwd.au3"
 #include "lng.au3"
 
 #include-once
+
 
 Func Mod_ListLoad()
 	Local Const $iListSize = 10
@@ -28,7 +29,7 @@ Func Mod_ListLoad()
 
 	_ArrayReverse($aModList_File, 1)
 	If Not IsArray($aModList_File) Then Dim $aModList_File[1] = [0]
-	$aModList_Dir = _FileListToArray($MM_LIST_DIR_PATH, "*", 2)
+	$aModList_Dir = _FileListToArray($MM_LIST_DIR_PATH, "*", $FLTA_FOLDERS)
 	If Not IsArray($aModList_Dir) Then Dim $aModList_Dir[1] = [0]
 	ReDim $aModList[1 + $aModList_File[0] + $aModList_Dir[0]][$iListSize]
 
@@ -108,8 +109,8 @@ Func Mod_ReEnable($sModID)
 EndFunc   ;==>Mod_ReEnable
 
 Func Mod_CompatibilityMapLoad()
-	Local $aAnswer[UBound($MM_LIST_CONTENT, 1)][UBound($MM_LIST_CONTENT, 1)]
-	$aAnswer[0][0] = UBound($MM_LIST_CONTENT, 1) - 1
+	Local $aAnswer[UBound($MM_LIST_CONTENT, $UBOUND_ROWS)][UBound($MM_LIST_CONTENT, $UBOUND_ROWS)]
+	$aAnswer[0][0] = UBound($MM_LIST_CONTENT, $UBOUND_ROWS) - 1
 	For $iCount = 1 To $aAnswer[0][0]
 		For $jCount = 1 To $aAnswer[0][0]
 			If $iCount = $jCount Then ContinueLoop
@@ -142,7 +143,7 @@ EndFunc   ;==>Mod_CompatibilityMapLoad
 
 Func Mod_ListSave()
 	If Not FileDelete($MM_LIST_FILE_PATH) And FileExists($MM_LIST_FILE_PATH) Then
-		MsgBox(4096, "", "Press CTRL+C to copy this message" & @CRLF & @CRLF & _
+		MsgBox($MB_SYSTEMMODAL, "", "Press CTRL+C to copy this message" & @CRLF & @CRLF & _
 				StringFormat(Lng_Get("list.txt"), StringFormat("FileDelete(%s)", $MM_LIST_FILE_PATH)))
 		Return False
 	EndIf
@@ -153,7 +154,7 @@ Func Mod_ListSave()
 		EndIf
 	Next
 	If Not FileWrite($MM_LIST_FILE_PATH, $sWrite) Then
-		MsgBox(4096, "", "Press CTRL+C to copy this message" & @CRLF & @CRLF & _
+		MsgBox($MB_SYSTEMMODAL, "", "Press CTRL+C to copy this message" & @CRLF & @CRLF & _
 				StringFormat(Lng_Get("list.txt"), StringFormat("FileWrite(%s, %s", $MM_LIST_FILE_PATH, $sWrite)))
 		Return False
 	EndIf
@@ -162,7 +163,7 @@ EndFunc   ;==>Mod_ListSave
 Func Mod_ListSwap($iModIndex1, $iModIndex2, $sUpdate = True)
 	Local $vTemp
 
-	For $jCount = 0 To UBound($MM_LIST_CONTENT, 2) - 1
+	For $jCount = 0 To UBound($MM_LIST_CONTENT, $UBOUND_COLUMNS) - 1
 		$vTemp = $MM_LIST_CONTENT[$iModIndex1][$jCount]
 		$MM_LIST_CONTENT[$iModIndex1][$jCount] = $MM_LIST_CONTENT[$iModIndex2][$jCount]
 		$MM_LIST_CONTENT[$iModIndex2][$jCount] = $vTemp
