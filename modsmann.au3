@@ -94,7 +94,7 @@ While 1
 
 	If $bGUINeedUpdate And WinActive($hFormMain) Then
 		$bGUINeedUpdate = False
-		If $MM_LIST_FILE_CONTENT <> FileRead($MM_LIST_FILE_PATH) Then SD_GUI_Update()
+		If Not Mod_ListIsActual() Then SD_GUI_Update()
 	EndIf
 
 	If $bEnableDisable Then
@@ -860,7 +860,7 @@ Func SD_GUI_Update()
 	GUICtrlSetState($auTreeView[1][0], $GUI_FOCUS)
 	GUICtrlSetData($hComboExe, Settings_Get("Exe"))
 	GUICtrlSetData($hComboWO, IniRead(@ScriptDir & "\..\..\wog.ini", "WoGification", "Options_File_Name", "settings.dat"))
-	;TreeViewTryFollow($sFollowMod)
+	TreeViewTryFollow($sFollowMod)
 EndFunc   ;==>SD_GUI_Update
 
 Func TreeViewDelete()
