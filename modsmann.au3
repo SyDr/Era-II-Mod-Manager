@@ -1,29 +1,18 @@
 #NoTrayIcon
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
-#AutoIt3Wrapper_Icon=icons\Misc-Tools.ico
+#AutoIt3Wrapper_Icon=icons\preferences-system.ico
 #AutoIt3Wrapper_Outfile=modsmann.exe
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseUpx=y
+#AutoIt3Wrapper_Res_Description=A mod manager for Era II
+#AutoIt3Wrapper_Res_Fileversion=0.14.9.0
 #AutoIt3Wrapper_Res_requestedExecutionLevel=asInvoker
-#AutoIt3Wrapper_AU3Check_Parameters=-d -w 1 -w 2 -w 3 -w 4 -w 6
+#AutoIt3Wrapper_AU3Check_Parameters=-d -w 1 -w 2 -w 3 -w 4 -w 5 -w 6 -w 7
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 ; Author:         Aliaksei SyDr Karalenka
 
-#include <Array.au3>
-#include <ButtonConstants.au3>
-#include <ComboConstants.au3>
-#include <Constants.au3>
-#include <Date.au3>
-#include <EditConstants.au3>
-#include <File.au3>
-#include <GUIConstantsEx.au3>
-#include <GuiDateTimePicker.au3>
-#include <GuiImageList.au3>
 #include <GuiMenu.au3>
 #include <GuiTreeView.au3>
-#include <StaticConstants.au3>
-#include <TreeViewConstants.au3>
-#include <WinAPI.au3>
 #include <WindowsConstants.au3>
 
 #include "folder_mods.au3"
@@ -32,19 +21,17 @@
 #include "plugins.au3"
 #include "settings.au3"
 #include "startup.au3"
+#include "utils.au3"
+
 
 AutoItSetOption("MustDeclareVars", 1)
 AutoItSetOption("GUIOnEventMode", 1)
-AutoItSetOption("GUIResizeMode", 2+32+4+64)
 AutoItSetOption("GUICloseOnESC", 1)
 
 #Region Variables
-Global $_VERSION = " [0.14.09 - Prepare for updates]"
 Global $hFormMain, $hTreeView
-Global $auTreeView, $auModList, $abModCompatibilityMap
-Global $sBasePath = @ScriptDir & "\..\..\Mods"
-Global $sDefaultList = $sBasePath & "\list.txt"
-Global $bGUINeedUpdate = False, $sMListUpdate = ""
+Global $auTreeView, $abModCompatibilityMap
+Global $bGUINeedUpdate = False
 
 Global $hGroupModList, $hGroupPresets, $hGroupGame, $hGroupModInfo, $hSettings, $hButtonChangeLanguage, $hChangeLanguageContextMenuID
 Global $aLanguages[1][2]
@@ -55,60 +42,36 @@ Global $hLabelPreset, $hPreset, $hPresetSave, $hPresetLoad, $hPresetDelete
 Global $hLabelExe, $hComboExe, $hButtonRun, $hButtonCSC
 Global $hLabelWO, $hComboWO
 Global $hModInfo
-Global $sFollowMod = "WoG"
+Global $sFollowMod = ""
 Global $sCompatibilityMessage = ""
 Global $hDummyF5
 Global $bEnableDisable
 Global $bInTrack = False
-#EndRegion
+#EndRegion Variables
 
 If @Compiled And @ScriptName = "installmod.exe" Then
-	Global $bUseWorkDir = FileExists(@ScriptDir & "\im_use_work_dir")
-	If $CMDLine[0] <> 1 Then
-		MsgBox(4096, "", "Usage:" & @CRLF & "installmod.exe <Mod Directory>" & @CRLF & ($bUseWorkDir ? "@WorkingDir will be used as root" : "@ScriptDir will be used as root"))
-		Exit
-	EndIf
-
-	$sBasePath = $bUseWorkDir ? (@WorkingDir & "\Mods") : (@ScriptDir & "\..\Mods")
-	$sDefaultList = $sBasePath & "\list.txt"
-
-	Settings_Global("Set", "List", $sDefaultList)
-	Settings_Global("Set", "Path", $sBasePath)
-	$auModList = Mod_ListLoad()
-	Mod_ReEnable($auModList, $CMDLine[1])
-	Exit
+	StartUp_WorkAsInstallmod()
 EndIf
 
-Global $sLanguage = Settings_Get("Language")
-If $sLanguage = "" Then $sLanguage = "english.txt"
-Lng_LoadFile($sLanguage)
+If $CMDLine[0] > 0 And $CMDLine[1] = '/assocdel' Then
+	StartUp_Assoc_Delete()
+EndIf
 
-If $CMDLine[0]>0 Then
-	If @Compiled Then
-		If $CMDLine[1] = '/assocset' Then
-			Settings_Assoc_Create()
-			Exit
-		ElseIf $CMDLine[1] = '/assocdel' Then
-			Settings_Assoc_Delete()
-			Exit
-		EndIf
-	EndIf
+$MM_SETTINGS_LANGUAGE = Settings_Get("Language")
+
+If $CMDLine[0] > 0 Then
 	If Not SD_CLI_Mod_Add() Then Exit
 EndIf
 
-StartUp_CheckRunningInstance(StringFormat(Lng_Get("main.title"), $_VERSION))
+StartUp_CheckRunningInstance(StringFormat(Lng_Get("main.title"), $MM_VERSION))
 
 Global $bSyncPresetWithWS = Settings_Get("SyncPresetWithWS")
 Global $bDisplayVersion = Settings_Get("DisplayVersion")
-Global $bRememberWindowSizePos = Settings_Get("RememberSizePos")
-Global $iLeft = 192, $iTop = 152, $iWidth=800, $iHeight=475
-If $bRememberWindowSizePos Then SD_GUI_LoadSizePos()
 
-;CheckForEraVersion()
+SD_GUI_LoadSize()
+SD_GUI_Create()
 
-SD_GUI_ReCreate()
-
-Global $aWindowSize, $sListFile, $sNewDate
+Global $aWindowSize, $sNewDate
 
 While 1
 	Sleep(50)
@@ -118,10 +81,7 @@ While 1
 
 	If $bGUINeedUpdate And WinActive($hFormMain) Then
 		$bGUINeedUpdate = False
-		$sListFile = Settings_Global("Get", "List")
-		$sNewDate = FileGetTime($sListFile, 0, 1)
-		If $sNewDate<>$sMListUpdate Then SD_GUI_Update()
-		$sMListUpdate = $sNewDate
+		If Not Mod_ListIsActual() Then SD_GUI_Update()
 	EndIf
 
 	If $bEnableDisable Then
@@ -130,61 +90,37 @@ While 1
 	EndIf
 WEnd
 
-Func CheckForEraVersion() ; Not used yet
-	Local $sFile = @ScriptDir & "\..\..\era.dll"
-	Local $sVersion = FileGetVersion($sFile, "Version")
-	If $sVersion < 2500 Then
-		MsgBox(4096, Lng_Get(""), Lng_Get(""))
-		MsgBox(4096, Lng_Get(""), Lng_Get(""))
-	EndIf
-EndFunc
-
 Func SD_GUI_Language_Change()
 	Local $iIndex = -1
 	For $iCount = 1 To $aLanguages[0][0]
-		If @GUI_CtrlId=$aLanguages[$iCount][0] Then
+		If @GUI_CtrlId = $aLanguages[$iCount][0] Then
 			$iIndex = $iCount
 			ExitLoop
 		EndIf
 	Next
 
 	If $iIndex = -1 Then Return False
-	$sLanguage = $aLanguages[$iIndex][1]
+	$MM_SETTINGS_LANGUAGE = $aLanguages[$iIndex][1]
 
-	Local $sLoaded = Lng_LoadFile($sLanguage)
+	Local $sIsLoaded = Lng_Load()
 	If @error Then
-		MsgBox(64+4096, "", $sLoaded, Default, $hFormMain)
+		MsgBox($MB_ICONINFORMATION + $MB_SYSTEMMODAL, "", $sIsLoaded, Default, $hFormMain)
 	Else
-		Settings_Set("Language", $sLanguage)
+		Settings_Set("Language", $MM_SETTINGS_LANGUAGE)
 	EndIf
 
 	SD_GUI_SetLng()
 	SD_GUI_Update()
-	Return $sLanguage
-EndFunc
-
-Func SD_GUI_ReCreate()
-	If IsHWnd($hFormMain) Then
-		If $bRememberWindowSizePos Then SD_GUI_SaveSizePos()
-		If $bRememberWindowSizePos Then SD_GUI_LoadSizePos()
-
-		$hTreeView = 0
-		SD_GUI_Events_UnRegister()
-		GUIDelete($hFormMain)
-	EndIf
-
-	SD_GUI_Create()
-	TreeViewTryFollow($sFollowMod)
-EndFunc
+EndFunc   ;==>SD_GUI_Language_Change
 
 Func SD_GUI_Create()
-	$hFormMain = 	GUICreate(StringFormat(Lng_Get("main.title"), $_VERSION), 800, 455, 192, 152, BitOr($GUI_SS_DEFAULT_GUI, $WS_SIZEBOX), $WS_EX_ACCEPTFILES)
+	$hFormMain = GUICreate(StringFormat(Lng_Get("main.title"), $MM_VERSION), $MM_WINDOW_MIN_WIDTH, $MM_WINDOW_MIN_HEIGHT - 20, Default, Default, BitOR($GUI_SS_DEFAULT_GUI, $WS_SIZEBOX, $WS_MAXIMIZEBOX), $WS_EX_ACCEPTFILES)
 	GUISwitch($hFormMain)
 	$hGroupModList = GUICtrlCreateGroup("Mod load order control", 8, 8, 473, 441)
 ;~ 	$hTreeView = 	GUICtrlCreateTreeView(16, 24, 361, 417, BitOR($TVS_HASBUTTONS, $TVS_HASLINES, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
-					TreeViewMain($hTreeView, $auModList, $auTreeView)
+	TreeViewMain()
 	$hModMoveUp = GUICtrlCreateButton("Up", 384, 24, 89, 25)
-	$hModMoveDown =	GUICtrlCreateButton("Down", 384, 56, 89, 25)
+	$hModMoveDown = GUICtrlCreateButton("Down", 384, 56, 89, 25)
 	$hModEnableDisable = GUICtrlCreateButton("Enable/Disable", 384, 88, 89, 25)
 	GUICtrlSetData($hModEnableDisable, Lng_Get("group.modlist.disable"))
 
@@ -193,90 +129,93 @@ Func SD_GUI_Create()
 	$hDummyF5 = GUICtrlCreateDummy()
 	$hMoreActionsContextMenuID = GUICtrlCreateContextMenu($hMoreActionsDummy)
 	$hButtonPlugins = GUICtrlCreateMenuItem("Plugins", $hMoreActionsDummy)
-	$hModWebSite = GUICtrlCreateMenuItem("Website", $hMoreActionsDummy)
+	$hModWebsite = GUICtrlCreateMenuItem("Website", $hMoreActionsDummy)
 	$hModCompatibility = GUICtrlCreateMenuItem("Compatibility", $hMoreActionsDummy)
 	GUICtrlSetState($hModCompatibility, $sCompatibilityMessage <> "" ? $GUI_ENABLE : $GUI_DISABLE)
 	$hModDelete = GUICtrlCreateMenuItem("Delete", $hMoreActionsDummy)
 	GUICtrlCreateMenuItem("", $hMoreActionsDummy)
 	$hModOpenFolder = GUICtrlCreateMenuItem("Open Folder", $hMoreActionsDummy)
 	$hModInfoC = GUICtrlCreateMenuItem("mod_info.ini", $hMoreActionsDummy)
-	$hModReadmeC = GUICtrlCreateMenuItem("Create Readme",$hMoreActionsDummy)
+	$hModReadmeC = GUICtrlCreateMenuItem("Create Readme", $hMoreActionsDummy)
+	GUICtrlCreateGroup("", -99, -99, 1, 1)
 
-	$hModAdd = GUICtrlCreateButton("Add new", 384, 455-32-8-32, 89, 25)
-	$hSettings = GUICtrlCreateButton("Settings", 384, 455-32-8, 89, 25)
+	$hModAdd = GUICtrlCreateButton("Add new", 384, 455 - 32 - 8 - 32, 89, 25)
+	$hSettings = GUICtrlCreateButton("Settings", 384, 455 - 32 - 8, 89, 25)
 	$hGroupPresets = GUICtrlCreateGroup("Presets", 488, 8, 308, 73)
-	$hLabelPreset =	GUICtrlCreateLabel("Current preset:", 496, 25, 97, 17)
-	$hPreset = 		GUICtrlCreateInput("None", 600, 24, 193, 21, BitOR($GUI_SS_DEFAULT_INPUT,$ES_READONLY))
-	$hPresetSave = 	GUICtrlCreateButton("Save", 496, 48, 97, 25)
-	$hPresetLoad = 	GUICtrlCreateButton("Load", 600, 48, 97, 25)
-	$hPresetDelete =GUICtrlCreateButton("Delete", 704, 48, 89, 25)
-					GUICtrlCreateGroup("", -99, -99, 1, 1)
-	$hGroupGame = 		GUICtrlCreateGroup("Game", 488, 84, 308, 80+32)
-	$hLabelExe  = 	GUICtrlCreateLabel("Game exe", 496, 108, 100, 17)
-	$hComboExe  = 	GUICtrlCreateCombo("h3era.exe", 608, 104, 169, 21)
-					SD_GUI_FillComboExe(@ScriptDir & "\..\..", $hComboExe, Settings_Get("Exe"))
-	$hLabelWO  = 	GUICtrlCreateLabel("WoG options", 496, 130, 100, 17)
-	$hComboWO  = 	GUICtrlCreateCombo("settings.dat", 608, 130, 169, 21)
-					SD_GUI_FillComboWo(@ScriptDir & "\..\..", $hComboWO, IniRead(@ScriptDir & "\..\..\wog.ini", "WoGification", "Options_File_Name", "settings.dat"))
-	$hButtonRun = 	GUICtrlCreateButton("Run game", 496, 155, 140, 25)
-	$hButtonCSC = 	GUICtrlCreateButton("Create shortcut", 496 + 160, 155, 136, 25)
+	$hLabelPreset = GUICtrlCreateLabel("Current preset:", 496, 25, 97, 17)
+	$hPreset = GUICtrlCreateInput("None", 600, 24, 193, 21, BitOR($GUI_SS_DEFAULT_INPUT, $ES_READONLY))
+	$hPresetSave = GUICtrlCreateButton("Save", 496, 48, 97, 25)
+	$hPresetLoad = GUICtrlCreateButton("Load", 600, 48, 97, 25)
+	$hPresetDelete = GUICtrlCreateButton("Delete", 704, 48, 89, 25)
+	GUICtrlCreateGroup("", -99, -99, 1, 1)
+	$hGroupGame = GUICtrlCreateGroup("Game", 488, 84, 308, 80 + 32)
+	$hLabelExe = GUICtrlCreateLabel("Game exe", 496, 108, 100, 17)
+	$hComboExe = GUICtrlCreateCombo("h3era.exe", 608, 104, 169, 21)
+	SD_GUI_FillComboExe(@ScriptDir & "\..\..", $hComboExe, Settings_Get("Exe"))
+	$hLabelWO = GUICtrlCreateLabel("WoG options", 496, 130, 100, 17)
+	$hComboWO = GUICtrlCreateCombo("settings.dat", 608, 130, 169, 21)
+	SD_GUI_FillComboWo(@ScriptDir & "\..\..", $hComboWO, IniRead(@ScriptDir & "\..\..\wog.ini", "WoGification", "Options_File_Name", "settings.dat"))
+	$hButtonRun = GUICtrlCreateButton("Run game", 496, 155, 140, 25)
+	$hButtonCSC = GUICtrlCreateButton("Create shortcut", 496 + 160, 155, 136, 25)
 	GUICtrlSetState($hButtonCSC, $GUI_DISABLE)
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
-	$hGroupModInfo = 		GUICtrlCreateGroup("Mod info", 488, 180+15, 308, 250-32)
-	$hModInfo = 	GUICtrlCreateEdit("", 496, 178+32, 294, 230-32, $ES_READONLY + $ES_AUTOVSCROLL + $WS_VSCROLL)
+	$hGroupModInfo = GUICtrlCreateGroup("Mod info", 488, 180 + 15, 308, 250 - 32)
+	$hModInfo = GUICtrlCreateEdit("", 496, 178 + 32, 294, 230 - 32, $ES_READONLY + $ES_AUTOVSCROLL + $WS_VSCROLL)
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
-	$hButtonChangeLanguage = GUICtrlCreateButton("Language", 800-161-4, 420, 161, 25)
+	$hButtonChangeLanguage = GUICtrlCreateButton("Language", 800 - 161 - 4, 420, 161, 25)
 	Local $hChangeLanguageDummy = GUICtrlCreateDummy()
 	$hChangeLanguageContextMenuID = GUICtrlCreateContextMenu($hChangeLanguageDummy)
 	Local $asTemp = _FileListToArray(@ScriptDir & "\lng\", "*.ini", 1)
 
 	For $iCount = 1 To $asTemp[0]
 		$aLanguages[0][0] += 1
-		ReDim $aLanguages[$aLanguages[0][0]+1][2]
+		ReDim $aLanguages[$aLanguages[0][0] + 1][2]
 		$aLanguages[$iCount][0] = GUICtrlCreateMenuItem(IniRead(@ScriptDir & "\lng\" & $asTemp[$iCount], "lang.info", "lang.name", "Remove, please " & $asTemp[$iCount]), $hChangeLanguageDummy)
 		$aLanguages[$iCount][1] = $asTemp[$iCount]
 	Next
 
 	SD_GUI_Mod_Controls_Disable()
-	TreeViewTryFollow("") ; Workaround : if Mod is already selected, no SD_GUI_Mod_Controls_Set is called
 	SD_GUI_SetResizing()
 	SD_GUI_Events_Register()
 	SD_GUI_SetLng()
-	WinMove($hFormMain, '', $iLeft, $iTop, $iWidth, $iHeight)
+	TreeViewTryFollow("")
+	WinMove($hFormMain, '', (@DesktopWidth - $MM_WINDOW_WIDTH) / 2, (@DesktopHeight - $MM_WINDOW_HEIGHT) / 2, $MM_WINDOW_WIDTH, $MM_WINDOW_HEIGHT)
+	If $MM_WINDOW_MAXIMIZED Then WinSetState($hFormMain, '', @SW_MAXIMIZE)
 	Local $AccelKeys[1][2] = [["{F5}", $hDummyF5]]
 	GUISetAccelerators($AccelKeys)
 	GUISetState(@SW_SHOW)
-EndFunc
+EndFunc   ;==>SD_GUI_Create
 
 Func SD_GUI_SetResizing()
-	GUICtrlSetResizing($hGroupModList, 2+32+64+256)
-	GUICtrlSetResizing($hModMoveUp, 802)
-	GUICtrlSetResizing($hModMoveDown, 802)
-	GUICtrlSetResizing($hModEnableDisable, 802)
-	GUICtrlSetResizing($hModCompatibility, 802)
-	GUICtrlSetResizing($hButtonMoreActions, 802)
-	GUICtrlSetResizing($hModAdd, 802)
-	GUICtrlSetResizing($hModOpenFolder, 802)
-	GUICtrlSetResizing($hModInfoC, 802)
-	GUICtrlSetResizing($hModReadmeC, 802)
-	GUICtrlSetResizing($hGroupPresets, 4+32+256+512)
-	GUICtrlSetResizing($hLabelPreset, 4+32+256+512)
-	GUICtrlSetResizing($hPreset, 4+32+256+512)
-	GUICtrlSetResizing($hSettings, 802)
-	GUICtrlSetResizing($hPresetSave, 4+32+256+512)
-	GUICtrlSetResizing($hPresetLoad, 4+32+256+512)
-	GUICtrlSetResizing($hPresetDelete, 4+32+256+512)
-	GUICtrlSetResizing($hGroupGame, 4+32+256+512)
-	GUICtrlSetResizing($hLabelExe, 4+32+256+512)
-	GUICtrlSetResizing($hComboExe, 4+32+256+512)
-	GUICtrlSetResizing($hLabelWO, 4+32+256+512)
-	GUICtrlSetResizing($hComboWO, 4+32+256+512)
-	GUICtrlSetResizing($hButtonRun, 4+32+256+512)
-	GUICtrlSetResizing($hButtonCSC, 4+32+256+512)
-	GUICtrlSetResizing($hGroupModInfo, 2+4+32+64)
-	GUICtrlSetResizing($hModInfo, 2+4+32+64)
-	GUICtrlSetResizing($hButtonChangeLanguage, 4+64+256+512)
-EndFunc
+	GUICtrlSetResizing($hTreeView, $GUI_DOCKLEFT + $GUI_DOCKTOP + $GUI_DOCKBOTTOM + $GUI_DOCKWIDTH)
+	GUICtrlSetResizing($hGroupModList, $GUI_DOCKLEFT + $GUI_DOCKTOP + $GUI_DOCKBOTTOM + $GUI_DOCKWIDTH)
+	GUICtrlSetResizing($hModMoveUp, $GUI_DOCKALL)
+	GUICtrlSetResizing($hModMoveDown, $GUI_DOCKALL)
+	GUICtrlSetResizing($hModEnableDisable, $GUI_DOCKALL)
+	GUICtrlSetResizing($hModCompatibility, $GUI_DOCKALL)
+	GUICtrlSetResizing($hButtonMoreActions, $GUI_DOCKALL)
+	GUICtrlSetResizing($hModAdd, $GUI_DOCKLEFT + $GUI_DOCKBOTTOM + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
+	GUICtrlSetResizing($hModOpenFolder, $GUI_DOCKALL)
+	GUICtrlSetResizing($hModInfoC, $GUI_DOCKALL)
+	GUICtrlSetResizing($hModReadmeC, $GUI_DOCKALL)
+	GUICtrlSetResizing($hGroupPresets, $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
+	GUICtrlSetResizing($hLabelPreset, $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
+	GUICtrlSetResizing($hPreset, $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
+	GUICtrlSetResizing($hSettings, $GUI_DOCKLEFT + $GUI_DOCKBOTTOM + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
+	GUICtrlSetResizing($hPresetSave, $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
+	GUICtrlSetResizing($hPresetLoad, $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
+	GUICtrlSetResizing($hPresetDelete, $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
+	GUICtrlSetResizing($hGroupGame, $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
+	GUICtrlSetResizing($hLabelExe, $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
+	GUICtrlSetResizing($hComboExe, $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
+	GUICtrlSetResizing($hLabelWO, $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
+	GUICtrlSetResizing($hComboWO, $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
+	GUICtrlSetResizing($hButtonRun, $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
+	GUICtrlSetResizing($hButtonCSC, $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
+	GUICtrlSetResizing($hGroupModInfo, $GUI_DOCKLEFT + $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKBOTTOM)
+	GUICtrlSetResizing($hModInfo, $GUI_DOCKLEFT + $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKBOTTOM)
+	GUICtrlSetResizing($hButtonChangeLanguage, $GUI_DOCKRIGHT + $GUI_DOCKBOTTOM + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
+EndFunc   ;==>SD_GUI_SetResizing
 
 
 Func SD_GUI_Events_Register()
@@ -290,7 +229,7 @@ Func SD_GUI_Events_Register()
 	GUICtrlSetOnEvent($hModCompatibility, "SD_GUI_Mod_Compatibility")
 	GUICtrlSetOnEvent($hButtonMoreActions, "SD_GUI_MoreActionsPopup")
 	GUICtrlSetOnEvent($hButtonPlugins, "SD_GUI_Manage_Plugins")
-	GUICtrlSetOnEvent($hModWebSite, "SD_GUI_Mod_Website")
+	GUICtrlSetOnEvent($hModWebsite, "SD_GUI_Mod_Website")
 	GUICtrlSetOnEvent($hModDelete, "SD_GUI_Mod_Delete")
 	GUICtrlSetOnEvent($hModAdd, "SD_GUI_Mod_Add")
 	GUICtrlSetOnEvent($hModOpenFolder, "SD_GUI_Mod_OpenFolder")
@@ -301,7 +240,7 @@ Func SD_GUI_Events_Register()
 	GUICtrlSetOnEvent($hPresetLoad, "SD_GUI_Preset_Load")
 	GUICtrlSetOnEvent($hPresetDelete, "SD_GUI_Preset_Delete")
 	GUICtrlSetOnEvent($hComboExe, "SD_GUI_Game_Exe_Change")
-	GUICtrlSetOnEvent($hComboWo, "SD_GUI_Game_Wo_Change")
+	GUICtrlSetOnEvent($hComboWO, "SD_GUI_Game_Wo_Change")
 	GUICtrlSetOnEvent($hButtonRun, "SD_GUI_Game_Exe_Run")
 	GUICtrlSetOnEvent($hButtonCSC, "SD_GUI_Game_Shortcut_Create")
 	GUICtrlSetOnEvent($hButtonChangeLanguage, "SD_GUI_Language_Popup")
@@ -309,43 +248,13 @@ Func SD_GUI_Events_Register()
 	For $iCount = 1 To $aLanguages[0][0]
 		GUICtrlSetOnEvent($aLanguages[$iCount][0], "SD_GUI_Language_Change")
 	Next
-EndFunc
-
-Func SD_GUI_Events_UnRegister()
-	GUISetOnEvent($GUI_EVENT_CLOSE, "")
-	GUIRegisterMsg($WM_GETMINMAXINFO, "")
-	GUIRegisterMsg($WM_DROPFILES, "")
-	GUIRegisterMsg($WM_NOTIFY, "")
-	GUICtrlSetOnEvent($hModMoveUp, "")
-	GUICtrlSetOnEvent($hModMoveDown, "")
-	GUICtrlSetOnEvent($hModEnableDisable, "")
-	GUICtrlSetOnEvent($hModCompatibility, "")
-	GUICtrlSetOnEvent($hButtonMoreActions, "")
-	GUICtrlSetOnEvent($hButtonPlugins, "")
-	GUICtrlSetOnEvent($hModWebSite, "")
-	GUICtrlSetOnEvent($hModDelete, "")
-	GUICtrlSetOnEvent($hModAdd, "")
-	GUICtrlSetOnEvent($hModOpenFolder, "")
-	GUICtrlSetOnEvent($hModInfoC, "")
-	GUICtrlSetOnEvent($hModReadmeC, "")
-	GUICtrlSetOnEvent($hSettings, "")
-	GUICtrlSetOnEvent($hPresetSave, "")
-	GUICtrlSetOnEvent($hPresetLoad, "")
-	GUICtrlSetOnEvent($hPresetDelete, "")
-	GUICtrlSetOnEvent($hComboExe, "")
-	GUICtrlSetOnEvent($hButtonRun, "")
-	GUICtrlSetOnEvent($hDummyF5, "")
-	GUICtrlSetOnEvent($hButtonCSC, "")
-	GUICtrlSetOnEvent($hButtonChangeLanguage, "")
-	For $iCount = 1 To $aLanguages[0][0]
-		GUICtrlSetOnEvent($aLanguages[$iCount][0], "")
-	Next
-EndFunc
+EndFunc   ;==>SD_GUI_Events_Register
 
 Func SD_GUI_SetLng()
 	GUICtrlSetData($hGroupModList, Lng_Get("group.modlist.title"))
 	GUICtrlSetData($hModMoveUp, Lng_Get("group.modlist.move_up"))
 	GUICtrlSetData($hModMoveDown, Lng_Get("group.modlist.move_down"))
+	GUICtrlSetData($hModEnableDisable, Lng_Get("group.modlist.enable"))
 	GUICtrlSetData($hModDelete, Lng_Get("group.modlist.delete"))
 	GUICtrlSetData($hButtonPlugins, Lng_Get("group.modlist.plugins"))
 	GUICtrlSetData($hModCompatibility, Lng_Get("group.modlist.compatibility"))
@@ -365,79 +274,65 @@ Func SD_GUI_SetLng()
 
 	GUICtrlSetData($hGroupGame, Lng_Get("group.game.title"))
 	GUICtrlSetData($hLabelExe, Lng_Get("group.game.label_launch"))
-	GUICtrlSetData($hLabelWo, Lng_Get("group.game.label_wog_opt"))
+	GUICtrlSetData($hLabelWO, Lng_Get("group.game.label_wog_opt"))
 	GUICtrlSetData($hButtonRun, Lng_Get("group.game.launch"))
 	GUICtrlSetData($hButtonCSC, Lng_Get("group.game.create_csc"))
 
 	GUICtrlSetData($hGroupModInfo, Lng_Get("group.modinfo.title"))
 	GUICtrlSetData($hButtonChangeLanguage, StringFormat("Language (%s)", Lng_Get("lang.name")))
-	WinSetTitle($hFormMain, "", StringFormat(Lng_Get("main.title"), $_VERSION))
-EndFunc
+	WinSetTitle($hFormMain, "", StringFormat(Lng_Get("main.title"), $MM_VERSION))
+EndFunc   ;==>SD_GUI_SetLng
 
 Func SD_GUI_Mod_Compatibility()
 	MsgBox(4096, "", $sCompatibilityMessage, Default, $hFormMain)
-EndFunc
+EndFunc   ;==>SD_GUI_Mod_Compatibility
 
 Func SD_GUI_MoreActionsPopup()
 	_GUICtrlMenu_TrackPopupMenu(GUICtrlGetHandle($hMoreActionsContextMenuID), $hFormMain, -1, -1, 1, 1, 1)
-EndFunc
+EndFunc   ;==>SD_GUI_MoreActionsPopup
 
 Func SD_GUI_Language_Popup()
 ;~ 	_ArrayDisplay($aLanguages)
 	_GUICtrlMenu_TrackPopupMenu(GUICtrlGetHandle($hChangeLanguageContextMenuID), $hFormMain, -1, -1, 1, 1, 1)
-EndFunc
+EndFunc   ;==>SD_GUI_Language_Popup
 
 Func SD_GUI_Settings()
 	GUISetState(@SW_DISABLE, $hFormMain)
-	Local $bAssoc = Settings_Get("Assoc")
 	Local $iGUIOnEventModeState = AutoItSetOption("GUIOnEventMode", 0)
 	Local $iResult = Settings_GUI($hFormMain)
 	AutoItSetOption("GUIOnEventMode", $iGUIOnEventModeState)
 	GUISetState(@SW_ENABLE, $hFormMain)
 	GUISetState(@SW_RESTORE, $hFormMain)
 
-	$bRememberWindowSizePos = Settings_Get("RememberSizePos")
 	$bDisplayVersion = Settings_Get("DisplayVersion")
 	$bSyncPresetWithWS = Settings_Get("SyncPresetWithWS")
-	Local $bAssocNew = Settings_Get("Assoc")
 
-	If $bAssoc<>$bAssocNew Then
-		If $bAssocNew Then
-			Settings_Assoc_Create()
-		Else
-			Settings_Assoc_Delete()
-		EndIf
-	EndIf
-
-	If $iResult = 1 Then ; Icons
-		TreeViewDelete()
-		SD_GUI_Update()
-	ElseIf $iResult = 2 Then ; Names
+	If $iResult = 1 Then ; Names
 		SD_GUI_Update()
 	EndIf
-EndFunc
+EndFunc   ;==>SD_GUI_Settings
 
 Func SD_GUI_Mod_CreateModifyReadme()
 	Local $iTreeViewIndex = TreeViewGetSelectedIndex()
-	Local $iModIndex1=$auTreeView[$iTreeViewIndex][2]
-	If $iModIndex1<1 Or $iModIndex1>$auModList[0][0] Then Return -1 ; never
-	Local $sPath = $sBasePath & "\" & $auModList[$iModIndex1][0] & '\Readme.txt'
-	Local $hFile = FileOpen($sPath, 1)
+	Local $iModIndex1 = $auTreeView[$iTreeViewIndex][2]
+	If $iModIndex1 < 1 Or $iModIndex1 > $MM_LIST_CONTENT[0][0] Then Return -1 ; never
+	Local $sPath = $MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iModIndex1][0] & '\Readme.txt'
+	Local $hFile = FileOpen($sPath, $FO_APPEND)
 	FileClose($hFile)
 	ShellExecute($sPath)
-EndFunc
+EndFunc   ;==>SD_GUI_Mod_CreateModifyReadme
 
 Func SD_GUI_Mod_CreateModifyModInfo()
 	Local $iTreeViewIndex = TreeViewGetSelectedIndex()
-	Local $iModIndex1=$auTreeView[$iTreeViewIndex][2]
-	If $iModIndex1<1 Or $iModIndex1>$auModList[0][0] Then Return -1 ; never
-	Local $sPath = $sBasePath & "\" & $auModList[$iModIndex1][0] & '\mod_info.ini'
+	Local $iModIndex1 = $auTreeView[$iTreeViewIndex][2]
+	If $iModIndex1 < 1 Or $iModIndex1 > $MM_LIST_CONTENT[0][0] Then Return -1 ; never
+	Local $sPath = $MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iModIndex1][0] & '\mod_info.ini'
 	Local $bAddInfo = Not FileExists($sPath)
-	Local $hFile = FileOpen($sPath, 1+8+32)
+	Local $hFile = FileOpen($sPath, $FO_APPEND + $FO_CREATEPATH + $FO_UNICODE)
 	If $bAddInfo Then
 		FileWriteLine($hFile, "[info]")
 		FileWriteLine($hFile, "; this section contains various settings + default name/description (use English here, please) ")
-		FileWriteLine($hFile, "Caption = " & $auModList[$iModIndex1][0])
+		FileWriteLine($hFile, "Caption = " & $MM_LIST_CONTENT[$iModIndex1][0])
 		FileWriteLine($hFile, "; if name not set -> MM will use directory name instead")
 		FileWriteLine($hFile, "Description File = Readme.txt")
 		FileWriteLine($hFile, "; file with mod description (please, don't use wall of text)")
@@ -451,9 +346,9 @@ Func SD_GUI_Mod_CreateModifyModInfo()
 		FileWriteLine($hFile, "; path to icon file. Index is not supported now (MM will always use 0). Icon Index = X will be supported in future versions")
 		FileWriteLine($hFile, "Compatibility Class = Default")
 		FileWriteLine($hFile, "; this field determines MM behaviour when detecting mods compatibility. Vaild values are ('Default' -> compatible with all mods, " & _
-		"except 'None' -> not compatible with any mod, 'All' (or any other value) -> compatible with all mods (override 'None')")
+				"except 'None' -> not compatible with any mod, 'All' (or any other value) -> compatible with all mods (override 'None')")
 		FileWriteLine($hFile, "")
-		FileWriteLine($hFile, "Caption." & Lng_Get("lang.code") & " = " & $auModList[$iModIndex1][0])
+		FileWriteLine($hFile, "Caption." & Lng_Get("lang.code") & " = " & $MM_LIST_CONTENT[$iModIndex1][0])
 		FileWriteLine($hFile, "Description File." & Lng_Get("lang.code") & " = Readme.txt")
 		FileWriteLine($hFile, "")
 		FileWriteLine($hFile, "[Compatibility]")
@@ -463,91 +358,94 @@ Func SD_GUI_Mod_CreateModifyModInfo()
 
 	FileClose($hFile)
 	ShellExecute($sPath)
-EndFunc
+EndFunc   ;==>SD_GUI_Mod_CreateModifyModInfo
 
 Func SD_GUI_Mod_OpenFolder()
 	Local $iTreeViewIndex = TreeViewGetSelectedIndex()
-	Local $iModIndex1=$auTreeView[$iTreeViewIndex][2]
-	If $iModIndex1<1 Or $iModIndex1>$auModList[0][0] Then Return -1 ; never
-	Local $sPath = '"' & $sBasePath & "\" & $auModList[$iModIndex1][0] & '"'
-	Local $sExplorer = Settings_Get("Explorer")
-	If $sExplorer == "" Then
-		ShellExecute($sPath)
-	Else
-		ShellExecute($sExplorer, $sPath)
-	EndIf
-EndFunc
+	Local $iModIndex1 = $auTreeView[$iTreeViewIndex][2]
+	If $iModIndex1 < 1 Or $iModIndex1 > $MM_LIST_CONTENT[0][0] Then Return -1 ; never
+	Local $sPath = '"' & $MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iModIndex1][0] & '"'
+	ShellExecute($sPath)
+EndFunc   ;==>SD_GUI_Mod_OpenFolder
 
 Func SD_GUI_FillComboExe($sPath, $hCombo, $sDefault = "h3era.exe")
 	If StringRight($sPath, 1) = "\" Then $sPath = StringTrimRight($sPath, 1)
+
 	Local $aFiles = _FileListToArray($sPath & "\", "*.exe", 1)
-	If @error Then Return False
+
+	If @error Then Return
+
 	GUICtrlSetData($hCombo, "")
+
 	For $iCount = 1 To $aFiles[0]
 		GUICtrlSetData($hCombo, $aFiles[$iCount])
 	Next
+
 	If FileExists($sPath & "\" & $sDefault) Then
 		GUICtrlSetData($hCombo, $sDefault)
 	ElseIf Not FileExists($sPath & "\h3era.exe") Then
-		; Нет, ну какого фига нужен менеджер модов без Эры?
+		; Can do nothing
 	Else
 		GUICtrlSetData($hCombo, "h3era.exe")
 	EndIf
-	Return True
-EndFunc
+EndFunc   ;==>SD_GUI_FillComboExe
 
 Func SD_GUI_FillComboWo($sPath, $hCombo, $sDefault = "settings.dat")
 	If StringRight($sPath, 1) = "\" Then $sPath = StringTrimRight($sPath, 1)
+
 	If $sDefault = "" Then $sDefault = "settings.dat"
+
 	Local $aFiles = _FileListToArray($sPath & "\", "*.dat", 1)
 
-	If @error Then Return False
+	If @error Then Return
+
 	GUICtrlSetData($hCombo, "")
+
 	For $iCount = 1 To $aFiles[0]
 		GUICtrlSetData($hCombo, $aFiles[$iCount])
 	Next
+
 	If FileExists($sPath & "\" & $sDefault) Then
 		GUICtrlSetData($hCombo, $sDefault)
 	ElseIf Not FileExists($sPath & "\settings.dat") Then
-		;
-		;MsgBox(4096, Default, "NE")
+		; Can do nothing
 	Else
 		GUICtrlSetData($hCombo, "settings.dat")
-		;MsgBox(4096, Default, "Def")
 	EndIf
+
 	Return True
-EndFunc
+EndFunc   ;==>SD_GUI_FillComboWo
 
 Func SD_GUI_Manage_Plugins()
 	GUISetState(@SW_DISABLE, $hFormMain)
 	Local $iGUIOnEventModeState = AutoItSetOption("GUIOnEventMode", 0)
-	Plugins_Manage($auModList[$auTreeView[TreeViewGetSelectedIndex()][2]][0], $hFormMain)
+	Plugins_Manage($MM_LIST_CONTENT[$auTreeView[TreeViewGetSelectedIndex()][2]][0], $hFormMain)
 	AutoItSetOption("GUIOnEventMode", $iGUIOnEventModeState)
 	GUISetState(@SW_ENABLE, $hFormMain)
 	GUISetState(@SW_RESTORE, $hFormMain)
-EndFunc
+EndFunc   ;==>SD_GUI_Manage_Plugins
 
 Func SD_GUI_Game_Shortcut_Create()
 	Local $sPresetName = GUICtrlRead($hPreset)
-	If StringLeft($sPresetName, 1)="*" Then $sPresetName=StringTrimLeft($sPresetName, 1)
-	If $sPresetName=Lng_Get("group.presets.none") Then $sPresetName=""
-	;If $sPresetName="" Then Return MsgBox(4096, "", Lng_Get(""), Default, $hFormMain)
-	Local $sFile = FileSaveDialog("", @DesktopDir, Lng_Get("group.game.sc_filter"), 2+16, "Era II " & $sPresetName , $hFormMain)
-	If @error Then Return False
+	If StringLeft($sPresetName, 1) = "*" Then $sPresetName = StringTrimLeft($sPresetName, 1)
+	If $sPresetName = Lng_Get("group.presets.none") Then $sPresetName = ""
+	Local $sFile = FileSaveDialog("", @DesktopDir, Lng_Get("group.game.sc_filter"), $FD_PATHMUSTEXIST + $FD_PROMPTOVERWRITE, "Era II " & $sPresetName, $hFormMain)
+	If @error Then Return
 	FileCreateShortcut(@ScriptDir & "\..\..\" & GUICtrlRead($hComboExe), $sFile, @ScriptDir & "\..\..\", 'modlist="' & @ScriptDir & '\presets\' & $sPresetName & '.txt"', StringFormat(Lng_Get("group.game.sc_tip"), $sPresetName))
-EndFunc
+EndFunc   ;==>SD_GUI_Game_Shortcut_Create
 
 Func SD_GUI_Mod_AddByDnD($hwnd, $msg, $wParam, $lParam)
-	Local $aRet = DllCall("shell32.dll", "int", "DragQueryFile", "int", $wParam, "int", -1, "ptr", 0, "int", 0)
-    If @error Then Return SetError(1, 0, 0)
-    Local $aDroppedFiles[$aRet[0]+1], $i, $tBuffer = DllStructCreate("char[256]")
+	#forceref $hwnd, $Msg, $wParam, $lParam
+	Local $aRet = DllCall("shell32.dll", "int", "DragQueryFile", "int", $wParam, "int", -1, "ptr", Null, "int", 0)
+	If @error Then Return SetError(1, 0, 0)
+	Local $aDroppedFiles[$aRet[0] + 1], $i, $tBuffer = DllStructCreate("char[256]")
 	$aDroppedFiles[0] = $aRet[0]
-    For $i = 0 To $aRet[0] - 1 ; цикл запрашивает все файлы и папки
-        DllCall("shell32.dll", "int", "DragQueryFile", "int", $wParam, "int", $i, "ptr", DllStructGetPtr($tBuffer), "int", DllStructGetSize($tBuffer))
-        $aDroppedFiles[$i+1] = DllStructGetData($tBuffer, 1)
-    Next
+	For $i = 0 To $aRet[0] - 1
+		DllCall("shell32.dll", "int", "DragQueryFile", "int", $wParam, "int", $i, "ptr", DllStructGetPtr($tBuffer), "int", DllStructGetSize($tBuffer))
+		$aDroppedFiles[$i + 1] = DllStructGetData($tBuffer, 1)
+	Next
 	DllCall("shell32.dll", "none", "DragFinish", "int", $wParam)
-    $tBuffer = 0
+	$tBuffer = 0
 
 	GUISetState(@SW_DISABLE, $hFormMain)
 
@@ -557,31 +455,31 @@ Func SD_GUI_Mod_AddByDnD($hwnd, $msg, $wParam, $lParam)
 	GUISetState(@SW_RESTORE, $hFormMain)
 
 	If $aModList[0][0] = 0 Then
-		MsgBox(4096, "", StringFormat(Lng_Get("add_new.no_mods"), "0_O"), Default, $hFormMain)
+		MsgBox($MB_SYSTEMMODAL, "", StringFormat(Lng_Get("add_new.no_mods"), "0_O"), Default, $hFormMain)
 		Return "GUI_RUNDEFMSG"
 	EndIf
 
 	GUISetState(@SW_DISABLE, $hFormMain)
 	Local $iGUIOnEventModeState = AutoItSetOption("GUIOnEventMode", 0)
-	PackedMod_InstallGUI_Simple($aModList, $auModList, $hFormMain)
+	PackedMod_InstallGUI_Simple($aModList, $hFormMain)
 	AutoItSetOption("GUIOnEventMode", $iGUIOnEventModeState)
 	GUISetState(@SW_ENABLE, $hFormMain)
 	GUISetState(@SW_RESTORE, $hFormMain)
 
-	TreeViewMain($hTreeView, $auModList, $auTreeView)
+	TreeViewMain()
 	TreeViewTryFollow($sFollowMod)
 	ControlFocus($hFormMain, "", $hButtonRun)
 
-    Return "GUI_RUNDEFMSG"
-EndFunc
+	Return "GUI_RUNDEFMSG"
+EndFunc   ;==>SD_GUI_Mod_AddByDnD
 
 Func Mod_ListCheck($aFileList, $sDir = "")
 	Local $iTotalMods = 0
-	Local $aModList[$aFileList[0]+1][9] ; FilePath, ModName, ModLocalizedName, ModLocalizedDescription, Version, MinVersion, InstalledVersion
-	ProgressOn(Lng_Get("add_new.progress.title"), "", "", Default, Default, 16)
+	Local $aModList[$aFileList[0] + 1][9] ; FilePath, ModName, ModLocalizedName, ModLocalizedDescription, Version, MinVersion, InstalledVersion
+	ProgressOn(Lng_Get("add_new.progress.title"), "", "", Default, Default, $DLG_MOVEABLE)
 	For $iCount = 1 To $aFileList[0]
 		Local $sPackedPath = $sDir & $aFileList[$iCount]
-		ProgressSet(Round($iCount/$aFileList[0]*100)-1, StringFormat(Lng_Get("add_new.progress.scanned"), $iCount-1, $aFileList[0]) & @LF & $aFileList[$iCount] & @LF & StringFormat(Lng_Get("add_new.progress.found"), $iTotalMods))
+		ProgressSet(Round($iCount / $aFileList[0] * 100) - 1, StringFormat(Lng_Get("add_new.progress.scanned"), $iCount - 1, $aFileList[0]) & @LF & $aFileList[$iCount] & @LF & StringFormat(Lng_Get("add_new.progress.found"), $iTotalMods))
 		Local $sModName = PackedMod_IsPackedMod($sPackedPath)
 		If $sModName Then
 			$iTotalMods += 1
@@ -594,16 +492,16 @@ Func Mod_ListCheck($aFileList, $sDir = "")
 	ProgressOff()
 	$aModList[0][0] = $iTotalMods
 	Return $aModList
-EndFunc
+EndFunc   ;==>Mod_ListCheck
 
 Func SD_GUI_Mod_Add()
-	Local $sFileList = FileOpenDialog("", "", Lng_Get("add_new.filter"), 1+4, "", $hFormMain)
+	Local $sFileList = FileOpenDialog("", "", Lng_Get("add_new.filter"), $FD_FILEMUSTEXIST + $FD_MULTISELECT, "", $hFormMain)
 	If @error Then Return False
 	GUISetState(@SW_DISABLE, $hFormMain)
 
-	Local $aFileList = StringSplit($sFileList, "|", 2)
+	Local $aFileList = StringSplit($sFileList, "|", $STR_NOCOUNT)
 
-	If UBound($aFileList, 1)=1 Then
+	If UBound($aFileList, 1) = 1 Then
 		ReDim $aFileList[2]
 		Local $szDrive, $szDir, $szFName, $szExt
 		_PathSplit($aFileList[0], $szDrive, $szDir, $szFName, $szExt)
@@ -612,7 +510,7 @@ Func SD_GUI_Mod_Add()
 	EndIf
 
 	Local $sDirPath = $aFileList[0]
-	$aFileList[0] = UBound($aFileList, 1)-1
+	$aFileList[0] = UBound($aFileList, 1) - 1
 
 	Local $aModList = Mod_ListCheck($aFileList, $sDirPath & "\"); FilePath, ModName, ModLocalizedName, ModLocalizedDescription, Version, MinVersion, InstalledVersion, AuthorName, ModWebSite
 
@@ -620,74 +518,67 @@ Func SD_GUI_Mod_Add()
 	GUISetState(@SW_RESTORE, $hFormMain)
 
 	If $aModList[0][0] = 0 Then
-		MsgBox(4096, "", StringFormat(Lng_Get("add_new.no_mods"), "0_O"), Default, $hFormMain)
+		MsgBox($MB_SYSTEMMODAL, "", StringFormat(Lng_Get("add_new.no_mods"), "0_O"), Default, $hFormMain)
 		Return False
 	EndIf
 
-;~ 	_ArrayDisplay($aModList)
 	GUISetState(@SW_DISABLE, $hFormMain)
 	Local $iGUIOnEventModeState = AutoItSetOption("GUIOnEventMode", 0)
-	PackedMod_InstallGUI_Simple($aModList, $auModList, $hFormMain)
+	PackedMod_InstallGUI_Simple($aModList, $hFormMain)
 	AutoItSetOption("GUIOnEventMode", $iGUIOnEventModeState)
 	GUISetState(@SW_ENABLE, $hFormMain)
 	GUISetState(@SW_RESTORE, $hFormMain)
 
-	TreeViewMain($hTreeView, $auModList, $auTreeView)
+	TreeViewMain()
 	TreeViewTryFollow($sFollowMod)
 	ControlFocus($hFormMain, "", $hButtonRun)
-EndFunc
+EndFunc   ;==>SD_GUI_Mod_Add
 
 Func SD_CLI_Mod_Add()
-	Settings_Global("Set", "List", $sDefaultList)
-	Settings_Global("Set", "Path", $sBasePath)
-	$auModList = Mod_ListLoad()
-	$auModList = Mod_ListLoad()
+	Mod_ListLoad()
+	Mod_ListLoad()
 	Local $aModList = Mod_ListCheck($CMDLine); FilePath, ModName, ModLocalizedName, ModLocalizedDescription, Version, MinVersion, InstalledVersion, AuthorName, ModWebSite
 
 	If $aModList[0][0] = 0 Then
-		MsgBox(4096, "", StringFormat(Lng_Get("add_new.no_mods"), "0_O"), Default)
+		MsgBox($MB_SYSTEMMODAL, "", StringFormat(Lng_Get("add_new.no_mods"), "0_O"), Default)
 		Return False
 	EndIf
 
-;~ 	_ArrayDisplay($aModList)
 	Local $iGUIOnEventModeState = AutoItSetOption("GUIOnEventMode", 0)
-	Settings_Global("Set", "List", $sDefaultList)
-	Settings_Global("Set", "Path", $sBasePath)
-	Local $bResult = PackedMod_InstallGUI_Simple($aModList, $auModList, 0)
+	Local $bResult = PackedMod_InstallGUI_Simple($aModList)
 	AutoItSetOption("GUIOnEventMode", $iGUIOnEventModeState)
+
 	Return $bResult
-EndFunc
+EndFunc   ;==>SD_CLI_Mod_Add
 
 Func SD_GUI_Game_Exe_Run()
-;~ 	GUISetState(@SW_MINIMIZE, $hFormMain)
 	If $sCompatibilityMessage <> "" Then
-		Local $iAnswer = MsgBox(4096+4, "", $sCompatibilityMessage & @CRLF & Lng_Get("message.compatibility.launch"), Default, $hFormMain)
-		If $iAnswer <> 6 Then Return 0
+		Local $iAnswer = MsgBox($MB_SYSTEMMODAL + $MB_YESNO, "", $sCompatibilityMessage & @CRLF & Lng_Get("message.compatibility.launch"), Default, $hFormMain)
+		If $iAnswer <> $IDYES (6) Then Return
 	EndIf
 
 	Run('"' & @ScriptDir & '\..\..\' & GUICtrlRead($hComboExe) & '"', @ScriptDir & "\..\..\")
-	;MsgBox(4096, @error, @ScriptDir & '\..\..\"' & GUICtrlRead($hComboExe) & '"')
 	If @error Then Run('"' & GUICtrlRead($hComboExe) & '"', @ScriptDir & "\..\..\")
 	Settings_Set("Exe", GUICtrlRead($hComboExe))
-EndFunc
+EndFunc   ;==>SD_GUI_Game_Exe_Run
 
 Func SD_GUI_Game_Exe_Change()
 	Settings_Set("Exe", GUICtrlRead($hComboExe))
-EndFunc
+EndFunc   ;==>SD_GUI_Game_Exe_Change
 
 Func SD_GUI_Game_Wo_Change()
-	IniWrite(@ScriptDir & "\..\..\wog.ini", "WoGification", "Options_File_Name", GUICtrlRead($hComboWo))
-EndFunc
+	IniWrite(@ScriptDir & "\..\..\wog.ini", "WoGification", "Options_File_Name", GUICtrlRead($hComboWO))
+EndFunc   ;==>SD_GUI_Game_Wo_Change
 
 Func SD_GUI_Preset_Load()
 	Local $sSuggestName = GUICtrlRead($hPreset) & ".txt"
-	If StringLeft($sSuggestName, 1)="*" Then $sSuggestName=StringTrimLeft($sSuggestName, 1)
-	If $sSuggestName=Lng_Get("group.presets.none") & ".txt" Then $sSuggestName=""
-	Local $sLoadPath = FileOpenDialog(Lng_Get("group.presets.dialog_load"), @ScriptDir & "\presets\", Lng_Get("group.presets.dialog_filter"), 1, $sSuggestName, $hFormMain)
+	If StringLeft($sSuggestName, 1) = "*" Then $sSuggestName = StringTrimLeft($sSuggestName, 1)
+	If $sSuggestName = Lng_Get("group.presets.none") & ".txt" Then $sSuggestName = ""
+	Local $sLoadPath = FileOpenDialog(Lng_Get("group.presets.dialog_load"), @ScriptDir & "\presets\", Lng_Get("group.presets.dialog_filter"), $FD_FILEMUSTEXIST, $sSuggestName, $hFormMain)
 	If @error Then
-		Return False
+		Return
 	Else
-		If StringLeft($sLoadPath, StringLen(@ScriptDir & "\presets\")) <> @ScriptDir & "\presets\" Then Return False
+		If StringLeft($sLoadPath, StringLen(@ScriptDir & "\presets\")) <> @ScriptDir & "\presets\" Then Return
 		Preset_Load($sLoadPath)
 		If $bSyncPresetWithWS Then
 			Local $sSettingsName = FileReadLine($sLoadPath & ".e2p", 1)
@@ -695,66 +586,64 @@ Func SD_GUI_Preset_Load()
 			If $sSettingsName <> "" Then IniWrite(@ScriptDir & "\..\..\wog.ini", "WoGification", "Options_File_Name", $sSettingsName)
 			If $sExeName <> "" Then Settings_Set("Exe", $sExeName)
 			GUICtrlSetData($hComboExe, Settings_Get("Exe"))
-			GUICtrlSetData($hComboWo, IniRead(@ScriptDir & "\..\..\wog.ini", "WoGification", "Options_File_Name", "settings.dat"))
+			GUICtrlSetData($hComboWO, IniRead(@ScriptDir & "\..\..\wog.ini", "WoGification", "Options_File_Name", "settings.dat"))
 		EndIf
 		Local $sPresetName = StringTrimRight(StringRegExpReplace($sLoadPath, ".*\\", ""), 4)
 		GUICtrlSetData($hPreset, $sPresetName)
 		GUICtrlSetState($hButtonCSC, $GUI_ENABLE)
 
-		TreeViewMain($hTreeView, $auModList, $auTreeView)
+		TreeViewMain()
 		TreeViewTryFollow($sFollowMod)
 		ControlFocus($hFormMain, "", $hButtonRun)
 	EndIf
-EndFunc
+EndFunc   ;==>SD_GUI_Preset_Load
 
 Func Preset_Load($sLoadPath)
 	Local $asPreset
 	_FileReadToArray($sLoadPath, $asPreset)
-	If @error=2 Then
+	If @error = 2 Then
 		Local $asPreset[1]
 	ElseIf @error Then
 		Return False
 	EndIf
 
-	Local $hList = FileOpen($sBasePath & "\list.txt", 2)
+	Local $hList = FileOpen($MM_LIST_DIR_PATH & "\list.txt", $FO_OVERWRITE)
 
 	For $iCount = 1 To $asPreset[0]
 		FileWriteLine($hList, $asPreset[$iCount])
 	Next
 
 	FileClose($hList)
-
-	TreeViewMain($hTreeView, $auModList, $auTreeView)
-EndFunc
+EndFunc   ;==>Preset_Load
 
 Func SD_GUI_Preset_Delete()
 	Local $sSuggestName = GUICtrlRead($hPreset) & ".txt"
-	If StringLeft($sSuggestName, 1)="*" Then $sSuggestName=StringTrimLeft($sSuggestName, 1)
-	If $sSuggestName=Lng_Get("group.presets.none") & ".txt" Then $sSuggestName=""
-	Local $sDeletePath = FileOpenDialog(Lng_Get("group.presets.dialog_delete"), @ScriptDir & "\presets\", Lng_Get("group.presets.dialog_filter"), 1, $sSuggestName, $hFormMain)
+	If StringLeft($sSuggestName, 1) = "*" Then $sSuggestName = StringTrimLeft($sSuggestName, 1)
+	If $sSuggestName = Lng_Get("group.presets.none") & ".txt" Then $sSuggestName = ""
+	Local $sDeletePath = FileOpenDialog(Lng_Get("group.presets.dialog_delete"), @ScriptDir & "\presets\", Lng_Get("group.presets.dialog_filter"), $FD_FILEMUSTEXIST, $sSuggestName, $hFormMain)
 	If @error Then
-		Return False
+		Return
 	Else
-		If StringLeft($sDeletePath, StringLen(@ScriptDir & "\presets\")) <> @ScriptDir & "\presets\" Then Return False
+		If StringLeft($sDeletePath, StringLen(@ScriptDir & "\presets\")) <> @ScriptDir & "\presets\" Then Return
 		FileRecycle($sDeletePath) ; Preset_Delete
 		Local $sPresetName = StringTrimRight(StringRegExpReplace($sDeletePath, ".*\\", ""), 4)
-		If GUICtrlRead($hPreset)=$sPresetName Then
+		If GUICtrlRead($hPreset) = $sPresetName Then
 			GUICtrlSetData($hPreset, Lng_Get("group.presets.none"))
 			GUICtrlSetState($hButtonCSC, $GUI_DISABLE)
 		EndIf
 	EndIf
-EndFunc
+EndFunc   ;==>SD_GUI_Preset_Delete
 
 Func SD_GUI_Preset_Save()
 	Local $sSuggestName = GUICtrlRead($hPreset)
-	If StringLeft($sSuggestName, 1)="*" Then $sSuggestName=StringTrimLeft($sSuggestName, 1)
-	If $sSuggestName=Lng_Get("group.presets.none") Then $sSuggestName=$auModList[1][0]
+	If StringLeft($sSuggestName, 1) = "*" Then $sSuggestName = StringTrimLeft($sSuggestName, 1)
+	If $sSuggestName = Lng_Get("group.presets.none") Then $sSuggestName = $MM_LIST_CONTENT[1][0]
 	Local $sSavePath = FileSaveDialog(Lng_Get("group.presets.dialog_save"), @ScriptDir & "\presets\", Lng_Get("group.presets.dialog_filter"), Default, $sSuggestName, $hFormMain)
 	If @error Then
-		Return False
+		Return
 	Else
-		If StringLeft($sSavePath, StringLen(@ScriptDir & "\presets\")) <> @ScriptDir & "\presets\" Then Return False
-		If StringRight($sSavePath, 4)<>".txt" Then
+		If StringLeft($sSavePath, StringLen(@ScriptDir & "\presets\")) <> @ScriptDir & "\presets\" Then Return
+		If StringRight($sSavePath, 4) <> ".txt" Then
 			If StringLeft(StringRight($sSavePath, 4), 1) = "." Then
 				$sSavePath = StringTrimRight($sSuggestName, 3) & "txt"
 			Else
@@ -762,7 +651,7 @@ Func SD_GUI_Preset_Save()
 			EndIf
 		EndIf
 
-		Preset_Save($auModList, $sSavePath)
+		Preset_Save($sSavePath)
 		If $bSyncPresetWithWS Then
 			FileDelete($sSavePath & ".e2p")
 			FileWriteLine($sSavePath & ".e2p", IniRead(@ScriptDir & "\..\..\wog.ini", "WoGification", "Options_File_Name", ""))
@@ -773,172 +662,157 @@ Func SD_GUI_Preset_Save()
 		GUICtrlSetData($hPreset, $sPresetName)
 		GUICtrlSetState($hButtonCSC, $GUI_ENABLE)
 	EndIf
-EndFunc
+EndFunc   ;==>SD_GUI_Preset_Save
 
-Func Preset_Save($aModList, $sSavePath)
-	Local $sPrevPath = Settings_Global("Set", "List", $sSavePath)
-	Mod_ListSave($aModList)
-	Settings_Global("Set", "List", $sPrevPath)
-EndFunc
+Func Preset_Save($sSavePath)
+	Local $sPrevPath = $MM_LIST_FILE_PATH
+	$MM_LIST_FILE_PATH = $sSavePath
+	Mod_ListSave()
+	$MM_LIST_FILE_PATH = $sPrevPath
+EndFunc   ;==>Preset_Save
 
-Func SD_GUI_SaveSizePos()
+Func SD_GUI_SaveSize()
 	Local $aPos = WinGetPos($hFormMain)
-	Settings_Set("Left", $aPos[0])
-	Settings_Set("Top", $aPos[1])
-	Settings_Set("Width", $aPos[2])
-	Settings_Set("Height", $aPos[3])
-EndFunc
 
-Func SD_GUI_LoadSizePos()
-	$iLeft = Settings_Get("Left")
-	$iTop = Settings_Get("Top")
-	$iWidth = Settings_Get("Width")
-	$iHeight = Settings_Get("Height")
-EndFunc
+	$MM_WINDOW_WIDTH = $aPos[2]
+	$MM_WINDOW_HEIGHT = $aPos[3]
+	$MM_WINDOW_MAXIMIZED = BitAND(WinGetState($hFormMain), 32)
+
+	Settings_Set("Maximized", $MM_WINDOW_MAXIMIZED)
+	If Not $MM_WINDOW_MAXIMIZED Then
+		Settings_Set("Width", $MM_WINDOW_WIDTH)
+		Settings_Set("Height", $MM_WINDOW_HEIGHT)
+	EndIf
+EndFunc   ;==>SD_GUI_SaveSize
+
+Func SD_GUI_LoadSize()
+	$MM_WINDOW_WIDTH = Settings_Get("Width")
+	$MM_WINDOW_HEIGHT = Settings_Get("Height")
+	$MM_WINDOW_MAXIMIZED = Settings_Get("Maximized")
+EndFunc   ;==>SD_GUI_LoadSize
 
 Func SD_GUI_Close()
-	If $bRememberWindowSizePos Then SD_GUI_SaveSizePos()
- 	Exit
-EndFunc
+	SD_GUI_SaveSize()
+	Exit
+EndFunc   ;==>SD_GUI_Close
 
 Func SD_GUI_Mod_Website()
 	Local $iTreeViewIndex = TreeViewGetSelectedIndex()
-	Local $iModIndex1=$auTreeView[$iTreeViewIndex][2]
-	If $iModIndex1<1 Or $iModIndex1>$auModList[0][0] Then Return -1 ; never
+	Local $iModIndex1 = $auTreeView[$iTreeViewIndex][2]
+	If $iModIndex1 < 1 Or $iModIndex1 > $MM_LIST_CONTENT[0][0] Then Return -1 ; never
 
-	Local $sBrowser = Settings_Get("Browser")
-	Run(StringReplace($sBrowser, "%1", $auModList[$iModIndex1][6]))
-EndFunc
+	Utils_LaunchInBrowser($MM_LIST_CONTENT[$iModIndex1][6])
+EndFunc   ;==>SD_GUI_Mod_Website
 
 Func SD_GUI_PresetChange()
-	If GUICtrlRead($hPreset)<>Lng_Get("group.presets.none") Then
-		Local $sPresetName=GUICtrlRead($hPreset)
-		If StringLeft($sPresetName, 1)<>"*" Then $sPresetName= "*" & $sPresetName
+	If GUICtrlRead($hPreset) <> Lng_Get("group.presets.none") Then
+		Local $sPresetName = GUICtrlRead($hPreset)
+		If StringLeft($sPresetName, 1) <> "*" Then $sPresetName = "*" & $sPresetName
 		GUICtrlSetData($hPreset, $sPresetName)
 	EndIf
-EndFunc
+EndFunc   ;==>SD_GUI_PresetChange
 
 Func SD_GUI_Mod_Move_Up()
 	Local $iTreeViewIndex = TreeViewGetSelectedIndex()
-	Local $iModIndex1=$auTreeView[$iTreeViewIndex][2], $iModIndex2
-	If $iModIndex1<2 Or $iModIndex1>$auModList[0][0] Then Return -1 ; never
-	$iModIndex2=$iModIndex1-1
+	Local $iModIndex1 = $auTreeView[$iTreeViewIndex][2], $iModIndex2
+	If $iModIndex1 < 2 Or $iModIndex1 > $MM_LIST_CONTENT[0][0] Then Return -1 ; never
+	$iModIndex2 = $iModIndex1 - 1
 	SD_GUI_Mod_Swap($iModIndex1, $iModIndex2)
-EndFunc
+EndFunc   ;==>SD_GUI_Mod_Move_Up
 
 Func SD_GUI_Mod_Move_Down()
 	Local $iTreeViewIndex = TreeViewGetSelectedIndex()
-	Local $iModIndex1=$auTreeView[$iTreeViewIndex][2], $iModIndex2
-	If $iModIndex1<1 Or $iModIndex1>$auModList[0][0]-1 Then Return -1 ; never
-	$iModIndex2=$iModIndex1+1
+	Local $iModIndex1 = $auTreeView[$iTreeViewIndex][2], $iModIndex2
+	If $iModIndex1 < 1 Or $iModIndex1 > $MM_LIST_CONTENT[0][0] - 1 Then Return -1 ; never
+	$iModIndex2 = $iModIndex1 + 1
 	SD_GUI_Mod_Swap($iModIndex1, $iModIndex2)
-EndFunc
+EndFunc   ;==>SD_GUI_Mod_Move_Down
 
 Func SD_GUI_Mod_Swap($iModIndex1, $iModIndex2)
-	Mod_ListSwap($iModIndex1, $iModIndex2, $auModList)
+	Mod_ListSwap($iModIndex1, $iModIndex2)
 	Mod_CompatibilitySwap($iModIndex1, $iModIndex2, $abModCompatibilityMap)
 	TreeViewSwap($iModIndex1, $iModIndex2, $auTreeView)
 	TreeViewTryFollow($sFollowMod)
 	ControlFocus($hFormMain, "", @GUI_CtrlId)
 	SD_GUI_PresetChange()
-EndFunc
+EndFunc   ;==>SD_GUI_Mod_Swap
 
 Func SD_GUI_Mod_Delete()
 	Local $iTreeViewIndex = TreeViewGetSelectedIndex()
-	Local $iModIndex=$auTreeView[$iTreeViewIndex][2]
-	Local $iAnswer = MsgBox(4+32+256+8192, "", StringFormat(Lng_Get("group.modlist.delete_confirm"), $auModList[$iModIndex][0]), Default, $hFormMain)
-	If $iAnswer=7 Then Return False
+	Local $iModIndex = $auTreeView[$iTreeViewIndex][2]
+	Local $iAnswer = MsgBox($MB_YESNO + $MB_ICONQUESTION + $MB_DEFBUTTON2 + $MB_TASKMODAL, "", StringFormat(Lng_Get("group.modlist.delete_confirm"), $MM_LIST_CONTENT[$iModIndex][0]), Default, $hFormMain)
+	If $iAnswer = $IDNO Then Return
 
-	Mod_Delete($iModIndex, $auModList)
+	Mod_Delete($iModIndex)
 
-	TreeViewMain($hTreeView, $auModList, $auTreeView)
-	If $auModList[0][0]<$iModIndex Then
-		$iModIndex = $auModList[0][0]
+	TreeViewMain()
+	If $MM_LIST_CONTENT[0][0] < $iModIndex Then
+		$iModIndex = $MM_LIST_CONTENT[0][0]
 	EndIf
 
-	If $iModIndex>0 Then
-		$sFollowMod = $auModList[$iModIndex][0]
+	If $iModIndex > 0 Then
+		$sFollowMod = $MM_LIST_CONTENT[$iModIndex][0]
 		TreeViewTryFollow($sFollowMod)
 	EndIf
+
 	SD_GUI_PresetChange()
-EndFunc
+EndFunc   ;==>SD_GUI_Mod_Delete
 
 Func SD_GUI_Mod_EnableDisable()
 	Local $iTreeViewIndex = TreeViewGetSelectedIndex()
-	Local $iModIndex=$auTreeView[$iTreeViewIndex][2]
+	If $auTreeView[$iTreeViewIndex][1] == 0 Then Return
+	Local $iModIndex = $auTreeView[$iTreeViewIndex][2]
 
-	If $iModIndex<1 Then Return
+	If $iModIndex < 1 Then Return
 
-	Local $sState = $auModList[$iModIndex][1]
+	Local $sState = $MM_LIST_CONTENT[$iModIndex][1]
 	If $sState = "Disabled" Then
-		Mod_Enable($iModIndex, $auModList)
+		Mod_Enable($iModIndex)
 	Else
-		Mod_Disable($iModIndex, $auModList)
+		Mod_Disable($iModIndex)
 	EndIf
 
-	TreeViewMain($hTreeView, $auModList, $auTreeView)
+	TreeViewMain()
 	If $sState = "Disabled" Then
 		TreeViewTryFollow($sFollowMod)
 	Else
-		If $iModIndex<>1 Then $iModIndex -= 1
-		$sFollowMod = $auModList[$iModIndex][0]
+		If $iModIndex <> 1 Then $iModIndex -= 1
+		$sFollowMod = $MM_LIST_CONTENT[$iModIndex][0]
 		TreeViewTryFollow($sFollowMod)
 	EndIf
 
 
 	ControlFocus($hFormMain, "", @GUI_CtrlId)
 	SD_GUI_PresetChange()
-EndFunc
+EndFunc   ;==>SD_GUI_Mod_EnableDisable
 
 Func SD_GUI_Update()
 	GUISwitch($hFormMain)
-	TreeViewMain($hTreeView, $auModList, $auTreeView)
+	TreeViewMain()
 	GUICtrlSetState($auTreeView[1][0], $GUI_FOCUS)
 	GUICtrlSetData($hComboExe, Settings_Get("Exe"))
-	GUICtrlSetData($hComboWo, IniRead(@ScriptDir & "\..\..\wog.ini", "WoGification", "Options_File_Name", "settings.dat"))
-	;TreeViewTryFollow($sFollowMod)
-EndFunc
+	GUICtrlSetData($hComboWO, IniRead(@ScriptDir & "\..\..\wog.ini", "WoGification", "Options_File_Name", "settings.dat"))
+	TreeViewTryFollow($sFollowMod)
+EndFunc   ;==>SD_GUI_Update
 
-Func _2DModListTo1D($aModList)
-	Local $aAnswer[1]=[0]
-	For $iCount = 1 To $aModList[0][0]
-		If $aModList[$iCount][1]="Enabled" Then
-			ReDim $aAnswer[UBound($aAnswer, 1)+1]
-			$aAnswer[0]+=1
-			$aAnswer[$aAnswer[0]]=$aModList[$iCount][0]
-		EndIf
-	Next
-	Return $aAnswer
-EndFunc
-
-Func TreeViewDelete()
-	If $hTreeView Then GUICtrlDelete($hTreeView)
-	$hTreeView = 0
-EndFunc
-
-Func TreeViewMain(ByRef $hTreeView, ByRef $auModList, ByRef $auTreeView)
-	Settings_Global("Set", "List", $sDefaultList)
-	Settings_Global("Set", "Path", $sBasePath)
-	$auModList = Mod_ListLoad()
-	$abModCompatibilityMap = Mod_CompatibilityMapLoad($auModList)
-	;If $hTreeView Then GUICtrlDelete($hTreeView)
+Func TreeViewMain()
+	Mod_ListLoad()
+	$abModCompatibilityMap = Mod_CompatibilityMapLoad()
 	Local $aWindowSize = WinGetClientSize($hFormMain)
-;~ 	If<492 Then WinMove($hFormMain, "", Default, Default, Default, 492+25)
 	If Not $hTreeView Then
-		$hTreeView = GUICtrlCreateTreeView(16, 24, 361, $aWindowSize[1]-40, BitOR($TVS_HASBUTTONS, $TVS_HASLINES, $TVS_FULLROWSELECT, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
+		$hTreeView = GUICtrlCreateTreeView(16, 24, 361, $aWindowSize[1] - 40, BitOR($TVS_HASBUTTONS, $TVS_HASLINES, $TVS_FULLROWSELECT, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
 	Else
 		_GUICtrlTreeView_BeginUpdate($hTreeView)
 		_GUICtrlTreeView_DeleteAll($hTreeView)
 		_GUICtrlTreeView_EndUpdate($hTreeView)
 	EndIf
-	GUICtrlSetResizing($hTreeView, 2+32+256)
-	If $hTreeView=0 Then MsgBox(4096, "Этого не должно быть", "@error:	" & @error & @CRLF & "@extended:	" & @extended)
-	$auTreeView = TreeViewFill($hTreeView, $auModList)
-EndFunc
+
+	$auTreeView = TreeViewFill()
+EndFunc   ;==>TreeViewMain
 
 Func Quit()
 	Exit
-EndFunc
+EndFunc   ;==>Quit
 
 Func SD_GUI_Mod_Controls_Disable()
 	GUICtrlSetState($hModMoveUp, $GUI_DISABLE)
@@ -946,37 +820,36 @@ Func SD_GUI_Mod_Controls_Disable()
 	GUICtrlSetState($hModEnableDisable, $GUI_DISABLE)
 	GUICtrlSetState($hModDelete, $GUI_DISABLE)
 	GUICtrlSetState($hButtonPlugins, $GUI_DISABLE)
-	GUICtrlSetState($hModWebSite, $GUI_DISABLE)
+	GUICtrlSetState($hModWebsite, $GUI_DISABLE)
 	GUICtrlSetState($hModOpenFolder, $GUI_DISABLE)
 	GUICtrlSetState($hModReadmeC, $GUI_DISABLE)
 	GUICtrlSetState($hModInfoC, $GUI_DISABLE)
 	GUICtrlSetData($hModInfo, Lng_Get("group.modinfo.no_info"))
-EndFunc
+	$sFollowMod = ""
+EndFunc   ;==>SD_GUI_Mod_Controls_Disable
 
 Func SD_GUI_Mod_Controls_Set()
-	For $iCount = 0 To UBound($auTreeView, 1)-1
-		If $auTreeView[$iCount][2]=-1 Then ContinueLoop
-		If @GUI_CtrlId<>$auTreeView[$iCount][0] Then ContinueLoop
-;~ 		_ArrayDisplay($auModList)
+	For $iCount = 0 To UBound($auTreeView, 1) - 1
+		If $auTreeView[$iCount][2] = -1 Then ContinueLoop
+		If @GUI_CtrlId <> $auTreeView[$iCount][0] Then ContinueLoop
 		Local $iModIndex = $auTreeView[$iCount][2]
-		$sFollowMod = $auModList[$iModIndex][0]
-		If $iModIndex>0 And $iModIndex<=$auModList[0][0] Then
-;~ 			_ArrayDisplay($auTreeView)
+		$sFollowMod = $MM_LIST_CONTENT[$iModIndex][0]
+		If $iModIndex > 0 And $iModIndex <= $MM_LIST_CONTENT[0][0] Then
 
 			; Info (5)
-			GUICtrlSetData($hModInfo, Mod_InfoLoad($auModList[$iModIndex][0], $auModList[$iModIndex][5]))
+			GUICtrlSetData($hModInfo, Mod_InfoLoad($MM_LIST_CONTENT[$iModIndex][0], $MM_LIST_CONTENT[$iModIndex][5]))
 
 			; MoveUp (2)
-			If $iModIndex>0 And $iModIndex<>-1 And $auTreeView[$iCount-1][2]<>-1 And _
-				$auModList[$iModIndex][1]="Enabled" And $auModList[$auTreeView[$iCount-1][2]][1]="Enabled" Then
+			If $iModIndex > 0 And $iModIndex <> -1 And $auTreeView[$iCount - 1][2] <> -1 And _
+					$MM_LIST_CONTENT[$iModIndex][1] = "Enabled" And $MM_LIST_CONTENT[$auTreeView[$iCount - 1][2]][1] = "Enabled" Then
 				GUICtrlSetState($hModMoveUp, $GUI_ENABLE)
 			Else
 				GUICtrlSetState($hModMoveUp, $GUI_DISABLE)
 			EndIf
 
 			; MoveDown (2)
-			If $iModIndex<$auModList[0][0] And $iModIndex<>-1 And $auTreeView[$iCount+1][2]<>-1 And _
-				$auModList[$auTreeView[$iCount][2]][1]="Enabled" And $auModList[$auTreeView[$iCount+1][2]][1]="Enabled" Then
+			If $iModIndex < $MM_LIST_CONTENT[0][0] And $iModIndex <> -1 And $auTreeView[$iCount + 1][2] <> -1 And _
+					$MM_LIST_CONTENT[$auTreeView[$iCount][2]][1] = "Enabled" And $MM_LIST_CONTENT[$auTreeView[$iCount + 1][2]][1] = "Enabled" Then
 				GUICtrlSetState($hModMoveDown, $GUI_ENABLE)
 			Else
 				GUICtrlSetState($hModMoveDown, $GUI_DISABLE)
@@ -984,37 +857,37 @@ Func SD_GUI_Mod_Controls_Set()
 
 			; Enable/Disable/Remove (1,2)
 			GUICtrlSetState($hModEnableDisable, $GUI_ENABLE)
-			If $auModList[$auTreeView[$iCount][2]][1]="Disabled" Then
+			If $MM_LIST_CONTENT[$auTreeView[$iCount][2]][1] = "Disabled" Then
 				GUICtrlSetData($hModEnableDisable, Lng_Get("group.modlist.enable"))
-			ElseIf $auModList[$auTreeView[$iCount][2]][2] Then ; Not exist
+			ElseIf $MM_LIST_CONTENT[$auTreeView[$iCount][2]][2] Then ; Not exist
 				GUICtrlSetData($hModEnableDisable, Lng_Get("group.modlist.remove"))
 			Else
 				GUICtrlSetData($hModEnableDisable, Lng_Get("group.modlist.disable"))
 			EndIf
 
 			; Plugins
-			If Plugins_ModHavePlugins($auModList[$iModIndex][0]) Then
+			If Plugins_ModHavePlugins($MM_LIST_CONTENT[$iModIndex][0]) Then
 				GUICtrlSetState($hButtonPlugins, $GUI_ENABLE)
 			Else
 				GUICtrlSetState($hButtonPlugins, $GUI_DISABLE)
 			EndIf
 
 			; Website (6)
-			If $auModList[$iModIndex][6] Then
-				GUICtrlSetState($hModWebSite, $GUI_ENABLE)
+			If $MM_LIST_CONTENT[$iModIndex][6] Then
+				GUICtrlSetState($hModWebsite, $GUI_ENABLE)
 			Else
-				GUICtrlSetState($hModWebSite, $GUI_DISABLE)
+				GUICtrlSetState($hModWebsite, $GUI_DISABLE)
 			EndIf
 
 			; Delete (2)
-			If $auModList[$iModIndex][2] Then
+			If $MM_LIST_CONTENT[$iModIndex][2] Then
 				GUICtrlSetState($hModDelete, $GUI_DISABLE)
 			Else
 				GUICtrlSetState($hModDelete, $GUI_ENABLE)
 			EndIf
 
 			; Modmaker (settings, 2)
-			If Not $auModList[$iModIndex][2] Then
+			If Not $MM_LIST_CONTENT[$iModIndex][2] Then
 				GUICtrlSetState($hModOpenFolder, $GUI_ENABLE)
 				GUICtrlSetState($hModReadmeC, $GUI_ENABLE)
 				GUICtrlSetState($hModInfoC, $GUI_ENABLE)
@@ -1025,17 +898,16 @@ Func SD_GUI_Mod_Controls_Set()
 			EndIf
 		EndIf
 
-		;TreeViewTryFollow($sFollowMod)
 		ExitLoop
 	Next
-EndFunc
+EndFunc   ;==>SD_GUI_Mod_Controls_Set
 
-Func TreeViewFill($hRoot, $aModList)
-	_GUICtrlTreeView_BeginUpdate($hRoot)
+Func TreeViewFill()
+	_GUICtrlTreeView_BeginUpdate($hTreeView)
 
-	Local $aTreeViewData[$aModList[0][0] + 1][4] ; $TreeViewHandle, $ParentIndex, $ModIndex / $EnabledDisabled, $PriorityGroup (Only for groups)
+	Local $aTreeViewData[$MM_LIST_CONTENT[0][0] + 1][4] ; $TreeViewHandle, $ParentIndex, $ModIndex / $EnabledDisabled, $PriorityGroup (Only for groups)
 
-	$aTreeViewData[0][0] = $hRoot
+	$aTreeViewData[0][0] = $hTreeView
 	$aTreeViewData[0][1] = -1
 	$aTreeViewData[0][2] = -1
 	$aTreeViewData[0][3] = -1
@@ -1045,9 +917,9 @@ Func TreeViewFill($hRoot, $aModList)
 
 	GUICtrlSetState($hModCompatibility, $GUI_DISABLE)
 
-	For $iCount = 1 To $aModList[0][0]
-		Local $bEnabled = $aModList[$iCount][1] = "Enabled"
-		Local $iPriority = $aModList[$iCount][9]
+	For $iCount = 1 To $MM_LIST_CONTENT[0][0]
+		Local $bEnabled = $MM_LIST_CONTENT[$iCount][1] = "Enabled"
+		Local $iPriority = $MM_LIST_CONTENT[$iCount][9]
 
 
 		Local $bCreateNewGroup = False
@@ -1061,15 +933,14 @@ Func TreeViewFill($hRoot, $aModList)
 			If $bEnabled And $iPriority <> 0 Then $sText = StringFormat(Lng_Get("group.modlist.label_enabled_p"), $iPriority)
 
 			$aTreeViewData[$iIndexToAdd][0] = GUICtrlCreateTreeViewItem($sText, $aTreeViewData[0][0])
-											  GUICtrlSetColor($aTreeViewData[$iIndexToAdd][0], 0x0000C0)
-											  GUICtrlSetOnEvent($aTreeViewData[$iIndexToAdd][0], "SD_GUI_Mod_Controls_Disable")
-											  If Settings_Get("IconSize") > 0 Then
-												  If $bEnabled Then
-													  _GUICtrlTreeView_SetIconX($aTreeViewData[0][0], $aTreeViewData[$iIndexToAdd][0], @ScriptDir & "\icons\Sign-Select.ico", 0, 6, Settings_Get("IconSize"))
-												  Else
-													  _GUICtrlTreeView_SetIconX($aTreeViewData[0][0], $aTreeViewData[$iIndexToAdd][0], @ScriptDir & "\icons\Sign-Stop.ico", 0, 6, Settings_Get("IconSize"))
-												  EndIf
-											  EndIf
+			GUICtrlSetColor($aTreeViewData[$iIndexToAdd][0], 0x0000C0)
+			GUICtrlSetOnEvent($aTreeViewData[$iIndexToAdd][0], "SD_GUI_Mod_Controls_Disable")
+			If $bEnabled Then
+				_GUICtrlTreeView_SetIcon($aTreeViewData[0][0], $aTreeViewData[$iIndexToAdd][0], @ScriptDir & "\icons\folder-green.ico", 0, 6)
+			Else
+				_GUICtrlTreeView_SetIcon($aTreeViewData[0][0], $aTreeViewData[$iIndexToAdd][0], @ScriptDir & "\icons\folder-red.ico", 0, 6)
+			EndIf
+
 			$aTreeViewData[$iIndexToAdd][1] = 0
 			$aTreeViewData[$iIndexToAdd][2] = $bEnabled
 			$aTreeViewData[$iIndexToAdd][3] = $iPriority
@@ -1084,54 +955,50 @@ Func TreeViewFill($hRoot, $aModList)
 		$aTreeViewData[$iIndexToAdd][2] = $iCount
 		$aTreeViewData[$iIndexToAdd][1] = $iCurrentGroup
 
-		$aTreeViewData[$iIndexToAdd][0] = GUICtrlCreateTreeViewItem(Mod_MakeDisplayName($aModList[$iCount][3], $aModList[$iCount][2], $aModList[$iCount][8], $bDisplayVersion), $aTreeViewData[$aTreeViewData[$iIndexToAdd][1]][0])
-										  GUICtrlSetOnEvent($aTreeViewData[$iIndexToAdd][0], "SD_GUI_Mod_Controls_Set")
-
-										  If Settings_Get("IconSize")>0 Then
-											If $aModList[$iCount][7] <> "" And FileExists($sBasePath & "\" & $aModList[$iCount][0] & "\" & $aModList[$iCount][7]) Then
-												_GUICtrlTreeView_SetIconX($aTreeViewData[0][0], $aTreeViewData[$iIndexToAdd][0], $sBasePath & "\" & $aModList[$iCount][0] & "\" & $aModList[$iCount][7], 0, 6, Settings_Get("IconSize"))
-											Else
-												_GUICtrlTreeView_SetIconX($aTreeViewData[0][0], $aTreeViewData[$iIndexToAdd][0], @ScriptDir & "\icons\Folder-grey.ico", 0, 6, Settings_Get("IconSize"))
-											EndIf
-										  EndIf
-
+		$aTreeViewData[$iIndexToAdd][0] = GUICtrlCreateTreeViewItem(Mod_MakeDisplayName($MM_LIST_CONTENT[$iCount][3], $MM_LIST_CONTENT[$iCount][2], $MM_LIST_CONTENT[$iCount][8], $bDisplayVersion), $aTreeViewData[$aTreeViewData[$iIndexToAdd][1]][0])
+		GUICtrlSetOnEvent($aTreeViewData[$iIndexToAdd][0], "SD_GUI_Mod_Controls_Set")
+		If $MM_LIST_CONTENT[$iCount][7] <> "" And FileExists($MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iCount][0] & "\" & $MM_LIST_CONTENT[$iCount][7]) Then
+			_GUICtrlTreeView_SetIcon($aTreeViewData[0][0], $aTreeViewData[$iIndexToAdd][0], $MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iCount][0] & "\" & $MM_LIST_CONTENT[$iCount][7], 0, 6)
+		Else
+			_GUICtrlTreeView_SetIcon($aTreeViewData[0][0], $aTreeViewData[$iIndexToAdd][0], @ScriptDir & "\icons\folder-grey.ico", 0, 6)
+		EndIf
 
 		$iIndexToAdd += 1
 	Next
 
 	For $iCount = 1 To UBound($aTreeViewData, 1) - 1
-		If $aTreeViewData[$iCount][1] <> - 1 Then GUICtrlSetState($aTreeViewData[$iCount][0], $GUI_EXPAND)
+		If $aTreeViewData[$iCount][1] <> -1 Then GUICtrlSetState($aTreeViewData[$iCount][0], $GUI_EXPAND)
 	Next
 
-	_GUICtrlTreeView_EndUpdate($hRoot)
-	TreeViewColor($aModList, $aTreeViewData)
+	TreeViewColor($aTreeViewData)
+	_GUICtrlTreeView_EndUpdate($hTreeView)
 	Return $aTreeViewData
-EndFunc
+EndFunc   ;==>TreeViewFill
 
-Func TreeViewColor($aModList, $auTreeView)
+Func TreeViewColor($auTreeView)
 	$sCompatibilityMessage = ""
 	Local $iListIndex, $bMasterIndex = 0
 
-	For $iCount = 1 To $aModList[0][0]
+	For $iCount = 1 To $MM_LIST_CONTENT[0][0]
 		$iListIndex = TreeViewGetIndexByModIndex($iCount, $auTreeView)
 
 		GUICtrlSetColor($auTreeView[$iListIndex][0], Default)
-		If $aModList[$iCount][2] Then GUICtrlSetColor($auTreeView[$iListIndex][0], 0xC00000)
-		If $bMasterIndex = 0 And $aModList[$iCount][1] = "Enabled" And Not $aModList[$iCount][2] Then
-			For $jCount = 1 To $auModList[0][0]
+		If $MM_LIST_CONTENT[$iCount][2] Then GUICtrlSetColor($auTreeView[$iListIndex][0], 0xC00000)
+		If $bMasterIndex = 0 And $MM_LIST_CONTENT[$iCount][1] = "Enabled" And Not $MM_LIST_CONTENT[$iCount][2] Then
+			For $jCount = 1 To $MM_LIST_CONTENT[0][0]
 				If $jCount = $iCount Then ContinueLoop
-				If $aModList[$jCount][1] = "Disabled" Or $aModList[$jCount][2] Then ContinueLoop
+				If $MM_LIST_CONTENT[$jCount][1] = "Disabled" Or $MM_LIST_CONTENT[$jCount][2] Then ContinueLoop
 				If Not $abModCompatibilityMap[$iCount][$jCount] Then
 					$bMasterIndex = $iCount
 					GUICtrlSetColor($auTreeView[$iListIndex][0], 0x00C000) ; This is master mod
-					$sCompatibilityMessage = StringFormat(Lng_Get("message.compatibility.part1"), $aModList[$iCount][3]) & @CRLF
+					$sCompatibilityMessage = StringFormat(Lng_Get("message.compatibility.part1"), $MM_LIST_CONTENT[$iCount][3]) & @CRLF
 					ExitLoop
 				EndIf
 			Next
-		ElseIf $bMasterIndex > 0 And $aModList[$iCount][1] = "Enabled" And Not $aModList[$iCount][2] Then
+		ElseIf $bMasterIndex > 0 And $MM_LIST_CONTENT[$iCount][1] = "Enabled" And Not $MM_LIST_CONTENT[$iCount][2] Then
 			If Not $abModCompatibilityMap[$bMasterIndex][$iCount] Then
 				GUICtrlSetColor($auTreeView[$iListIndex][0], 0xCC0000) ; This is slave mod
-				$sCompatibilityMessage &= $aModList[$iCount][3] & @CRLF
+				$sCompatibilityMessage &= $MM_LIST_CONTENT[$iCount][3] & @CRLF
 			EndIf
 		EndIf
 	Next
@@ -1141,7 +1008,7 @@ Func TreeViewColor($aModList, $auTreeView)
 	For $iCount = UBound($auTreeView, 1) - 1 To 1 Step -1
 		If $auTreeView[$iCount][1] = 0 And $auTreeView[$iCount][2] And $auTreeView[$iCount][3] < $iCurrentPriority Then
 			GUICtrlSetColor($auTreeView[$iCount][0], 0xA00000)
-		ElseIf $auTreeView[$iCount][1] = 0 And $auTreeView[$iCount][2] And $auTreeView[$iCount][3] > $iCurrentPriority  Then
+		ElseIf $auTreeView[$iCount][1] = 0 And $auTreeView[$iCount][2] And $auTreeView[$iCount][3] > $iCurrentPriority Then
 			$iCurrentPriority = $auTreeView[$iCount][3]
 		EndIf
 	Next
@@ -1150,7 +1017,7 @@ Func TreeViewColor($aModList, $auTreeView)
 		$sCompatibilityMessage &= @CRLF & Lng_Get("message.compatibility.part2")
 		GUICtrlSetState($hModCompatibility, $GUI_ENABLE)
 	EndIf
-EndFunc
+EndFunc   ;==>TreeViewColor
 
 
 Func TreeViewSwap($iModIndex1, $iModIndex2, $auTreeView)
@@ -1176,17 +1043,17 @@ Func TreeViewSwap($iModIndex1, $iModIndex2, $auTreeView)
 	_GUICtrlTreeView_SetSelectedImageIndex($auTreeView[0][0], $auTreeView[$iIndex1][0], _GUICtrlTreeView_GetSelectedImageIndex($auTreeView[0][0], $auTreeView[$iIndex2][0]))
 	_GUICtrlTreeView_SetSelectedImageIndex($auTreeView[0][0], $auTreeView[$iIndex2][0], $vTemp)
 
-	TreeViewColor($auModList, $auTreeView)
+	TreeViewColor($auTreeView)
 
 	_GUICtrlTreeView_EndUpdate($auTreeView[0][0])
-EndFunc
+EndFunc   ;==>TreeViewSwap
 
 Func TreeViewGetSelectedIndex()
 	Local $iSelected = GUICtrlRead($hTreeView)
-	For $iCount = 0 To UBound($auTreeView, 1)-1
-		If $auTreeView[$iCount][0]=$iSelected Then Return $iCount
+	For $iCount = 0 To UBound($auTreeView, 1) - 1
+		If $auTreeView[$iCount][0] = $iSelected Then Return $iCount
 	Next
-EndFunc
+EndFunc   ;==>TreeViewGetSelectedIndex
 
 Func TreeViewGetIndexByModIndex($iModIndex, $auTreeView)
 	For $iCount = 0 To UBound($auTreeView, 1) - 1
@@ -1194,14 +1061,15 @@ Func TreeViewGetIndexByModIndex($iModIndex, $auTreeView)
 	Next
 
 	Return -1
-EndFunc
+EndFunc   ;==>TreeViewGetIndexByModIndex
 
-Func TreeViewTryFollow($sModName = "WoG")
+Func TreeViewTryFollow($sModName)
 	If $bInTrack Then Return
 	$bInTrack = True
+
 	Local $iModIndex = 0
-	For $iCount = 1 To $auModList[0][0]
-		If $auModList[$iCount][0]=$sModName Then
+	For $iCount = 1 To $MM_LIST_CONTENT[0][0]
+		If $MM_LIST_CONTENT[$iCount][0] = $sModName Then
 			$iModIndex = $iCount
 			ExitLoop
 		EndIf
@@ -1210,107 +1078,45 @@ Func TreeViewTryFollow($sModName = "WoG")
 	If $iModIndex = 0 Then
 		GUICtrlSetState($auTreeView[1][0], $GUI_FOCUS)
 		$bInTrack = False
-		Return 0
+		Return
 	EndIf
 
 	GUICtrlSetState($auTreeView[1][0], $GUI_FOCUS)
 	Local $iIndex = TreeViewGetIndexByModIndex($iModIndex, $auTreeView)
 	GUICtrlSetState($auTreeView[$iIndex][0], $GUI_FOCUS)
 	$bInTrack = False
-EndFunc
+EndFunc   ;==>TreeViewTryFollow
 
-Func _GUICtrlTreeView_SetIconX($hWnd, $hItem = 0, $sIconFile = "", $iIconID = 0, $iImageMode = 6, $iIconSize = 16)
-
-	If $hItem = 0 Then $hItem = 0x00000000
-
-	If $hItem <> 0x00000000 And Not IsHWnd($hItem) Then $hItem = _GUICtrlTreeView_GetItemHandle($hWnd, $hItem)
-	If $hItem = 0x00000000 Or $sIconFile = "" Then Return SetError(1, 1, False)
-
-	If Not IsHWnd($hWnd) Then $hWnd = GUICtrlGetHandle($hWnd)
-
-	Local $tTVITEM = DllStructCreate($tagTVITEMEX)
-
-	Local $tIcon = DllStructCreate("handle")
-	Local $i_count = DllCall("shell32.dll", "uint", "ExtractIconExW", "wstr", $sIconFile, "int", $iIconID, _
-			"handle", 0, "struct*", $tIcon, "uint", 1)
-	If @error Then Return SetError(@error, @extended, 0)
-	If $i_count[0] = 0 Then Return 0
-
-	Local $hImageList = _SendMessage($hWnd, $TVM_GETIMAGELIST, 0, 0, 0, "wparam", "lparam", "handle")
-	If $hImageList = 0x00000000 Then
-		$hImageList = DllCall("comctl32.dll", "handle", "ImageList_Create", "int", $iIconSize, "int", $iIconSize, "uint", 0x0021, "int", 0, "int", 1)
-		If @error Then Return SetError(@error, @extended, 0)
-		$hImageList = $hImageList[0]
-		If $hImageList = 0 Then Return SetError(1, 1, False)
-
-		_SendMessage($hWnd, $TVM_SETIMAGELIST, 0, $hImageList, 0, "wparam", "handle")
-	EndIf
-
-	Local $hIcon = DllStructGetData($tIcon, 1)
-	Local $i_icon = DllCall("comctl32.dll", "int", "ImageList_AddIcon", "handle", $hImageList, "handle", $hIcon)
-	$i_icon = $i_icon[0]
-	If @error Then
-		Local $iError = @error, $iExtended = @extended
-		DllCall("user32.dll", "int", "DestroyIcon", "handle", $hIcon)
-		; No @error test because results are unimportant.
-		Return SetError($iError, $iExtended, 0)
-	EndIf
-
-	DllCall("user32.dll", "int", "DestroyIcon", "handle", $hIcon)
-	; No @error test because results are unimportant.
-
-	Local $iMask = BitOR($TVIF_IMAGE, $TVIF_SELECTEDIMAGE)
-
-	If BitAND($iImageMode, 2) Then
-		DllStructSetData($tTVITEM, "Image", $i_icon)
-		If Not BitAND($iImageMode, 4) Then $iMask = $TVIF_IMAGE
-	EndIf
-
-	If BitAND($iImageMode, 4) Then
-		DllStructSetData($tTVITEM, "SelectedImage", $i_icon)
-		If Not BitAND($iImageMode, 2) Then
-			$iMask = $TVIF_SELECTEDIMAGE
-		Else
-			$iMask = BitOR($TVIF_IMAGE, $TVIF_SELECTEDIMAGE)
-		EndIf
-	EndIf
-
-	DllStructSetData($tTVITEM, "Mask", $iMask)
-	DllStructSetData($tTVITEM, "hItem", $hItem)
-
-	Return __GUICtrlTreeView_SetItem($hWnd, $tTVITEM)
-EndFunc   ;==>_GUICtrlTreeView_SetIcon
-
-Func WM_GETMINMAXINFO($hwnd, $Msg, $wParam, $lParam)
-    #forceref $hwnd, $Msg, $wParam, $lParam
-    Local $GUIMINWID = 816, $GUIMINHT = 492 ; set your restrictions here
-    Local $GUIMAXWID = 10000, $GUIMAXHT = 10000
-    Local $tagMaxinfo = DllStructCreate("int;int;int;int;int;int;int;int;int;int", $lParam)
-    DllStructSetData($tagMaxinfo, 7, $GUIMINWID) ; min X
-    DllStructSetData($tagMaxinfo, 8, $GUIMINHT) ; min Y
-    DllStructSetData($tagMaxinfo, 9, $GUIMAXWID); max X
-    DllStructSetData($tagMaxinfo, 10, $GUIMAXHT) ; max Y
-    Return 0
+Func WM_GETMINMAXINFO($hwnd, $msg, $wParam, $lParam)
+	#forceref $hwnd, $Msg, $wParam, $lParam
+	Local $GUIMINWID = $MM_WINDOW_MIN_WIDTH + 16, $GUIMINHT = $MM_WINDOW_MIN_HEIGHT + 16 ; set your restrictions here
+	Local $GUIMAXWID = 10000, $GUIMAXHT = 10000
+	Local $tagMaxinfo = DllStructCreate("int;int;int;int;int;int;int;int;int;int", $lParam)
+	DllStructSetData($tagMaxinfo, 7, $GUIMINWID) ; min X
+	DllStructSetData($tagMaxinfo, 8, $GUIMINHT) ; min Y
+	DllStructSetData($tagMaxinfo, 9, $GUIMAXWID); max X
+	DllStructSetData($tagMaxinfo, 10, $GUIMAXHT) ; max Y
+	Return 0
 EndFunc   ;==>WM_GETMINMAXINFO
 
-Func WM_NOTIFY($hWnd, $iMsg, $iwParam, $ilParam)
-    #forceref $hWnd, $iMsg, $iwParam
-    Local $hWndFrom, $iCode, $tNMHDR, $hWndTreeview
-    $hWndTreeview = $hTreeView
-    If Not IsHWnd($hTreeView) Then $hWndTreeview = GUICtrlGetHandle($hTreeView)
+Func WM_NOTIFY($hwnd, $iMsg, $iwParam, $ilParam)
+	#forceref $hWnd, $iMsg, $iwParam, $ilParam
+	Local $hWndFrom, $iCode, $tNMHDR, $hWndTreeview
+	$hWndTreeview = $hTreeView
+	If Not IsHWnd($hTreeView) Then $hWndTreeview = GUICtrlGetHandle($hTreeView)
 	If Not IsHWnd($hWndTreeview) Then Return $GUI_RUNDEFMSG
 
-    $tNMHDR = DllStructCreate($tagNMHDR, $ilParam)
-    $hWndFrom = HWnd(DllStructGetData($tNMHDR, "hWndFrom"))
-    $iCode = DllStructGetData($tNMHDR, "Code")
+	$tNMHDR = DllStructCreate($tagNMHDR, $ilParam)
+	$hWndFrom = HWnd(DllStructGetData($tNMHDR, "hWndFrom"))
+	$iCode = DllStructGetData($tNMHDR, "Code")
 
 	Switch $hWndFrom
-        Case $hWndTreeview
-            Switch $iCode
-                Case $NM_DBLCLK
+		Case $hWndTreeview
+			Switch $iCode
+				Case $NM_DBLCLK
 					$bEnableDisable = True
-            EndSwitch
+			EndSwitch
 	EndSwitch
 
-    Return $GUI_RUNDEFMSG
+	Return $GUI_RUNDEFMSG
 EndFunc   ;==>WM_NOTIFY
