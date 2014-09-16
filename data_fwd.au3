@@ -1,3 +1,4 @@
+#include "const.au3"
 #include-once
 
 Global $MM_VERSION = "[0.14.09 - Stein um Stein]"
@@ -7,8 +8,8 @@ Global $MM_LIST_FILE_PATH = $MM_LIST_DIR_PATH & "\list.txt"
 
 Global $MM_SETTINGS_PATH = @ScriptDir & "\settings.ini"
 Global $MM_SETTINGS_LANGUAGE = "english.ini"
-Global $MM_WINDOW_WIDTH = 800
-Global $MM_WINDOW_HEIGHT = 475
+Global $MM_WINDOW_WIDTH = $MM_WINDOW_MIN_WIDTH
+Global $MM_WINDOW_HEIGHT = $MM_WINDOW_MIN_HEIGHT
 Global $MM_WINDOW_MAXIMIZED = False
 
 Global $MM_LNG_CACHE ; lng.au3

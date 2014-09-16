@@ -70,12 +70,12 @@ Func Settings_Get($sName)
 			If $sExe = "" Then $sExe = "h3era.exe"
 			Return $sExe
 		Case "Width"
-			Local $iWidth = IniRead($MM_SETTINGS_PATH, "settings", "Width", 800)
-			If $iWidth < 800 Then $iWidth = 800
+			Local $iWidth = IniRead($MM_SETTINGS_PATH, "settings", "Width", $MM_WINDOW_MIN_WIDTH)
+			If $iWidth < $MM_WINDOW_MIN_WIDTH Then $iWidth = $MM_WINDOW_MIN_WIDTH
 			Return $iWidth
 		Case "Height"
-			Local $iHeight = IniRead($MM_SETTINGS_PATH, "settings", "Height", 475)
-			If $iHeight < 475 Then $iHeight = 475
+			Local $iHeight = IniRead($MM_SETTINGS_PATH, "settings", "Height", $MM_WINDOW_MIN_HEIGHT)
+			If $iHeight < $MM_WINDOW_MIN_HEIGHT Then $iHeight = $MM_WINDOW_MIN_HEIGHT
 			Return $iHeight
 		Case "Maximized"
 			Return Int(IniRead($MM_SETTINGS_PATH, "settings", "Maximized", "")) <> 0
