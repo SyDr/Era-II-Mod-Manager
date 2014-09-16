@@ -3,6 +3,7 @@
 DirRemove("Mod Manager\", 1)
 DirCreate("Mod Manager\")
 FileCopy("modsmann.exe", "Mod Manager\")
+FileCopy("License.txt", "Mod Manager\")
 DirCopy("7z", "Mod Manager\7z", 1)
 DirCopy("icons", "Mod Manager\icons", 1)
 DirCopy("lng", "Mod Manager\lng", 1)
