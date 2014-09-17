@@ -2,8 +2,6 @@
 
 #include-once
 
-Global $MM_VERSION = "[0.14.09 - Stein um Stein]"
-
 Global $MM_LIST_DIR_PATH = @ScriptDir & "\..\..\Mods"
 Global $MM_LIST_FILE_PATH = $MM_LIST_DIR_PATH & "\list.txt"
 
