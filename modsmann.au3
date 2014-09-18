@@ -165,13 +165,13 @@ Func SD_GUI_Create()
 	$hButtonChangeLanguage = GUICtrlCreateButton("Language", 800 - 161 - 4, 420, 161, 25)
 	Local $hChangeLanguageDummy = GUICtrlCreateDummy()
 	$hChangeLanguageContextMenuID = GUICtrlCreateContextMenu($hChangeLanguageDummy)
-	Local $asTemp = _FileListToArray(@ScriptDir & "\lng\", "*.ini", 1)
 
-	For $iCount = 1 To $asTemp[0]
+	Local $asTemp = Lng_LoadList()
+	For $iCount = 1 To $asTemp[0][0]
 		$aLanguages[0][0] += 1
 		ReDim $aLanguages[$aLanguages[0][0] + 1][2]
-		$aLanguages[$iCount][0] = GUICtrlCreateMenuItem(IniRead(@ScriptDir & "\lng\" & $asTemp[$iCount], "lang.info", "lang.name", "Remove, please " & $asTemp[$iCount]), $hChangeLanguageDummy)
-		$aLanguages[$iCount][1] = $asTemp[$iCount]
+		$aLanguages[$iCount][0] = GUICtrlCreateMenuItem($asTemp[$iCount][0], $hChangeLanguageDummy)
+		$aLanguages[$iCount][1] = $asTemp[$iCount][1]
 	Next
 
 	SD_GUI_Mod_Controls_Disable()
