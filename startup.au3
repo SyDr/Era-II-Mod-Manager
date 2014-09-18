@@ -8,11 +8,11 @@
 #include-once
 
 
-Func StartUp_CheckRunningInstance($sTitle)
+Func StartUp_CheckRunningInstance()
 	Local $hSingleton = _Singleton("EMMat." & Hex(StringToBinary(@ScriptDir)), 1)
 
 	If $hSingleton = 0 Then
-		If WinActivate($sTitle) Then Exit
+		If WinActivate($MM_TITLE) Then Exit
 	EndIf
 EndFunc   ;==>StartUp_CheckRunningInstance
 

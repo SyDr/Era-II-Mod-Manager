@@ -1,4 +1,4 @@
-﻿#include-once
+#include-once
 #include <Array.au3>
 
 ; верси¤ 0.6 от 2013.07.21

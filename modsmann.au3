@@ -63,7 +63,7 @@ If $CMDLine[0] > 0 Then
 	If Not SD_CLI_Mod_Add() Then Exit
 EndIf
 
-StartUp_CheckRunningInstance(StringFormat(Lng_Get("main.title"), $MM_VERSION))
+StartUp_CheckRunningInstance()
 
 Global $bSyncPresetWithWS = Settings_Get("SyncPresetWithWS")
 Global $bDisplayVersion = Settings_Get("DisplayVersion")
@@ -114,7 +114,7 @@ Func SD_GUI_Language_Change()
 EndFunc   ;==>SD_GUI_Language_Change
 
 Func SD_GUI_Create()
-	$hFormMain = GUICreate(StringFormat(Lng_Get("main.title"), $MM_VERSION), $MM_WINDOW_MIN_WIDTH, $MM_WINDOW_MIN_HEIGHT - 20, Default, Default, BitOR($GUI_SS_DEFAULT_GUI, $WS_SIZEBOX, $WS_MAXIMIZEBOX), $WS_EX_ACCEPTFILES)
+	$hFormMain = GUICreate($MM_TITLE, $MM_WINDOW_MIN_WIDTH, $MM_WINDOW_MIN_HEIGHT - 20, Default, Default, BitOR($GUI_SS_DEFAULT_GUI, $WS_SIZEBOX, $WS_MAXIMIZEBOX), $WS_EX_ACCEPTFILES)
 	GUISwitch($hFormMain)
 	$hGroupModList = GUICtrlCreateGroup("Mod load order control", 8, 8, 473, 441)
 ;~ 	$hTreeView = 	GUICtrlCreateTreeView(16, 24, 361, 417, BitOR($TVS_HASBUTTONS, $TVS_HASLINES, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
@@ -280,7 +280,6 @@ Func SD_GUI_SetLng()
 
 	GUICtrlSetData($hGroupModInfo, Lng_Get("group.modinfo.title"))
 	GUICtrlSetData($hButtonChangeLanguage, StringFormat("Language (%s)", Lng_Get("lang.name")))
-	WinSetTitle($hFormMain, "", StringFormat(Lng_Get("main.title"), $MM_VERSION))
 EndFunc   ;==>SD_GUI_SetLng
 
 Func SD_GUI_Mod_Compatibility()
