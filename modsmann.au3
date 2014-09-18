@@ -117,7 +117,7 @@ Func SD_GUI_Create()
 	$hFormMain = GUICreate($MM_TITLE, $MM_WINDOW_MIN_WIDTH, $MM_WINDOW_MIN_HEIGHT - 20, Default, Default, BitOR($GUI_SS_DEFAULT_GUI, $WS_SIZEBOX, $WS_MAXIMIZEBOX), $WS_EX_ACCEPTFILES)
 	GUISwitch($hFormMain)
 	$hGroupModList = GUICtrlCreateGroup("Mod load order control", 8, 8, 473, 441)
-;~ 	$hTreeView = 	GUICtrlCreateTreeView(16, 24, 361, 417, BitOR($TVS_HASBUTTONS, $TVS_HASLINES, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
+	$hTreeView = GUICtrlCreateTreeView(16, 24, 361, 415, BitOR($TVS_HASBUTTONS, $TVS_FULLROWSELECT, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
 	TreeViewMain()
 	$hModMoveUp = GUICtrlCreateButton("Up", 384, 24, 89, 25)
 	$hModMoveDown = GUICtrlCreateButton("Down", 384, 56, 89, 25)
@@ -797,14 +797,10 @@ EndFunc   ;==>SD_GUI_Update
 Func TreeViewMain()
 	Mod_ListLoad()
 	$abModCompatibilityMap = Mod_CompatibilityMapLoad()
-	Local $aWindowSize = WinGetClientSize($hFormMain)
-	If Not $hTreeView Then
-		$hTreeView = GUICtrlCreateTreeView(16, 24, 361, $aWindowSize[1] - 40, BitOR($TVS_HASBUTTONS, $TVS_HASLINES, $TVS_FULLROWSELECT, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
-	Else
-		_GUICtrlTreeView_BeginUpdate($hTreeView)
-		_GUICtrlTreeView_DeleteAll($hTreeView)
-		_GUICtrlTreeView_EndUpdate($hTreeView)
-	EndIf
+
+	_GUICtrlTreeView_BeginUpdate($hTreeView)
+	_GUICtrlTreeView_DeleteAll($hTreeView)
+	_GUICtrlTreeView_EndUpdate($hTreeView)
 
 	$auTreeView = TreeViewFill()
 EndFunc   ;==>TreeViewMain
@@ -824,7 +820,7 @@ Func SD_GUI_Mod_Controls_Disable()
 	GUICtrlSetState($hModReadmeC, $GUI_DISABLE)
 	GUICtrlSetState($hModInfoC, $GUI_DISABLE)
 	GUICtrlSetData($hModInfo, Lng_Get("group.modinfo.no_info"))
-	$sFollowMod = ""
+;~ 	$sFollowMod = ""
 EndFunc   ;==>SD_GUI_Mod_Controls_Disable
 
 Func SD_GUI_Mod_Controls_Set()
