@@ -1,21 +1,26 @@
 ; Author:         Aliaksei SyDr Karalenka
 
 #include <Array.au3>
+#include <File.au3>
 
+#include "include\IniVirtual.au3"
 #include "data_fwd.au3"
 
 #include-once
 
 
 Func Lng_Load()
-	Local $aSections = IniReadSectionNames(@ScriptDir & "\lng\" & $MM_SETTINGS_LANGUAGE)
+	Local $sText = FileRead(@ScriptDir & "\lng\" & $MM_SETTINGS_LANGUAGE)
 	If @error Then Return SetError(1, @extended, "Can't read " & @ScriptDir & "\lng\" & $MM_SETTINGS_LANGUAGE)
+
+	Local $aIni = _IniVirtual_Initial($sText)
+
+	Local $aSections = _IniVirtual_ReadSectionNames($aIni)
 
 	Local $aResult[1][2] = [[0, 0]]
 
 	For $iCount = 1 To $aSections[0]
-		Local $aTmp = IniReadSection(@ScriptDir & "\lng\" & $MM_SETTINGS_LANGUAGE, $aSections[$iCount])
-		If @error Then Return SetError(2, @extended, "Can't read " & @ScriptDir & "\lng\" & $MM_SETTINGS_LANGUAGE)
+		Local $aTmp = _IniVirtual_ReadSection($aIni, $aSections[$iCount])
 
 		ReDim $aResult[UBound($aResult, $UBOUND_ROWS) + $aTmp[0][0]][2]
 
@@ -33,6 +38,22 @@ Func Lng_Load()
 
 	Return SetError(0, 0, "") ; everething ok
 EndFunc   ;==>Lng_Load
+
+Func Lng_LoadList()
+	Local $asTemp = _FileListToArray(@ScriptDir & "\lng\", "*.ini", 1)
+	Local $asReturn[UBound($asTemp, $UBOUND_ROWS)][2] = [[$asTemp[0]]]
+	Local $sText, $aIni
+
+	For $i = 1 To $asTemp[0]
+		$sText = FileRead(@ScriptDir & "\lng\" & $asTemp[$i])
+		$aIni = _IniVirtual_Initial($sText)
+		$asReturn[$i][0] = _IniVirtual_Read($aIni, "lang.info", "lang.name", "")
+		$asReturn[$i][1] = $asTemp[$i]
+	Next
+
+	Return $asReturn
+EndFunc
+
 
 Func Lng_Get($sKeyName)
 	If Not IsArray($MM_LNG_CACHE) Then
