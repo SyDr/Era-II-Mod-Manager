@@ -29,11 +29,11 @@ AutoItSetOption("GUIOnEventMode", 1)
 AutoItSetOption("GUICloseOnESC", 1)
 
 #Region Variables
-Global $hFormMain, $hTreeView
+Global $hFormMain, $hTreeView, $hLanguageMenu
 Global $auTreeView, $abModCompatibilityMap
 Global $bGUINeedUpdate = False
 
-Global $hGroupModList, $hGroupPresets, $hGroupGame, $hGroupModInfo, $hSettings, $hButtonChangeLanguage, $hChangeLanguageContextMenuID
+Global $hGroupModList, $hGroupPresets, $hGroupGame, $hGroupModInfo, $hSettings
 Global $aLanguages[1][2]
 Global $hModMoveUp, $hModMoveDown, $hModEnableDisable, $hModDelete, $hModAdd, $hModCompatibility
 Global $hButtonPlugins, $hModWebsite, $hModOpenFolder, $hMoreActionsContextMenuID, $hButtonMoreActions
@@ -119,9 +119,13 @@ Func SD_GUI_Language_Change()
 EndFunc   ;==>SD_GUI_Language_Change
 
 Func SD_GUI_Create()
-	$hFormMain = GUICreate($MM_TITLE, $MM_WINDOW_MIN_WIDTH, $MM_WINDOW_MIN_HEIGHT - 20, Default, Default, BitOR($GUI_SS_DEFAULT_GUI, $WS_SIZEBOX, $WS_MAXIMIZEBOX), $WS_EX_ACCEPTFILES)
+	$hFormMain = GUICreate($MM_TITLE, $MM_WINDOW_MIN_WIDTH, $MM_WINDOW_MIN_HEIGHT, Default, Default, BitOR($GUI_SS_DEFAULT_GUI, $WS_SIZEBOX, $WS_MAXIMIZEBOX), $WS_EX_ACCEPTFILES)
+	GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
 	GUISetState(@SW_HIDE) ; this as dirty fix for GUICtrlSetResizing bug in beta 3.3.13.19
-	$hGroupModList = GUICtrlCreateGroup("Mod load order control", 8, 8, 473, 441)
+
+	$hLanguageMenu = GUICtrlCreateMenu("&Language")
+
+	$hGroupModList = GUICtrlCreateGroup("Mod load order control", 4, 0, 473, 441)
 	$hTreeView = GUICtrlCreateTreeView(16, 24, 361, 415, BitOR($TVS_HASBUTTONS, $TVS_FULLROWSELECT, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
 	TreeViewMain()
 	$hModMoveUp = GUICtrlCreateButton("Up", 384, 24, 89, 25)
@@ -167,16 +171,14 @@ Func SD_GUI_Create()
 	$hGroupModInfo = GUICtrlCreateGroup("Mod info", 488, 180 + 15, 308, 250 - 32)
 	$hModInfo = GUICtrlCreateEdit("", 496, 178 + 32, 294, 230 - 32, $ES_READONLY + $ES_AUTOVSCROLL + $WS_VSCROLL)
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
-	$hButtonChangeLanguage = GUICtrlCreateButton("Language", 800 - 161 - 4, 420, 161, 25)
-	Local $hChangeLanguageDummy = GUICtrlCreateDummy()
-	$hChangeLanguageContextMenuID = GUICtrlCreateContextMenu($hChangeLanguageDummy)
 
 	Local $asTemp = Lng_LoadList()
 	For $iCount = 1 To $asTemp[0][0]
 		$aLanguages[0][0] += 1
 		ReDim $aLanguages[$aLanguages[0][0] + 1][2]
-		$aLanguages[$iCount][0] = GUICtrlCreateMenuItem($asTemp[$iCount][0], $hChangeLanguageDummy)
+		$aLanguages[$iCount][0] = GUICtrlCreateMenuItem($asTemp[$iCount][0], $hLanguageMenu, Default, 1)
 		$aLanguages[$iCount][1] = $asTemp[$iCount][1]
+		If $aLanguages[$iCount][1] = $MM_SETTINGS_LANGUAGE Then GUICtrlSetState($aLanguages[$iCount][0], $GUI_CHECKED)
 	Next
 
 	SD_GUI_Mod_Controls_Disable()
@@ -219,7 +221,6 @@ Func SD_GUI_SetResizing()
 	GUICtrlSetResizing($hButtonCSC, $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
 	GUICtrlSetResizing($hGroupModInfo, $GUI_DOCKLEFT + $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKBOTTOM)
 	GUICtrlSetResizing($hModInfo, $GUI_DOCKLEFT + $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKBOTTOM)
-	GUICtrlSetResizing($hButtonChangeLanguage, $GUI_DOCKRIGHT + $GUI_DOCKBOTTOM + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
 EndFunc   ;==>SD_GUI_SetResizing
 
 
@@ -248,7 +249,6 @@ Func SD_GUI_Events_Register()
 	GUICtrlSetOnEvent($hComboWO, "SD_GUI_Game_Wo_Change")
 	GUICtrlSetOnEvent($hButtonRun, "SD_GUI_Game_Exe_Run")
 	GUICtrlSetOnEvent($hButtonCSC, "SD_GUI_Game_Shortcut_Create")
-	GUICtrlSetOnEvent($hButtonChangeLanguage, "SD_GUI_Language_Popup")
 	GUICtrlSetOnEvent($hDummyF5, "SD_GUI_Update")
 	For $iCount = 1 To $aLanguages[0][0]
 		GUICtrlSetOnEvent($aLanguages[$iCount][0], "SD_GUI_Language_Change")
@@ -284,7 +284,6 @@ Func SD_GUI_SetLng()
 	GUICtrlSetData($hButtonCSC, Lng_Get("group.game.create_csc"))
 
 	GUICtrlSetData($hGroupModInfo, Lng_Get("group.modinfo.title"))
-	GUICtrlSetData($hButtonChangeLanguage, StringFormat("Language (%s)", Lng_Get("lang.name")))
 EndFunc   ;==>SD_GUI_SetLng
 
 Func SD_GUI_Mod_Compatibility()
@@ -294,11 +293,6 @@ EndFunc   ;==>SD_GUI_Mod_Compatibility
 Func SD_GUI_MoreActionsPopup()
 	_GUICtrlMenu_TrackPopupMenu(GUICtrlGetHandle($hMoreActionsContextMenuID), $hFormMain, -1, -1, 1, 1, 1)
 EndFunc   ;==>SD_GUI_MoreActionsPopup
-
-Func SD_GUI_Language_Popup()
-;~ 	_ArrayDisplay($aLanguages)
-	_GUICtrlMenu_TrackPopupMenu(GUICtrlGetHandle($hChangeLanguageContextMenuID), $hFormMain, -1, -1, 1, 1, 1)
-EndFunc   ;==>SD_GUI_Language_Popup
 
 Func SD_GUI_Settings()
 	GUISetState(@SW_DISABLE, $hFormMain)
