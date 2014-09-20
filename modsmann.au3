@@ -45,7 +45,7 @@ Global $hModInfo
 Global $sFollowMod = ""
 Global $sCompatibilityMessage = ""
 Global $hDummyF5
-Global $bEnableDisable
+Global $bEnableDisable, $bSelectionChanged
 Global $bInTrack = False
 #EndRegion Variables
 
@@ -86,7 +86,12 @@ While 1
 
 	If $bEnableDisable Then
 		$bEnableDisable = False
-		SD_GUI_Mod_EnableDisable()
+		SD_GUI_Mod_EnableDisable(True)
+	EndIf
+
+	If $bSelectionChanged Then
+		$bSelectionChanged = False
+		SD_GUI_Mod_SelectionChanged()
 	EndIf
 WEnd
 
@@ -115,7 +120,7 @@ EndFunc   ;==>SD_GUI_Language_Change
 
 Func SD_GUI_Create()
 	$hFormMain = GUICreate($MM_TITLE, $MM_WINDOW_MIN_WIDTH, $MM_WINDOW_MIN_HEIGHT - 20, Default, Default, BitOR($GUI_SS_DEFAULT_GUI, $WS_SIZEBOX, $WS_MAXIMIZEBOX), $WS_EX_ACCEPTFILES)
-	GUISwitch($hFormMain)
+	GUISetState(@SW_HIDE) ; this as dirty fix for GUICtrlSetResizing bug in beta 3.3.13.19
 	$hGroupModList = GUICtrlCreateGroup("Mod load order control", 8, 8, 473, 441)
 	$hTreeView = GUICtrlCreateTreeView(16, 24, 361, 415, BitOR($TVS_HASBUTTONS, $TVS_FULLROWSELECT, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
 	TreeViewMain()
@@ -181,9 +186,9 @@ Func SD_GUI_Create()
 	TreeViewTryFollow("")
 	WinMove($hFormMain, '', (@DesktopWidth - $MM_WINDOW_WIDTH) / 2, (@DesktopHeight - $MM_WINDOW_HEIGHT) / 2, $MM_WINDOW_WIDTH, $MM_WINDOW_HEIGHT)
 	If $MM_WINDOW_MAXIMIZED Then WinSetState($hFormMain, '', @SW_MAXIMIZE)
+	GUISetState(@SW_SHOW)
 	Local $AccelKeys[1][2] = [["{F5}", $hDummyF5]]
 	GUISetAccelerators($AccelKeys)
-	GUISetState(@SW_SHOW)
 EndFunc   ;==>SD_GUI_Create
 
 Func SD_GUI_SetResizing()
@@ -225,7 +230,7 @@ Func SD_GUI_Events_Register()
 	GUIRegisterMsg($WM_NOTIFY, "WM_NOTIFY") ; DblClick in TreeView
 	GUICtrlSetOnEvent($hModMoveUp, "SD_GUI_Mod_Move_Up")
 	GUICtrlSetOnEvent($hModMoveDown, "SD_GUI_Mod_Move_Down")
-	GUICtrlSetOnEvent($hModEnableDisable, "SD_GUI_Mod_EnableDisable")
+	GUICtrlSetOnEvent($hModEnableDisable, "SD_GUI_Mod_EnableDisableEvent")
 	GUICtrlSetOnEvent($hModCompatibility, "SD_GUI_Mod_Compatibility")
 	GUICtrlSetOnEvent($hButtonMoreActions, "SD_GUI_MoreActionsPopup")
 	GUICtrlSetOnEvent($hButtonPlugins, "SD_GUI_Manage_Plugins")
@@ -757,7 +762,7 @@ Func SD_GUI_Mod_Delete()
 	SD_GUI_PresetChange()
 EndFunc   ;==>SD_GUI_Mod_Delete
 
-Func SD_GUI_Mod_EnableDisable()
+Func SD_GUI_Mod_EnableDisable($bNoCtrlId = False)
 	Local $iTreeViewIndex = TreeViewGetSelectedIndex()
 	If $auTreeView[$iTreeViewIndex][1] == 0 Then Return
 	Local $iModIndex = $auTreeView[$iTreeViewIndex][2]
@@ -781,9 +786,14 @@ Func SD_GUI_Mod_EnableDisable()
 	EndIf
 
 
-	ControlFocus($hFormMain, "", @GUI_CtrlId)
+	If Not $bNoCtrlId Then ControlFocus($hFormMain, "", @GUI_CtrlId)
 	SD_GUI_PresetChange()
 EndFunc   ;==>SD_GUI_Mod_EnableDisable
+
+Func SD_GUI_Mod_EnableDisableEvent()
+	SD_GUI_Mod_EnableDisable()
+EndFunc
+
 
 Func SD_GUI_Update()
 	GUISwitch($hFormMain)
@@ -823,11 +833,20 @@ Func SD_GUI_Mod_Controls_Disable()
 ;~ 	$sFollowMod = ""
 EndFunc   ;==>SD_GUI_Mod_Controls_Disable
 
-Func SD_GUI_Mod_Controls_Set()
-	For $iCount = 0 To UBound($auTreeView, 1) - 1
-		If $auTreeView[$iCount][2] = -1 Then ContinueLoop
-		If @GUI_CtrlId <> $auTreeView[$iCount][0] Then ContinueLoop
+Func SD_GUI_Mod_SelectionChanged()
+	Local $hSelected = GUICtrlRead($auTreeView[0][0])
+;~ 	_ArrayDisplay($auTreeView)
+
+	For $iCount = 1 To UBound($auTreeView, 1) - 1
+		If $hSelected <> $auTreeView[$iCount][0] Then ContinueLoop
+
+		If $auTreeView[$iCount][1] = 0 Then
+			SD_GUI_Mod_Controls_Disable()
+			ExitLoop
+		EndIf
+
 		Local $iModIndex = $auTreeView[$iCount][2]
+
 		$sFollowMod = $MM_LIST_CONTENT[$iModIndex][0]
 		If $iModIndex > 0 And $iModIndex <= $MM_LIST_CONTENT[0][0] Then
 
@@ -895,7 +914,7 @@ Func SD_GUI_Mod_Controls_Set()
 
 		ExitLoop
 	Next
-EndFunc   ;==>SD_GUI_Mod_Controls_Set
+EndFunc
 
 Func TreeViewFill()
 	_GUICtrlTreeView_BeginUpdate($hTreeView)
@@ -929,7 +948,7 @@ Func TreeViewFill()
 
 			$aTreeViewData[$iIndexToAdd][0] = GUICtrlCreateTreeViewItem($sText, $aTreeViewData[0][0])
 			GUICtrlSetColor($aTreeViewData[$iIndexToAdd][0], 0x0000C0)
-			GUICtrlSetOnEvent($aTreeViewData[$iIndexToAdd][0], "SD_GUI_Mod_Controls_Disable")
+;~ 			GUICtrlSetOnEvent($aTreeViewData[$iIndexToAdd][0], "SD_GUI_Mod_Controls_Disable")
 			If $bEnabled Then
 				_GUICtrlTreeView_SetIcon($aTreeViewData[0][0], $aTreeViewData[$iIndexToAdd][0], @ScriptDir & "\icons\folder-green.ico", 0, 6)
 			Else
@@ -951,7 +970,7 @@ Func TreeViewFill()
 		$aTreeViewData[$iIndexToAdd][1] = $iCurrentGroup
 
 		$aTreeViewData[$iIndexToAdd][0] = GUICtrlCreateTreeViewItem(Mod_MakeDisplayName($MM_LIST_CONTENT[$iCount][3], $MM_LIST_CONTENT[$iCount][2], $MM_LIST_CONTENT[$iCount][8], $bDisplayVersion), $aTreeViewData[$aTreeViewData[$iIndexToAdd][1]][0])
-		GUICtrlSetOnEvent($aTreeViewData[$iIndexToAdd][0], "SD_GUI_Mod_Controls_Set")
+;~ 		GUICtrlSetOnEvent($aTreeViewData[$iIndexToAdd][0], "SD_GUI_Mod_Controls_Set")
 		If $MM_LIST_CONTENT[$iCount][7] <> "" And FileExists($MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iCount][0] & "\" & $MM_LIST_CONTENT[$iCount][7]) Then
 			_GUICtrlTreeView_SetIcon($aTreeViewData[0][0], $aTreeViewData[$iIndexToAdd][0], $MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iCount][0] & "\" & $MM_LIST_CONTENT[$iCount][7], 0, 6)
 		Else
@@ -1110,6 +1129,8 @@ Func WM_NOTIFY($hwnd, $iMsg, $iwParam, $ilParam)
 			Switch $iCode
 				Case $NM_DBLCLK
 					$bEnableDisable = True
+				Case $TVN_SELCHANGEDW
+					$bSelectionChanged = True
 			EndSwitch
 	EndSwitch
 
