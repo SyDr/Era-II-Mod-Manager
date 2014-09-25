@@ -239,7 +239,7 @@ Func Mod_GetVersion($sModName)
 	Return IniRead($MM_LIST_DIR_PATH & "\" & $sModName & "\mod_info.ini", "info", "Version", "0.0")
 EndFunc   ;==>Mod_GetVersion
 
-Func Mod_MakeDisplayName($sName, $bDNE, $sVersion, $bDisplayVersion = True)
+Func Mod_MakeDisplayName($sName, $bDNE)
 	Local $sReturn = ""
 	If $bDNE Then
 		$sReturn = $sName & " " & Lng_Get("group.modlist.missing_mod")
@@ -247,7 +247,6 @@ Func Mod_MakeDisplayName($sName, $bDNE, $sVersion, $bDisplayVersion = True)
 		$sReturn = $sName
 	EndIf
 
-	If $bDisplayVersion And $sVersion <> "0.0" And $sVersion <> "" Then $sReturn &= StringFormat(" [%s]", $sVersion)
 	Return $sReturn
 EndFunc   ;==>Mod_MakeDisplayName
 
