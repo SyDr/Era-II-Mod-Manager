@@ -144,7 +144,7 @@ Func SD_GUI_Create()
 		If $aLanguages[$iCount][1] = $MM_SETTINGS_LANGUAGE Then GUICtrlSetState($aLanguages[$iCount][0], $GUI_CHECKED)
 	Next
 
-	$hGroupList = GUICtrlCreateGroup("", $iLeftOffset, $iTopOffset, $MM_WINDOW_MIN_WIDTH / 2 - $iLeftOffset, $MM_WINDOW_MIN_HEIGHT - $iMenuHeight - $iTopOffset)
+	$hGroupList = GUICtrlCreateGroup("-", $iLeftOffset, $iTopOffset, $MM_WINDOW_MIN_WIDTH / 2 - $iLeftOffset, $MM_WINDOW_MIN_HEIGHT - $iMenuHeight - $iTopOffset)
 	$hModList = GUICtrlCreateTreeView($iLeftOffset + $iItemSpacing, $iTopOffset + 4 * $iItemSpacing, _ ; left, top
 			$MM_WINDOW_MIN_WIDTH / 2 - $iLeftOffset - 3 * $iItemSpacing - 90, $MM_WINDOW_MIN_HEIGHT - $iMenuHeight - $iTopOffset - 5 * $iItemSpacing, _ ; width, height, 90 + $iItemSpacing reserved for buttons column
 			BitOR($TVS_FULLROWSELECT, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
@@ -167,7 +167,7 @@ Func SD_GUI_Create()
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
 
 
-	$hGroupPlugins = GUICtrlCreateGroup("Plugins (for WoG)", $iLeftOffset, $iTopOffset, $MM_WINDOW_MIN_WIDTH / 2 - $iLeftOffset, $MM_WINDOW_MIN_HEIGHT - $iMenuHeight - $iTopOffset)
+	$hGroupPlugins = GUICtrlCreateGroup("-", $iLeftOffset, $iTopOffset, $MM_WINDOW_MIN_WIDTH / 2 - $iLeftOffset, $MM_WINDOW_MIN_HEIGHT - $iMenuHeight - $iTopOffset)
 	$hPluginsList = GUICtrlCreateTreeView($iLeftOffset + $iItemSpacing, $iTopOffset + 4 * $iItemSpacing, _ ; left, top
 			$MM_WINDOW_MIN_WIDTH / 2 - $iLeftOffset - 3 * $iItemSpacing - 90, $MM_WINDOW_MIN_HEIGHT - $iMenuHeight - $iTopOffset - 5 * $iItemSpacing, _ ; width, height, 90 + $iItemSpacing reserved for buttons column
 			BitOR($TVS_FULLROWSELECT, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
@@ -175,23 +175,23 @@ Func SD_GUI_Create()
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
 
 
-	$hGroupScenario = GUICtrlCreateGroup("", $MM_WINDOW_MIN_WIDTH / 2 + $iItemSpacing, $iTopOffset, $MM_WINDOW_MIN_WIDTH / 2 - $iLeftOffset - $iItemSpacing, $MM_WINDOW_MIN_HEIGHT / 2 - $iMenuHeight - $iItemSpacing - $iTopOffset)
-	$hScenarioInfo = GUICtrlCreateEdit("This is a text", $iLeftOffset + $iItemSpacing + $MM_WINDOW_MIN_WIDTH / 2, $iTopOffset + 4 * $iItemSpacing, _
+	$hGroupScenario = GUICtrlCreateGroup("-", $MM_WINDOW_MIN_WIDTH / 2 + $iItemSpacing, $iTopOffset, $MM_WINDOW_MIN_WIDTH / 2 - $iLeftOffset - $iItemSpacing, $MM_WINDOW_MIN_HEIGHT / 2 - $iMenuHeight - $iItemSpacing - $iTopOffset)
+	$hScenarioInfo = GUICtrlCreateEdit("", $iLeftOffset + $iItemSpacing + $MM_WINDOW_MIN_WIDTH / 2, $iTopOffset + 4 * $iItemSpacing, _
 			$MM_WINDOW_MIN_WIDTH / 2 - $iLeftOffset - 4 * $iItemSpacing - 90, $MM_WINDOW_MIN_HEIGHT / 2 - $iMenuHeight - $iTopOffset - 6 * $iItemSpacing, _
             BitOR($ES_READONLY, $WS_TABSTOP))
-	$hButtonScenarioManage = GUICtrlCreateButton("Manage", $MM_WINDOW_MIN_WIDTH - 2 * $iItemSpacing - 90, $iTopOffset + 4 * $iItemSpacing - 1, 90, 25)
-	$hButtonScenarioChange = GUICtrlCreateButton("Change", $MM_WINDOW_MIN_WIDTH - 2 * $iItemSpacing - 90, $iTopOffset + 5 * $iItemSpacing - 1 + 25, 90, 25)
-	$hButtonScenarioLaunch = GUICtrlCreateButton("Launch", $MM_WINDOW_MIN_WIDTH - 2 * $iItemSpacing - 90, $iTopOffset + 8 * $iItemSpacing - 1 + 75, 90, 25)
+	$hButtonScenarioManage = GUICtrlCreateButton("", $MM_WINDOW_MIN_WIDTH - 2 * $iItemSpacing - 90, $iTopOffset + 4 * $iItemSpacing - 1, 90, 25)
+	$hButtonScenarioChange = GUICtrlCreateButton("", $MM_WINDOW_MIN_WIDTH - 2 * $iItemSpacing - 90, $iTopOffset + 5 * $iItemSpacing - 1 + 25, 90, 25)
+	$hButtonScenarioLaunch = GUICtrlCreateButton("", $MM_WINDOW_MIN_WIDTH - 2 * $iItemSpacing - 90, $iTopOffset + 8 * $iItemSpacing - 1 + 75, 90, 25)
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
 
-	$hGroupInfo = GUICtrlCreateGroup("", $MM_WINDOW_MIN_WIDTH / 2 + $iItemSpacing, $MM_WINDOW_MIN_HEIGHT / 2 - $iItemSpacing - $iMenuHeight, $MM_WINDOW_MIN_WIDTH / 2 - $iLeftOffset - $iItemSpacing, $MM_WINDOW_MIN_HEIGHT / 2 + $iItemSpacing - $iTopOffset)
+	$hGroupInfo = GUICtrlCreateGroup("-", $MM_WINDOW_MIN_WIDTH / 2 + $iItemSpacing, $MM_WINDOW_MIN_HEIGHT / 2 - $iItemSpacing - $iMenuHeight, $MM_WINDOW_MIN_WIDTH / 2 - $iLeftOffset - $iItemSpacing, $MM_WINDOW_MIN_HEIGHT / 2 + $iItemSpacing - $iTopOffset)
 	$hModInfo = GUICtrlCreateEdit("", $MM_WINDOW_MIN_WIDTH / 2 + $iItemSpacing + $iItemSpacing, _
 			$MM_WINDOW_MIN_HEIGHT / 2 + 3 * $iItemSpacing - $iMenuHeight, $MM_WINDOW_MIN_WIDTH / 2 - $iLeftOffset - 3 * $iItemSpacing, $MM_WINDOW_MIN_HEIGHT / 2 - 4 * $iItemSpacing - $iTopOffset, _
 			BitOR($ES_READONLY, $WS_VSCROLL, $WS_TABSTOP))
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
 
 	SD_GUI_Mod_Controls_Disable()
-;~ 	SD_GUI_SetResizing()
+	SD_GUI_SetResizing()
 	SD_GUI_Events_Register()
 	SD_GUI_SetLng()
 
@@ -244,18 +244,21 @@ Func SD_GUI_Events_Register()
 EndFunc   ;==>SD_GUI_Events_Register
 
 Func SD_GUI_SetLng()
-	GUICtrlSetData($hGroupList, Lng_Get("group.modlist.title"))
-	GUICtrlSetData($hModUp, Lng_Get("group.modlist.move_up"))
-	GUICtrlSetData($hModDown, Lng_Get("group.modlist.move_down"))
-	GUICtrlSetData($hModChangeState, Lng_Get("group.modlist.enable"))
-	GUICtrlSetData($hModDelete, Lng_Get("group.modlist.delete"))
-	GUICtrlSetData($hModPlugins, Lng_Get("group.modlist.plugins"))
-	GUICtrlSetData($hModCompatibility, Lng_Get("group.modlist.compatibility"))
-	GUICtrlSetData($hModAdd, Lng_Get("group.modlist.add_new"))
-	GUICtrlSetData($hModHomepage, Lng_Get("group.modlist.website"))
-	GUICtrlSetData($hModMoreActions, Lng_Get("group.modlist.button_more"))
-	GUICtrlSetData($hModOpenFolder, Lng_Get("group.modlist.open_folder"))
-	GUICtrlSetData($hGroupScenario, Lng_Get("group.scenario.title"))
+	GUICtrlSetData($hGroupList, Lng_Get("list.mods.caption"))
+	GUICtrlSetData($hModUp, Lng_Get("list.mods.up"))
+	GUICtrlSetData($hModDown, Lng_Get("list.mods.down"))
+	GUICtrlSetData($hModChangeState, Lng_Get("list.mods.enable"))
+	GUICtrlSetData($hModDelete, Lng_Get("list.mods.delete"))
+	GUICtrlSetData($hModPlugins, Lng_Get("list.mods.plugins"))
+	GUICtrlSetData($hModCompatibility, Lng_Get("list.mods.compatibility"))
+	GUICtrlSetData($hModAdd, Lng_Get("list.mods.group.add_new"))
+	GUICtrlSetData($hModHomepage, Lng_Get("list.mods.homepage"))
+	GUICtrlSetData($hModMoreActions, Lng_Get("list.mods.more"))
+	GUICtrlSetData($hModOpenFolder, Lng_Get("list.mods.dir.open"))
+
+	GUICtrlSetData($hGroupPlugins, Lng_GetF("plugins.title", $MM_LIST_CONTENT[0][0] > 0 ? $MM_LIST_CONTENT[1][3] : ""))
+	GUICtrlSetData($hPluginsBack, Lng_Get("list.plugins.back"))
+
 	GUICtrlSetData($hGroupInfo, Lng_Get("group.modinfo.title"))
 EndFunc   ;==>SD_GUI_SetLng
 
@@ -277,6 +280,7 @@ EndFunc   ;==>SD_GUI_Mod_OpenFolder
 
 Func SD_GUI_Manage_Plugins()
 	Plugins_ListLoad($MM_LIST_CONTENT[$auTreeView[TreeViewGetSelectedIndex()][2]][0])
+	GUICtrlSetData($hGroupPlugins, Lng_GetF("plugins.title", $MM_LIST_CONTENT[0][0] > 0 ? $MM_LIST_CONTENT[$auTreeView[TreeViewGetSelectedIndex()][2]][3] : ""))
 	SD_GUI_PluginsDisplay()
 	SD_SwitchView($MM_VIEW_PLUGINS)
 EndFunc   ;==>SD_GUI_Manage_Plugins
@@ -555,17 +559,17 @@ Func SD_GUI_PluginsDisplay()
 	_GUICtrlTreeView_DeleteAll($hPluginsList)
 
 	If $MM_PLUGINS_PART_PRESENT[$PLUGIN_GROUP_GLOBAL] Then
-		$hPluginsParts[$PLUGIN_GROUP_GLOBAL] = _GUICtrlTreeView_Add($hPluginsList, 0, "Global")
+		$hPluginsParts[$PLUGIN_GROUP_GLOBAL] = _GUICtrlTreeView_Add($hPluginsList, 0, Lng_Get("list.plugins.global"))
 		_GUICtrlTreeView_SetIcon($hPluginsList, $hPluginsParts[$PLUGIN_GROUP_GLOBAL], @ScriptDir & "\icons\folder-green.ico", 0, 6)
 	EndIf
 
 	If $MM_PLUGINS_PART_PRESENT[$PLUGIN_GROUP_BEFORE] Then
-		$hPluginsParts[$PLUGIN_GROUP_BEFORE] = _GUICtrlTreeView_Add($hPluginsList, 0, "BeforeWoG")
+		$hPluginsParts[$PLUGIN_GROUP_BEFORE] = _GUICtrlTreeView_Add($hPluginsList, 0, Lng_Get("list.plugins.before_wog"))
 		_GUICtrlTreeView_SetIcon($hPluginsList, $hPluginsParts[$PLUGIN_GROUP_BEFORE], @ScriptDir & "\icons\folder-green.ico", 0, 6)
 	EndIf
 
 	If $MM_PLUGINS_PART_PRESENT[$PLUGIN_GROUP_AFTER] Then
-		$hPluginsParts[$PLUGIN_GROUP_AFTER] = _GUICtrlTreeView_Add($hPluginsList, 0, "AfterWoG")
+		$hPluginsParts[$PLUGIN_GROUP_AFTER] = _GUICtrlTreeView_Add($hPluginsList, 0, Lng_Get("list.plugins.after_wog"))
 		_GUICtrlTreeView_SetIcon($hPluginsList, $hPluginsParts[$PLUGIN_GROUP_AFTER], @ScriptDir & "\icons\folder-green.ico", 0, 6)
 	EndIf
 
@@ -646,11 +650,11 @@ Func SD_GUI_Mod_SelectionChanged()
 
 			GUICtrlSetState($hModChangeState, $GUI_ENABLE)
 			If $MM_LIST_CONTENT[$auTreeView[$iCount][2]][1] = "Disabled" Then
-				GUICtrlSetData($hModChangeState, Lng_Get("group.modlist.enable"))
+				GUICtrlSetData($hModChangeState, Lng_Get("list.mods.enable"))
 			ElseIf $MM_LIST_CONTENT[$auTreeView[$iCount][2]][2] Then ; Not exist
-				GUICtrlSetData($hModChangeState, Lng_Get("group.modlist.remove"))
+				GUICtrlSetData($hModChangeState, Lng_Get("list.mods.remove"))
 			Else
-				GUICtrlSetData($hModChangeState, Lng_Get("group.modlist.disable"))
+				GUICtrlSetData($hModChangeState, Lng_Get("list.mods.disable"))
 			EndIf
 
 			; Plugins
@@ -696,7 +700,6 @@ Func SD_GUI_Plugin_SelectionChanged()
 
 		If $iPlugin > 0 And $iPlugin <= $MM_PLUGINS_CONTENT[0][0] Then
 			GUICtrlSetData($hModInfo, $MM_PLUGINS_CONTENT[$iPlugin][$PLUGIN_DESCRIPTION])
-
 		EndIf
 
 		ExitLoop
@@ -721,7 +724,7 @@ Func TreeViewFill()
 	For $iCount = 1 To $MM_LIST_CONTENT[0][0]
 		Local $bEnabled = $MM_LIST_CONTENT[$iCount][1] = "Enabled"
 		Local $iPriority = $MM_LIST_CONTENT[$iCount][9]
-
+		Local $sCaption = $MM_LIST_CONTENT[$iCount][2] ? Lng_GetF("list.mods.missing", $MM_LIST_CONTENT[$iCount][3]) : $MM_LIST_CONTENT[$iCount][3]
 
 		Local $bCreateNewGroup = False
 		If $iCurrentGroup = -1 Then $bCreateNewGroup = True
@@ -729,9 +732,9 @@ Func TreeViewFill()
 		If $bCurrentGroupEnabled And Not $bEnabled Then $bCreateNewGroup = True
 
 		If $bCreateNewGroup Then
-			Local $sText = Lng_Get("group.modlist.label_disabled")
-			If $bEnabled Then $sText = Lng_Get("group.modlist.label_enabled")
-			If $bEnabled And $iPriority <> 0 Then $sText = StringFormat(Lng_Get("group.modlist.label_enabled_p"), $iPriority)
+			Local $sText = Lng_Get("list.mods.group.disabled")
+			If $bEnabled Then $sText = Lng_Get("list.mods.group.enabled")
+			If $bEnabled And $iPriority <> 0 Then $sText = StringFormat(Lng_Get("list.mods.group.enabled.with_priority"), $iPriority)
 
 			$aTreeViewData[$iIndexToAdd][0] = GUICtrlCreateTreeViewItem($sText, $aTreeViewData[0][0])
 			GUICtrlSetColor($aTreeViewData[$iIndexToAdd][0], 0x0000C0)
@@ -756,7 +759,7 @@ Func TreeViewFill()
 		$aTreeViewData[$iIndexToAdd][2] = $iCount
 		$aTreeViewData[$iIndexToAdd][1] = $iCurrentGroup
 
-		$aTreeViewData[$iIndexToAdd][0] = GUICtrlCreateTreeViewItem(Mod_MakeDisplayName($MM_LIST_CONTENT[$iCount][3], $MM_LIST_CONTENT[$iCount][2]), $aTreeViewData[$aTreeViewData[$iIndexToAdd][1]][0])
+		$aTreeViewData[$iIndexToAdd][0] = GUICtrlCreateTreeViewItem($sCaption, $aTreeViewData[$aTreeViewData[$iIndexToAdd][1]][0])
 ;~ 		GUICtrlSetOnEvent($aTreeViewData[$iIndexToAdd][0], "SD_GUI_Mod_Controls_Set")
 		If $MM_LIST_CONTENT[$iCount][7] <> "" And FileExists($MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iCount][0] & "\" & $MM_LIST_CONTENT[$iCount][7]) Then
 			_GUICtrlTreeView_SetIcon($aTreeViewData[0][0], $aTreeViewData[$iIndexToAdd][0], $MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iCount][0] & "\" & $MM_LIST_CONTENT[$iCount][7], 0, 6)

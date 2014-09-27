@@ -54,8 +54,7 @@ Func Lng_LoadList()
 	Return $asReturn
 EndFunc
 
-
-Func Lng_Get($sKeyName)
+Func Lng_Get(Const ByRef $sKeyName)
 	If Not IsArray($MM_LNG_CACHE) Then
 		Lng_Load()
 	EndIf
@@ -84,3 +83,11 @@ Func Lng_Get($sKeyName)
 		Return $MM_LNG_CACHE[$iIndex][1]
 	EndIf
 EndFunc   ;==>Lng_Get
+
+Func Lng_GetF(Const ByRef $sKeyName, $vParam1, $vParam2 = Default)
+	If IsKeyword($vParam2) == $KEYWORD_DEFAULT Then
+		Return StringFormat(Lng_Get($sKeyName), $vParam1)
+	Else
+		Return StringFormat(Lng_Get($sKeyName), $vParam1, $vParam2)
+	EndIf
+EndFunc
