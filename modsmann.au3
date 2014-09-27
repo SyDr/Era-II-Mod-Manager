@@ -1,4 +1,4 @@
-;~ #NoTrayIcon
+#NoTrayIcon
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=icons\preferences-system.ico
 #AutoIt3Wrapper_Outfile=modsmann.exe
@@ -32,7 +32,7 @@ AutoItSetOption("GUICloseOnESC", 1)
 Global $hFormMain, $hLanguageMenu, $hDummyF5
 Global $aLanguages[1][2]
 
-Global $hGroupList, $hModList, $hModUp, $hModDown, $hModChangeState, $hModDelete, $hModAdd, $hModCompatibility, $hModPlugins, $hModHomepage, $hModOpenFolder, $hModMoreActions, $hModReadmeC, $hModInfoC
+Global $hGroupList, $hModList, $hModUp, $hModDown, $hModChangeState, $hModDelete, $hModAdd, $hModCompatibility, $hModPlugins, $hModHomepage, $hModOpenFolder, $hModMoreActions
 Global $auTreeView, $abModCompatibilityMap, $hMoreActionsContextMenuID, $hMoreActionsDummy
 
 Global $hGroupPlugins, $hPluginsList, $hPluginsBack
@@ -43,8 +43,6 @@ Global $hButtonScenarioManage, $hButtonScenarioChange, $hButtonScenarioLaunch
 
 Global $hGroupInfo, $hModInfo
 
-
-Global $bGUINeedUpdate = False
 Global $sFollowMod = ""
 Global $sCompatibilityMessage = ""
 Global $bEnableDisable, $bSelectionChanged
@@ -72,28 +70,35 @@ SD_GUI_Create()
 TreeViewMain()
 TreeViewTryFollow($MM_LIST_CONTENT[0][0] > 0 ? $MM_LIST_CONTENT[1][0] : "")
 SD_SwitchView()
+MainLoop()
 
-While 1
-	Sleep(50)
-	If Not $bGUINeedUpdate And Not WinActive($hFormMain) Then
-		$bGUINeedUpdate = True
-	EndIf
+Func MainLoop()
+	Local $bGUINeedUpdate = False
 
-	If $bGUINeedUpdate And WinActive($hFormMain) Then
-		$bGUINeedUpdate = False
-		If Not Mod_ListIsActual() Then SD_GUI_Update()
-	EndIf
+	While True
+		Sleep(50)
+		If Not $bGUINeedUpdate And Not WinActive($hFormMain) Then
+			$bGUINeedUpdate = True
+		EndIf
 
-	If $bEnableDisable Then
-		$bEnableDisable = False
-		SD_GUI_List_ChangeState()
-	EndIf
+		If $bGUINeedUpdate And WinActive($hFormMain) Then
+			$bGUINeedUpdate = False
+			If Not Mod_ListIsActual() Then SD_GUI_Update()
+		EndIf
 
-	If $bSelectionChanged Then
-		$bSelectionChanged = False
-		SD_GUI_List_SelectionChanged()
-	EndIf
-WEnd
+		If $bEnableDisable Then
+			$bEnableDisable = False
+			SD_GUI_List_ChangeState()
+		EndIf
+
+		If $bSelectionChanged Then
+			$bSelectionChanged = False
+			SD_GUI_List_SelectionChanged()
+		EndIf
+	WEnd
+EndFunc
+
+
 
 Func SD_GUI_Language_Change()
 	Local $iIndex = -1
@@ -159,8 +164,6 @@ Func SD_GUI_Create()
 	$hModCompatibility = GUICtrlCreateMenuItem("-", $hMoreActionsDummy)
 	GUICtrlCreateMenuItem("", $hMoreActionsDummy)
 	$hModOpenFolder = GUICtrlCreateMenuItem("-", $hMoreActionsDummy)
-	$hModInfoC = GUICtrlCreateMenuItem("-", $hMoreActionsDummy)
-	$hModReadmeC = GUICtrlCreateMenuItem("-", $hMoreActionsDummy)
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
 
 
@@ -209,8 +212,6 @@ Func SD_GUI_SetResizing()
 	GUICtrlSetResizing($hModMoreActions, $GUI_DOCKALL)
 	GUICtrlSetResizing($hModAdd, $GUI_DOCKLEFT + $GUI_DOCKBOTTOM + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
 	GUICtrlSetResizing($hModOpenFolder, $GUI_DOCKALL)
-	GUICtrlSetResizing($hModInfoC, $GUI_DOCKALL)
-	GUICtrlSetResizing($hModReadmeC, $GUI_DOCKALL)
 	GUICtrlSetResizing($hScenarioInfo, $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
 	GUICtrlSetResizing($hGroupScenario, $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
 	GUICtrlSetResizing($hGroupInfo, $GUI_DOCKLEFT + $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKBOTTOM)
@@ -237,8 +238,6 @@ Func SD_GUI_Events_Register()
 	GUICtrlSetOnEvent($hModDelete, "SD_GUI_Mod_Delete")
 	GUICtrlSetOnEvent($hModAdd, "SD_GUI_Mod_Add")
 	GUICtrlSetOnEvent($hModOpenFolder, "SD_GUI_Mod_OpenFolder")
-	GUICtrlSetOnEvent($hModInfoC, "SD_GUI_Mod_CreateModifyModInfo")
-	GUICtrlSetOnEvent($hModReadmeC, "SD_GUI_Mod_CreateModifyReadme")
 	GUICtrlSetOnEvent($hDummyF5, "SD_GUI_Update")
 
 	GUICtrlSetOnEvent($hPluginsBack, "SD_GUI_Plugins_Close")
@@ -256,8 +255,6 @@ Func SD_GUI_SetLng()
 	GUICtrlSetData($hModHomepage, Lng_Get("group.modlist.website"))
 	GUICtrlSetData($hModMoreActions, Lng_Get("group.modlist.button_more"))
 	GUICtrlSetData($hModOpenFolder, Lng_Get("group.modlist.open_folder"))
-	GUICtrlSetData($hModInfoC, Lng_Get("group.modlist.edit_modinfo"))
-	GUICtrlSetData($hModReadmeC, Lng_Get("group.modlist.edit_readme"))
 	GUICtrlSetData($hGroupScenario, Lng_Get("group.scenario.title"))
 	GUICtrlSetData($hGroupInfo, Lng_Get("group.modinfo.title"))
 EndFunc   ;==>SD_GUI_SetLng
@@ -269,54 +266,6 @@ EndFunc   ;==>SD_GUI_Mod_Compatibility
 Func SD_GUI_MoreActionsPopup()
 	_GUICtrlMenu_TrackPopupMenu(GUICtrlGetHandle($hMoreActionsContextMenuID), $hFormMain, -1, -1, 1, 1, 1)
 EndFunc   ;==>SD_GUI_MoreActionsPopup
-
-Func SD_GUI_Mod_CreateModifyReadme()
-	Local $iTreeViewIndex = TreeViewGetSelectedIndex()
-	Local $iModIndex1 = $auTreeView[$iTreeViewIndex][2]
-	If $iModIndex1 < 1 Or $iModIndex1 > $MM_LIST_CONTENT[0][0] Then Return -1 ; never
-	Local $sPath = $MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iModIndex1][0] & '\Readme.txt'
-	Local $hFile = FileOpen($sPath, $FO_APPEND)
-	FileClose($hFile)
-	ShellExecute($sPath)
-EndFunc   ;==>SD_GUI_Mod_CreateModifyReadme
-
-Func SD_GUI_Mod_CreateModifyModInfo()
-	Local $iTreeViewIndex = TreeViewGetSelectedIndex()
-	Local $iModIndex1 = $auTreeView[$iTreeViewIndex][2]
-	If $iModIndex1 < 1 Or $iModIndex1 > $MM_LIST_CONTENT[0][0] Then Return -1 ; never
-	Local $sPath = $MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iModIndex1][0] & '\mod_info.ini'
-	Local $bAddInfo = Not FileExists($sPath)
-	Local $hFile = FileOpen($sPath, $FO_APPEND + $FO_CREATEPATH + $FO_UNICODE)
-	If $bAddInfo Then
-		FileWriteLine($hFile, "[info]")
-		FileWriteLine($hFile, "; this section contains various settings + default name/description (use English here, please) ")
-		FileWriteLine($hFile, "Caption = " & $MM_LIST_CONTENT[$iModIndex1][0])
-		FileWriteLine($hFile, "; if name not set -> MM will use directory name instead")
-		FileWriteLine($hFile, "Description File = Readme.txt")
-		FileWriteLine($hFile, "; file with mod description (please, don't use wall of text)")
-		FileWriteLine($hFile, "Author = " & @UserName)
-		FileWriteLine($hFile, "; author name")
-		FileWriteLine($hFile, "Homepage = ")
-		FileWriteLine($hFile, "; your webpage")
-		FileWriteLine($hFile, "Version = ")
-		FileWriteLine($hFile, "; version in form X.X[.X[.X]] -> 1.52	2.13.34	3.1324.324.234")
-		FileWriteLine($hFile, "Icon File = ")
-		FileWriteLine($hFile, "; path to icon file. Index is not supported now (MM will always use 0). Icon Index = X will be supported in future versions")
-		FileWriteLine($hFile, "Compatibility Class = Default")
-		FileWriteLine($hFile, "; this field determines MM behaviour when detecting mods compatibility. Vaild values are ('Default' -> compatible with all mods, " & _
-				"except 'None' -> not compatible with any mod, 'All' (or any other value) -> compatible with all mods (override 'None')")
-		FileWriteLine($hFile, "")
-		FileWriteLine($hFile, "Caption." & Lng_Get("lang.code") & " = " & $MM_LIST_CONTENT[$iModIndex1][0])
-		FileWriteLine($hFile, "Description File." & Lng_Get("lang.code") & " = Readme.txt")
-		FileWriteLine($hFile, "")
-		FileWriteLine($hFile, "[Compatibility]")
-		FileWriteLine($hFile, "WoG = 1")
-		FileWriteLine($hFile, "; usage: 'ModName = value', values are -1 (not compatible) and 1 (compatible) with this mod")
-	EndIf
-
-	FileClose($hFile)
-	ShellExecute($sPath)
-EndFunc   ;==>SD_GUI_Mod_CreateModifyModInfo
 
 Func SD_GUI_Mod_OpenFolder()
 	Local $iTreeViewIndex = TreeViewGetSelectedIndex()
@@ -645,8 +594,6 @@ Func SD_GUI_Mod_Controls_Disable()
 	GUICtrlSetState($hModPlugins, $GUI_DISABLE)
 	GUICtrlSetState($hModHomepage, $GUI_DISABLE)
 	GUICtrlSetState($hModOpenFolder, $GUI_DISABLE)
-	GUICtrlSetState($hModReadmeC, $GUI_DISABLE)
-	GUICtrlSetState($hModInfoC, $GUI_DISABLE)
 	GUICtrlSetData($hModInfo, Lng_Get("group.modinfo.no_info"))
 ;~ 	$sFollowMod = ""
 EndFunc   ;==>SD_GUI_Mod_Controls_Disable
@@ -727,15 +674,11 @@ Func SD_GUI_Mod_SelectionChanged()
 				GUICtrlSetState($hModDelete, $GUI_ENABLE)
 			EndIf
 
-			; Modmaker (settings, 2)
+			; Modmaker (2)
 			If Not $MM_LIST_CONTENT[$iModIndex][2] Then
 				GUICtrlSetState($hModOpenFolder, $GUI_ENABLE)
-				GUICtrlSetState($hModReadmeC, $GUI_ENABLE)
-				GUICtrlSetState($hModInfoC, $GUI_ENABLE)
 			Else
 				GUICtrlSetState($hModOpenFolder, $GUI_DISABLE)
-				GUICtrlSetState($hModReadmeC, $GUI_DISABLE)
-				GUICtrlSetState($hModInfoC, $GUI_DISABLE)
 			EndIf
 		EndIf
 
