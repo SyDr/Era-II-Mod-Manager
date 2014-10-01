@@ -702,8 +702,10 @@ Func SD_GUI_Plugin_SelectionChanged()
 			GUICtrlSetData($hModInfo, $MM_PLUGINS_CONTENT[$iPlugin][$PLUGIN_DESCRIPTION])
 		EndIf
 
-		ExitLoop
+		Return
 	Next
+
+	GUICtrlSetData($hModInfo, Lng_Get("info_group.no_info"))
 EndFunc   ;==>SD_GUI_Mod_SelectionChanged
 
 Func TreeViewFill()
