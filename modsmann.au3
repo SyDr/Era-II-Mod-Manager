@@ -171,7 +171,7 @@ Func SD_GUI_Create()
 	$hPluginsList = GUICtrlCreateTreeView($iLeftOffset + $iItemSpacing, $iTopOffset + 4 * $iItemSpacing, _ ; left, top
 			$MM_WINDOW_MIN_WIDTH / 2 - $iLeftOffset - 3 * $iItemSpacing - 90, $MM_WINDOW_MIN_HEIGHT - $iMenuHeight - $iTopOffset - 5 * $iItemSpacing, _ ; width, height, 90 + $iItemSpacing reserved for buttons column
 			BitOR($TVS_FULLROWSELECT, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
-	$hPluginsBack = GUICtrlCreateButton("Назад", $MM_WINDOW_MIN_WIDTH / 2 - 90 - $iItemSpacing, $iTopOffset + 4 * $iItemSpacing - 1, 90, 25)
+	$hPluginsBack = GUICtrlCreateButton("", $MM_WINDOW_MIN_WIDTH / 2 - 90 - $iItemSpacing, $iTopOffset + 4 * $iItemSpacing - 1, 90, 25)
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
 
 
@@ -244,22 +244,22 @@ Func SD_GUI_Events_Register()
 EndFunc   ;==>SD_GUI_Events_Register
 
 Func SD_GUI_SetLng()
-	GUICtrlSetData($hGroupList, Lng_Get("list.mods.caption"))
-	GUICtrlSetData($hModUp, Lng_Get("list.mods.up"))
-	GUICtrlSetData($hModDown, Lng_Get("list.mods.down"))
-	GUICtrlSetData($hModChangeState, Lng_Get("list.mods.enable"))
-	GUICtrlSetData($hModDelete, Lng_Get("list.mods.delete"))
-	GUICtrlSetData($hModPlugins, Lng_Get("list.mods.plugins"))
-	GUICtrlSetData($hModCompatibility, Lng_Get("list.mods.compatibility"))
-	GUICtrlSetData($hModAdd, Lng_Get("list.mods.group.add_new"))
-	GUICtrlSetData($hModHomepage, Lng_Get("list.mods.homepage"))
-	GUICtrlSetData($hModMoreActions, Lng_Get("list.mods.more"))
-	GUICtrlSetData($hModOpenFolder, Lng_Get("list.mods.dir.open"))
+	GUICtrlSetData($hGroupList, Lng_Get("mod_list.caption"))
+	GUICtrlSetData($hModUp, Lng_Get("mod_list.up"))
+	GUICtrlSetData($hModDown, Lng_Get("mod_list.down"))
+	GUICtrlSetData($hModChangeState, Lng_Get("mod_list.enable"))
+	GUICtrlSetData($hModDelete, Lng_Get("mod_list.delete"))
+	GUICtrlSetData($hModPlugins, Lng_Get("mod_list.plugins"))
+	GUICtrlSetData($hModCompatibility, Lng_Get("mod_list.compatibility"))
+	GUICtrlSetData($hModAdd, Lng_Get("mod_list.add_new"))
+	GUICtrlSetData($hModHomepage, Lng_Get("mod_list.homepage"))
+	GUICtrlSetData($hModMoreActions, Lng_Get("mod_list.more"))
+	GUICtrlSetData($hModOpenFolder, Lng_Get("mod_list.open_dir"))
 
-	GUICtrlSetData($hGroupPlugins, Lng_GetF("plugins.title", $MM_LIST_CONTENT[0][0] > 0 ? $MM_LIST_CONTENT[1][3] : ""))
-	GUICtrlSetData($hPluginsBack, Lng_Get("list.plugins.back"))
+	GUICtrlSetData($hGroupPlugins, Lng_GetF("plugins_list.caption", $MM_LIST_CONTENT[0][0] > 0 ? $MM_LIST_CONTENT[1][3] : ""))
+	GUICtrlSetData($hPluginsBack, Lng_Get("plugins_list.back"))
 
-	GUICtrlSetData($hGroupInfo, Lng_Get("group.modinfo.title"))
+	GUICtrlSetData($hGroupInfo, Lng_Get("info_group.caption"))
 EndFunc   ;==>SD_GUI_SetLng
 
 Func SD_GUI_Mod_Compatibility()
@@ -280,7 +280,7 @@ EndFunc   ;==>SD_GUI_Mod_OpenFolder
 
 Func SD_GUI_Manage_Plugins()
 	Plugins_ListLoad($MM_LIST_CONTENT[$auTreeView[TreeViewGetSelectedIndex()][2]][0])
-	GUICtrlSetData($hGroupPlugins, Lng_GetF("plugins.title", $MM_LIST_CONTENT[0][0] > 0 ? $MM_LIST_CONTENT[$auTreeView[TreeViewGetSelectedIndex()][2]][3] : ""))
+	GUICtrlSetData($hGroupPlugins, Lng_GetF("plugins_list.caption", $MM_LIST_CONTENT[0][0] > 0 ? $MM_LIST_CONTENT[$auTreeView[TreeViewGetSelectedIndex()][2]][3] : ""))
 	SD_GUI_PluginsDisplay()
 	SD_SwitchView($MM_VIEW_PLUGINS)
 EndFunc   ;==>SD_GUI_Manage_Plugins
@@ -464,7 +464,7 @@ EndFunc   ;==>SD_GUI_Mod_Swap
 Func SD_GUI_Mod_Delete()
 	Local $iTreeViewIndex = TreeViewGetSelectedIndex()
 	Local $iModIndex = $auTreeView[$iTreeViewIndex][2]
-	Local $iAnswer = MsgBox($MB_YESNO + $MB_ICONQUESTION + $MB_DEFBUTTON2 + $MB_TASKMODAL, "", StringFormat(Lng_Get("group.modlist.delete_confirm"), $MM_LIST_CONTENT[$iModIndex][0]), Default, $hFormMain)
+	Local $iAnswer = MsgBox($MB_YESNO + $MB_ICONQUESTION + $MB_DEFBUTTON2 + $MB_TASKMODAL, "", StringFormat(Lng_Get("mod_list.delete_confirm"), $MM_LIST_CONTENT[$iModIndex][0]), Default, $hFormMain)
 	If $iAnswer = $IDNO Then Return
 
 	Mod_Delete($iModIndex)
@@ -559,17 +559,17 @@ Func SD_GUI_PluginsDisplay()
 	_GUICtrlTreeView_DeleteAll($hPluginsList)
 
 	If $MM_PLUGINS_PART_PRESENT[$PLUGIN_GROUP_GLOBAL] Then
-		$hPluginsParts[$PLUGIN_GROUP_GLOBAL] = _GUICtrlTreeView_Add($hPluginsList, 0, Lng_Get("list.plugins.global"))
+		$hPluginsParts[$PLUGIN_GROUP_GLOBAL] = _GUICtrlTreeView_Add($hPluginsList, 0, Lng_Get("plugins_list.global"))
 		_GUICtrlTreeView_SetIcon($hPluginsList, $hPluginsParts[$PLUGIN_GROUP_GLOBAL], @ScriptDir & "\icons\folder-green.ico", 0, 6)
 	EndIf
 
 	If $MM_PLUGINS_PART_PRESENT[$PLUGIN_GROUP_BEFORE] Then
-		$hPluginsParts[$PLUGIN_GROUP_BEFORE] = _GUICtrlTreeView_Add($hPluginsList, 0, Lng_Get("list.plugins.before_wog"))
+		$hPluginsParts[$PLUGIN_GROUP_BEFORE] = _GUICtrlTreeView_Add($hPluginsList, 0, Lng_Get("plugins_list.before_wog"))
 		_GUICtrlTreeView_SetIcon($hPluginsList, $hPluginsParts[$PLUGIN_GROUP_BEFORE], @ScriptDir & "\icons\folder-green.ico", 0, 6)
 	EndIf
 
 	If $MM_PLUGINS_PART_PRESENT[$PLUGIN_GROUP_AFTER] Then
-		$hPluginsParts[$PLUGIN_GROUP_AFTER] = _GUICtrlTreeView_Add($hPluginsList, 0, Lng_Get("list.plugins.after_wog"))
+		$hPluginsParts[$PLUGIN_GROUP_AFTER] = _GUICtrlTreeView_Add($hPluginsList, 0, Lng_Get("plugins_list.after_wog"))
 		_GUICtrlTreeView_SetIcon($hPluginsList, $hPluginsParts[$PLUGIN_GROUP_AFTER], @ScriptDir & "\icons\folder-green.ico", 0, 6)
 	EndIf
 
@@ -598,7 +598,7 @@ Func SD_GUI_Mod_Controls_Disable()
 	GUICtrlSetState($hModPlugins, $GUI_DISABLE)
 	GUICtrlSetState($hModHomepage, $GUI_DISABLE)
 	GUICtrlSetState($hModOpenFolder, $GUI_DISABLE)
-	GUICtrlSetData($hModInfo, Lng_Get("group.modinfo.no_info"))
+	GUICtrlSetData($hModInfo, Lng_Get("info_group.no_info"))
 ;~ 	$sFollowMod = ""
 EndFunc   ;==>SD_GUI_Mod_Controls_Disable
 
@@ -650,11 +650,11 @@ Func SD_GUI_Mod_SelectionChanged()
 
 			GUICtrlSetState($hModChangeState, $GUI_ENABLE)
 			If $MM_LIST_CONTENT[$auTreeView[$iCount][2]][1] = "Disabled" Then
-				GUICtrlSetData($hModChangeState, Lng_Get("list.mods.enable"))
+				GUICtrlSetData($hModChangeState, Lng_Get("mod_list.enable"))
 			ElseIf $MM_LIST_CONTENT[$auTreeView[$iCount][2]][2] Then ; Not exist
-				GUICtrlSetData($hModChangeState, Lng_Get("list.mods.remove"))
+				GUICtrlSetData($hModChangeState, Lng_Get("mod_list.remove"))
 			Else
-				GUICtrlSetData($hModChangeState, Lng_Get("list.mods.disable"))
+				GUICtrlSetData($hModChangeState, Lng_Get("mod_list.disable"))
 			EndIf
 
 			; Plugins
@@ -724,7 +724,7 @@ Func TreeViewFill()
 	For $iCount = 1 To $MM_LIST_CONTENT[0][0]
 		Local $bEnabled = $MM_LIST_CONTENT[$iCount][1] = "Enabled"
 		Local $iPriority = $MM_LIST_CONTENT[$iCount][9]
-		Local $sCaption = $MM_LIST_CONTENT[$iCount][2] ? Lng_GetF("list.mods.missing", $MM_LIST_CONTENT[$iCount][3]) : $MM_LIST_CONTENT[$iCount][3]
+		Local $sCaption = $MM_LIST_CONTENT[$iCount][2] ? Lng_GetF("mod_list.missing", $MM_LIST_CONTENT[$iCount][3]) : $MM_LIST_CONTENT[$iCount][3]
 
 		Local $bCreateNewGroup = False
 		If $iCurrentGroup = -1 Then $bCreateNewGroup = True
@@ -732,9 +732,9 @@ Func TreeViewFill()
 		If $bCurrentGroupEnabled And Not $bEnabled Then $bCreateNewGroup = True
 
 		If $bCreateNewGroup Then
-			Local $sText = Lng_Get("list.mods.group.disabled")
-			If $bEnabled Then $sText = Lng_Get("list.mods.group.enabled")
-			If $bEnabled And $iPriority <> 0 Then $sText = StringFormat(Lng_Get("list.mods.group.enabled.with_priority"), $iPriority)
+			Local $sText = Lng_Get("mod_list.group.disabled")
+			If $bEnabled Then $sText = Lng_Get("mod_list.group.enabled")
+			If $bEnabled And $iPriority <> 0 Then $sText = StringFormat(Lng_Get("mod_list.group.enabled_with_priority"), $iPriority)
 
 			$aTreeViewData[$iIndexToAdd][0] = GUICtrlCreateTreeViewItem($sText, $aTreeViewData[0][0])
 			GUICtrlSetColor($aTreeViewData[$iIndexToAdd][0], 0x0000C0)
@@ -795,7 +795,7 @@ Func TreeViewColor($auTreeView)
 				If Not $abModCompatibilityMap[$iCount][$jCount] Then
 					$bMasterIndex = $iCount
 					GUICtrlSetColor($auTreeView[$iListIndex][0], 0x00C000) ; This is master mod
-					$sCompatibilityMessage = StringFormat(Lng_Get("message.compatibility.part1"), $MM_LIST_CONTENT[$iCount][3]) & @CRLF
+					$sCompatibilityMessage = StringFormat(Lng_Get("compatibility.part1"), $MM_LIST_CONTENT[$iCount][3]) & @CRLF
 					ExitLoop
 				EndIf
 			Next
@@ -818,7 +818,7 @@ Func TreeViewColor($auTreeView)
 	Next
 
 	If $sCompatibilityMessage <> "" Then
-		$sCompatibilityMessage &= @CRLF & Lng_Get("message.compatibility.part2")
+		$sCompatibilityMessage &= @CRLF & Lng_Get("compatibility.part2")
 		GUICtrlSetState($hModCompatibility, $GUI_ENABLE)
 	EndIf
 EndFunc   ;==>TreeViewColor

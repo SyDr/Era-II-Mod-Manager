@@ -1,0 +1,73 @@
+{
+	"lang" :
+	{
+		"code" : "en_US",
+		"name" : "English",
+		"author" : "Aliaksei SyDr Karalenka"
+	},
+	"mod_list" :
+	{
+		"caption" : "Mod list",
+		"up" : "Move up",
+		"down" : "Move down",
+		"enable" : "Enable",
+		"disable" : "Disable",
+		"missing" : "%s (missing mod)",
+		"remove" : "Remove",
+		"group" :
+		{
+			"enabled" : "Enabled",
+			"enabled_with_priority" : "Enabled (%+i)",
+			"disabled" : "Disabled"
+		},
+		"more" : "More actions",
+		"plugins" : "Plugins",
+		"homepage" : "Go to webpage",
+		"delete" : "Delete",
+		"delete_confirm" : "Do you really want to delete this mod? \n%s\n\n(The mod will be moved to recycle bin, if it's possible))",
+		"add_new" : "Add new mod(s)",
+		"compatibility" : "Compatibility",
+		"open_dir" : "Open mod directory"
+	},
+	"plugins_list" :
+	{
+		"caption" : "Plugins (%s)",
+		"global" : "Global",
+		"before_wog" : "BeforeWoG",
+		"after_wog" : "AfterWoG",
+		"back" : "Back",
+		"default" : "Default"
+	},
+	"info_group" :
+	{
+		"caption" : "Info",
+		"no_info" : "No info available"	
+	},
+	"compatibility" :
+	{
+		"part1" : "Mod %s is incompatible with following mods:",
+		"part2" : "Disable these mods to reduce amount of unexpected bugs :)"
+	},
+	"add_new" :
+	{
+		"caption" : "Mod install (%d from %d)",
+		"filter" : "Era II Mods (*.exe; *.rar; *.zip; *.7z)|All (*.*)",
+		"progress" :
+		{
+			"caption" : "Please wait... Unpacking files...",
+			"scanned" : "Scanned (%i/%i)",
+			"found" : "Found %i"
+			"no_mods" : "There is no mod in the specified file. \n\nThe possible reasons are: \n1) You use an out-of-date program version. \n2) You're trying to add not supported mod file (probably not a mod at all)."
+		},
+		"unpacking" : "Please wait... Unpacking files...",
+		"install" : "Install",
+		"reinstall" : "Reinstall",
+		"installed" : "Please wait... Installing...",
+		"dont_install" : "Don't install",
+		"next_mod" : "Next mod",
+		"close" : "Close",
+		"exit" : "Exit",
+		"version_installed" : "Mod is installed (version %s)",
+		"install_package" : "Install package (version %s)"
+	}	
+}

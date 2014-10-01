@@ -1,9 +1,6 @@
 ; Author:         Aliaksei SyDr Karalenka
 
-;~ #include <File.au3>
-#include <GUIConstantsEx.au3>
-
-#include "lng.au3"
+#include "data_fwd.au3"
 
 #include-once
 

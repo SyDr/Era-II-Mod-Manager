@@ -3,85 +3,69 @@
 #include <Array.au3>
 #include <File.au3>
 
-#include "include\IniVirtual.au3"
+#include "include\JSMN.au3"
 #include "data_fwd.au3"
 
 #include-once
-
 
 Func Lng_Load()
 	Local $sText = FileRead(@ScriptDir & "\lng\" & $MM_SETTINGS_LANGUAGE)
 	If @error Then Return SetError(1, @extended, "Can't read " & @ScriptDir & "\lng\" & $MM_SETTINGS_LANGUAGE)
 
-	Local $aIni = _IniVirtual_Initial($sText)
-
-	Local $aSections = _IniVirtual_ReadSectionNames($aIni)
-
-	Local $aResult[1][2] = [[0, 0]]
-
-	For $iCount = 1 To $aSections[0]
-		Local $aTmp = _IniVirtual_ReadSection($aIni, $aSections[$iCount])
-
-		ReDim $aResult[UBound($aResult, $UBOUND_ROWS) + $aTmp[0][0]][2]
-
-		For $jCount = 1 To $aTmp[0][0]
-			$aResult[$aResult[0][0] + $jCount][0] = $aTmp[$jCount][0]
-			$aResult[$aResult[0][0] + $jCount][1] = $aTmp[$jCount][1]
-		Next
-
-		$aResult[0][0] += $aTmp[0][0]
-	Next
-
-	_ArraySort($aResult, 0, 1, $aResult[0][0])
-
-	$MM_LNG_CACHE = $aResult
+	$MM_LNG_CACHE = Jsmn_Decode($sText)
 
 	Return SetError(0, 0, "") ; everething ok
 EndFunc   ;==>Lng_Load
 
 Func Lng_LoadList()
-	Local $asTemp = _FileListToArray(@ScriptDir & "\lng\", "*.ini", 1)
+	Local $asTemp = _FileListToArray(@ScriptDir & "\lng\", "*.json", 1)
 	Local $asReturn[UBound($asTemp, $UBOUND_ROWS)][2] = [[$asTemp[0]]]
-	Local $sText, $aIni
+	Local $sText, $vDecoded
 
 	For $i = 1 To $asTemp[0]
-		$sText = FileRead(@ScriptDir & "\lng\" & $asTemp[$i])
-		$aIni = _IniVirtual_Initial($sText)
-		$asReturn[$i][0] = _IniVirtual_Read($aIni, "lang.info", "lang.name", "")
 		$asReturn[$i][1] = $asTemp[$i]
+		$sText = FileRead(@ScriptDir & "\lng\" & $asTemp[$i])
+
+		If @error Then
+			$asReturn[$i][1] = "Can't read file " & @ScriptDir & "\lng\" & $asTemp[$i]
+		Else
+			$vDecoded = Jsmn_Decode($sText)
+			If @error Then
+				$asReturn[$i][0] = "1 Error when parsing " & @ScriptDir & "\lng\" & $asTemp[$i]
+			Else
+				If Not IsObj($vDecoded) Then
+					$asReturn[$i][0] = "2 Error when parsing " & @ScriptDir & "\lng\" & $asTemp[$i]
+				ElseIf Not IsObj($vDecoded.Item("lang")) Then
+					$asReturn[$i][0] = "3 Error when parsing " & @ScriptDir & "\lng\" & $asTemp[$i]
+				Else
+					$asReturn[$i][0] = $vDecoded.Item("lang").Item("name")
+				EndIf
+			EndIf
+		EndIf
 	Next
 
 	Return $asReturn
 EndFunc
 
 Func Lng_Get(Const ByRef $sKeyName)
-	If Not IsArray($MM_LNG_CACHE) Then
-		Lng_Load()
-	EndIf
+	If Not IsObj($MM_LNG_CACHE) Then Lng_Load()
+	If Not IsObj($MM_LNG_CACHE) Then Return $sKeyName
 
-	If Not IsArray($MM_LNG_CACHE) Then
-		Return $sKeyName
-	EndIf
+	Local $sReturn
+	Local $aParts = StringSplit($sKeyName, ".")
 
-	Local $iLeft = 1, $iRight = $MM_LNG_CACHE[0][0], $iIndex
+	Switch $aParts[0]
+		Case 1
+			$sReturn = $MM_LNG_CACHE.Item($aParts[1])
+		Case 2
+			$sReturn = $MM_LNG_CACHE.Item($aParts[1]).Item($aParts[2])
+		Case 3
+			$sReturn = $MM_LNG_CACHE.Item($aParts[1]).Item($aParts[2]).Item($aParts[3])
+		Case 4
+			$sReturn = $MM_LNG_CACHE.Item($aParts[1]).Item($aParts[2]).Item($aParts[3]).Item($aParts[4])
+	EndSwitch
 
-	While $iLeft <= $iRight
-		$iIndex = Floor(($iLeft + $iRight) / 2)
-
-		If $sKeyName < $MM_LNG_CACHE[$iIndex][0] Then
-			$iRight = $iIndex - 1
-		ElseIf $sKeyName > $MM_LNG_CACHE[$iIndex][0] Then
-			$iLeft = $iIndex + 1
-		Else
-			$iLeft = $iRight + 1
-		EndIf
-	WEnd
-
-	If $iIndex > $MM_LNG_CACHE[0][0] Or $MM_LNG_CACHE[$iIndex][0] <> $sKeyName Then
-		Return $sKeyName ; not found
-	Else
-		Return $MM_LNG_CACHE[$iIndex][1]
-	EndIf
+	Return $sReturn ? $sReturn : $sKeyName
 EndFunc   ;==>Lng_Get
 
 Func Lng_GetF(Const ByRef $sKeyName, $vParam1, $vParam2 = Default)
