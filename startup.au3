@@ -38,13 +38,10 @@ Func StartUp_Assoc_Delete()
 
 	RegDelete("HKCR\.emp")
 	RegDelete("HKCR\Era.ModManager.Package")
-	__StartUp_Assoc_Notify_System()
-	Exit
-EndFunc   ;==>StartUp_Assoc_Delete
 
-Func __StartUp_Assoc_Notify_System()
 	Local Const $SHCNE_ASSOCCHANGED = 0x8000000
 	Local Const $SHCNF_IDLIST = 0
 
 	DllCall("shell32.dll", "none", "SHChangeNotify", "long", $SHCNE_ASSOCCHANGED, "int", $SHCNF_IDLIST, "ptr", Null, "ptr", Null)
-EndFunc   ;==>__StartUp_Assoc_Notify_System
+	Exit
+EndFunc   ;==>StartUp_Assoc_Delete

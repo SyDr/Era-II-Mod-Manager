@@ -1,0 +1,73 @@
+{
+	"lang" :
+	{
+		"code" : "Cn_Simp",
+		"name" : "简体中文",
+		"author" : "kswdiy"
+	},
+	"mod_list" :
+	{
+		"caption" : "MOD的加载顺序列表 (在最前顶部加载就越优先)",
+		"up" : "上 移",
+		"down" : "下 移",
+		"enable" : "激 活",
+		"disable" : "禁 用",
+		"missing" : "%s (mod丢失)",
+		"remove" : "移 除",
+		"group" :
+		{
+			"enabled" : "激活",
+			"enabled_with_priority" : "激活 (%+i)",
+			"disabled" : "禁用"
+		},
+		"more" : "附加操作",
+		"plugins" : "插件",
+		"homepage" : "访问MOD网页",
+		"delete" : "删 除",
+		"delete_confirm" : "确定删除下面这个MOD吗? \n\n%s\n\n(这个MOD将被删除存放到回收站)",
+		"add_new" : "添加Mod",
+		"compatibility" : "兼容性",
+		"open_dir" : "打开MOD目录"
+	},
+	"plugins_list" :
+	{
+		"caption" : "插件 (%s)",
+		"global" : "Global",
+		"before_wog" : "BeforeWoG",
+		"after_wog" : "AfterWoG",
+		"back" : "Back", /* Translate this, please*/
+		"default" : "Default" /* Translate this, please*/
+	},
+	"info_group" :
+	{
+		"caption" : "Mod相关信息", /* caption changed from "Mod Info" to "Info". Fix please.*/
+		"no_info" : "无任何信息"	
+	},
+	"compatibility" :
+	{
+		"part1" : "Mod %s 与如下Mod不兼容:",
+		"part2" : "禁用这些Mod以减少不必要出现的Bug :)"
+	},
+	"add_new" :
+	{
+		"caption" : "Mod 安装 (%d/%d)",
+		"filter" : "Era II Mod 封包格式 (*.exe; *.rar; *.zip; *.7z)|全部 (*.*)",
+		"progress" :
+		{
+			"caption" : "请稍候... 解压文件中...",
+			"scanned" : "扫描 (%i/%i)",
+			"found" : "找到 %i"
+			"no_mods" : "这不是一个标准的MOD目录结构的文件. \n%s\n\n可能的原因: \n1) 你使用的程序版本平台太低. \n2) 您试图添加文件不支持MOD封包目录结构(可能根本不是一个MOD). \n\n请手动安装MOD."
+		},
+		"unpacking" : "请稍等... 运行操作中...",
+		"install" : "安装",
+		"reinstall" : "重新安装",
+		"installed" : "请稍候... 安装中...",
+		"dont_install" : "不安装",
+		"next_mod" : "下一个 mod",
+		"close" : "关闭",
+		"exit" : "退出",
+		"version_installed" : "Mod 已安装 (版本: %s)",
+		"install_package" : "安装封包版本: %s"
+	}	
+}

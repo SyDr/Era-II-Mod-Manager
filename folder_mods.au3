@@ -231,24 +231,13 @@ Func Mod_InfoLoad($sModName, $sPreferFile = "")
 	If $sPreferFile <> "" Then $sReturn = FileRead($MM_LIST_DIR_PATH & "\" & $sModName & "\" & $sPreferFile)
 	If $sPreferFile = "" Or @error Then $sReturn = FileRead($MM_LIST_DIR_PATH & "\" & $sModName & "\Readme.txt")
 	If @error Then $sReturn = FileRead($MM_LIST_DIR_PATH & "\" & $sModName & "\Info.txt")
-	If @error Or $sReturn = "" Then $sReturn = Lng_Get("group.modinfo.no_info")
+	If @error Or $sReturn = "" Then $sReturn = Lng_Get("info_group.no_info")
 	Return $sReturn
 EndFunc   ;==>Mod_InfoLoad
 
 Func Mod_GetVersion($sModName)
 	Return IniRead($MM_LIST_DIR_PATH & "\" & $sModName & "\mod_info.ini", "info", "Version", "0.0")
 EndFunc   ;==>Mod_GetVersion
-
-Func Mod_MakeDisplayName($sName, $bDNE)
-	Local $sReturn = ""
-	If $bDNE Then
-		$sReturn = $sName & " " & Lng_Get("group.modlist.missing_mod")
-	Else
-		$sReturn = $sName
-	EndIf
-
-	Return $sReturn
-EndFunc   ;==>Mod_MakeDisplayName
 
 Func Mod_GetIndexByID($sModID)
 	For $iCount = 1 To $MM_LIST_CONTENT[0][0]
