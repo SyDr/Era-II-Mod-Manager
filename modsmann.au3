@@ -310,7 +310,7 @@ Func SD_GUI_Mod_AddByDnD($hwnd, $msg, $wParam, $lParam)
 	GUISetState(@SW_RESTORE, $hFormMain)
 
 	If $aModList[0][0] = 0 Then
-		MsgBox($MB_SYSTEMMODAL, "", StringFormat(Lng_Get("add_new.no_mods"), "0_O"), Default, $hFormMain)
+		MsgBox($MB_SYSTEMMODAL, "", StringFormat(Lng_Get("add_new.progress.no_mods"), "0_O"), Default, $hFormMain)
 		Return "GUI_RUNDEFMSG"
 	EndIf
 
@@ -330,7 +330,7 @@ EndFunc   ;==>SD_GUI_Mod_AddByDnD
 Func Mod_ListCheck($aFileList, $sDir = "")
 	Local $iTotalMods = 0
 	Local $aModList[$aFileList[0] + 1][9] ; FilePath, ModName, ModLocalizedName, ModLocalizedDescription, Version, MinVersion, InstalledVersion
-	ProgressOn(Lng_Get("add_new.progress.title"), "", "", Default, Default, $DLG_MOVEABLE)
+	ProgressOn(Lng_Get("add_new.progress.caption"), "", "", Default, Default, $DLG_MOVEABLE)
 	For $iCount = 1 To $aFileList[0]
 		Local $sPackedPath = $sDir & $aFileList[$iCount]
 		ProgressSet(Round($iCount / $aFileList[0] * 100) - 1, StringFormat(Lng_Get("add_new.progress.scanned"), $iCount - 1, $aFileList[0]) & @LF & $aFileList[$iCount] & @LF & StringFormat(Lng_Get("add_new.progress.found"), $iTotalMods))
@@ -372,7 +372,7 @@ Func SD_GUI_Mod_Add()
 	GUISetState(@SW_RESTORE, $hFormMain)
 
 	If $aModList[0][0] = 0 Then
-		MsgBox($MB_SYSTEMMODAL, "", StringFormat(Lng_Get("add_new.no_mods"), "0_O"), Default, $hFormMain)
+		MsgBox($MB_SYSTEMMODAL, "", StringFormat(Lng_Get("add_new.progress.no_mods"), "0_O"), Default, $hFormMain)
 		Return False
 	EndIf
 
