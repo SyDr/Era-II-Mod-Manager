@@ -38,9 +38,6 @@ Global $auTreeView, $abModCompatibilityMap, $hMoreActionsContextMenuID, $hMoreAc
 Global $hGroupPlugins, $hPluginsList, $hPluginsBack
 Global $aPlugins[1][2], $hPluginsParts[3]
 
-Global $hGroupScenario, $hScenarioInfo
-Global $hButtonScenarioManage, $hButtonScenarioChange, $hButtonScenarioLaunch
-
 Global $hGroupInfo, $hModInfo
 
 Global $sFollowMod = ""
@@ -174,19 +171,10 @@ Func SD_GUI_Create()
 	$hPluginsBack = GUICtrlCreateButton("", $MM_WINDOW_MIN_WIDTH / 2 - 90 - $iItemSpacing, $iTopOffset + 4 * $iItemSpacing - 1, 90, 25)
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
 
-
-	$hGroupScenario = GUICtrlCreateGroup("-", $MM_WINDOW_MIN_WIDTH / 2 + $iItemSpacing, $iTopOffset, $MM_WINDOW_MIN_WIDTH / 2 - $iLeftOffset - $iItemSpacing, $MM_WINDOW_MIN_HEIGHT / 2 - $iMenuHeight - $iItemSpacing - $iTopOffset)
-	$hScenarioInfo = GUICtrlCreateEdit("", $iLeftOffset + $iItemSpacing + $MM_WINDOW_MIN_WIDTH / 2, $iTopOffset + 4 * $iItemSpacing, _
-			$MM_WINDOW_MIN_WIDTH / 2 - $iLeftOffset - 4 * $iItemSpacing - 90, $MM_WINDOW_MIN_HEIGHT / 2 - $iMenuHeight - $iTopOffset - 6 * $iItemSpacing, _
-            BitOR($ES_READONLY, $WS_TABSTOP))
-	$hButtonScenarioManage = GUICtrlCreateButton("", $MM_WINDOW_MIN_WIDTH - 2 * $iItemSpacing - 90, $iTopOffset + 4 * $iItemSpacing - 1, 90, 25)
-	$hButtonScenarioChange = GUICtrlCreateButton("", $MM_WINDOW_MIN_WIDTH - 2 * $iItemSpacing - 90, $iTopOffset + 5 * $iItemSpacing - 1 + 25, 90, 25)
-	$hButtonScenarioLaunch = GUICtrlCreateButton("", $MM_WINDOW_MIN_WIDTH - 2 * $iItemSpacing - 90, $iTopOffset + 8 * $iItemSpacing - 1 + 75, 90, 25)
-	GUICtrlCreateGroup("", -99, -99, 1, 1)
-
-	$hGroupInfo = GUICtrlCreateGroup("-", $MM_WINDOW_MIN_WIDTH / 2 + $iItemSpacing, $MM_WINDOW_MIN_HEIGHT / 2 - $iItemSpacing - $iMenuHeight, $MM_WINDOW_MIN_WIDTH / 2 - $iLeftOffset - $iItemSpacing, $MM_WINDOW_MIN_HEIGHT / 2 + $iItemSpacing - $iTopOffset)
-	$hModInfo = GUICtrlCreateEdit("", $MM_WINDOW_MIN_WIDTH / 2 + $iItemSpacing + $iItemSpacing, _
-			$MM_WINDOW_MIN_HEIGHT / 2 + 3 * $iItemSpacing - $iMenuHeight, $MM_WINDOW_MIN_WIDTH / 2 - $iLeftOffset - 3 * $iItemSpacing, $MM_WINDOW_MIN_HEIGHT / 2 - 4 * $iItemSpacing - $iTopOffset, _
+	$hGroupInfo = GUICtrlCreateGroup("-", $MM_WINDOW_MIN_WIDTH / 2 + $iItemSpacing, $iTopOffset, _
+			$MM_WINDOW_MIN_WIDTH / 2 - $iLeftOffset - $iItemSpacing, $MM_WINDOW_MIN_HEIGHT - $iTopOffset - $iMenuHeight)
+	$hModInfo = GUICtrlCreateEdit("", $MM_WINDOW_MIN_WIDTH / 2 + $iItemSpacing + $iItemSpacing, $iTopOffset + 4 * $iItemSpacing, _
+			$MM_WINDOW_MIN_WIDTH / 2 - $iLeftOffset - 3 * $iItemSpacing, $MM_WINDOW_MIN_HEIGHT - $iMenuHeight - $iTopOffset - 5 * $iItemSpacing, _
 			BitOR($ES_READONLY, $WS_VSCROLL, $WS_TABSTOP))
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
 
@@ -212,8 +200,6 @@ Func SD_GUI_SetResizing()
 	GUICtrlSetResizing($hModMoreActions, $GUI_DOCKALL)
 	GUICtrlSetResizing($hModAdd, $GUI_DOCKLEFT + $GUI_DOCKBOTTOM + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
 	GUICtrlSetResizing($hModOpenFolder, $GUI_DOCKALL)
-	GUICtrlSetResizing($hScenarioInfo, $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
-	GUICtrlSetResizing($hGroupScenario, $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
 	GUICtrlSetResizing($hGroupInfo, $GUI_DOCKLEFT + $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKBOTTOM)
 	GUICtrlSetResizing($hModInfo, $GUI_DOCKLEFT + $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKBOTTOM)
 EndFunc   ;==>SD_GUI_SetResizing
