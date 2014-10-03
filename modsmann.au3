@@ -31,9 +31,10 @@ AutoItSetOption("GUICloseOnESC", 1)
 #Region Variables
 Global $hFormMain, $hLanguageMenu, $hDummyF5
 Global $aLanguages[1][2]
+Global $hMoreActionsMenu, $hModDelete, $hModAdd, $hModCompatibility, $hModPlugins, $hModHomepage, $hModOpenFolder
 
-Global $hGroupList, $hModList, $hModUp, $hModDown, $hModChangeState, $hModDelete, $hModAdd, $hModCompatibility, $hModPlugins, $hModHomepage, $hModOpenFolder, $hModMoreActions
-Global $auTreeView, $abModCompatibilityMap, $hMoreActionsContextMenuID, $hMoreActionsDummy
+Global $hGroupList, $hModList, $hModUp, $hModDown, $hModChangeState
+Global $auTreeView, $abModCompatibilityMap
 
 Global $hGroupPlugins, $hPluginsList, $hPluginsBack
 Global $aPlugins[1][2], $hPluginsParts[3]
@@ -131,7 +132,7 @@ Func SD_GUI_Create()
 	GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
 	GUISetState(@SW_HIDE) ; this as dirty fix for GUICtrlSetResizing bug in beta 3.3.13.19
 
-	$hLanguageMenu = GUICtrlCreateMenu("&Language")
+	$hLanguageMenu = GUICtrlCreateMenu("-")
 	Local $asTemp = Lng_LoadList()
 	For $iCount = 1 To $asTemp[0][0]
 		$aLanguages[0][0] += 1
@@ -141,6 +142,16 @@ Func SD_GUI_Create()
 		If $aLanguages[$iCount][1] = $MM_SETTINGS_LANGUAGE Then GUICtrlSetState($aLanguages[$iCount][0], $GUI_CHECKED)
 	Next
 
+	$hMoreActionsMenu = GUICtrlCreateMenu("-")
+	$hModPlugins = GUICtrlCreateMenuItem("-", $hMoreActionsMenu)
+	$hModHomepage = GUICtrlCreateMenuItem("-", $hMoreActionsMenu)
+	$hModDelete = GUICtrlCreateMenuItem("-", $hMoreActionsMenu)
+	GUICtrlCreateMenuItem("", $hMoreActionsMenu)
+	$hModAdd = GUICtrlCreateMenuItem("-", $hMoreActionsMenu)
+	$hModCompatibility = GUICtrlCreateMenuItem("-", $hMoreActionsMenu)
+	GUICtrlCreateMenuItem("", $hMoreActionsMenu)
+	$hModOpenFolder = GUICtrlCreateMenuItem("-", $hMoreActionsMenu)
+
 	$hGroupList = GUICtrlCreateGroup("-", $iLeftOffset, $iTopOffset, $MM_WINDOW_MIN_WIDTH / 2 - $iLeftOffset, $MM_WINDOW_MIN_HEIGHT - $iMenuHeight - $iTopOffset)
 	$hModList = GUICtrlCreateTreeView($iLeftOffset + $iItemSpacing, $iTopOffset + 4 * $iItemSpacing, _ ; left, top
 			$MM_WINDOW_MIN_WIDTH / 2 - $iLeftOffset - 3 * $iItemSpacing - 90, $MM_WINDOW_MIN_HEIGHT - $iMenuHeight - $iTopOffset - 5 * $iItemSpacing, _ ; width, height, 90 + $iItemSpacing reserved for buttons column
@@ -149,18 +160,7 @@ Func SD_GUI_Create()
 	$hModDown = GUICtrlCreateButton("", $MM_WINDOW_MIN_WIDTH / 2 - 90 - $iItemSpacing, $iTopOffset + 5 * $iItemSpacing - 1 + 25, 90, 25)
 	$hModChangeState = GUICtrlCreateButton("", $MM_WINDOW_MIN_WIDTH / 2 - 90 - $iItemSpacing, $iTopOffset + 6 * $iItemSpacing - 1 + 2 * 25,90, 25)
 
-	$hModMoreActions = GUICtrlCreateButton("", $MM_WINDOW_MIN_WIDTH / 2 - 90 - $iItemSpacing, $iTopOffset + 8 * $iItemSpacing - 1 + 4 * 25, 90, 25)
-	$hMoreActionsDummy = GUICtrlCreateDummy()
-	$hDummyF5 = GUICtrlCreateDummy()
-	$hMoreActionsContextMenuID = GUICtrlCreateContextMenu($hMoreActionsDummy)
-	$hModPlugins = GUICtrlCreateMenuItem("-", $hMoreActionsDummy)
-	$hModHomepage = GUICtrlCreateMenuItem("-", $hMoreActionsDummy)
-	$hModDelete = GUICtrlCreateMenuItem("-", $hMoreActionsDummy)
-	GUICtrlCreateMenuItem("", $hMoreActionsDummy)
-	$hModAdd = GUICtrlCreateMenuItem("-", $hMoreActionsDummy)
-	$hModCompatibility = GUICtrlCreateMenuItem("-", $hMoreActionsDummy)
-	GUICtrlCreateMenuItem("", $hMoreActionsDummy)
-	$hModOpenFolder = GUICtrlCreateMenuItem("-", $hMoreActionsDummy)
+
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
 
 
@@ -185,9 +185,10 @@ Func SD_GUI_Create()
 
 	WinMove($hFormMain, '', (@DesktopWidth - $MM_WINDOW_WIDTH) / 2, (@DesktopHeight - $MM_WINDOW_HEIGHT) / 2, $MM_WINDOW_WIDTH, $MM_WINDOW_HEIGHT)
 	If $MM_WINDOW_MAXIMIZED Then WinSetState($hFormMain, '', @SW_MAXIMIZE)
-	GUISetState(@SW_SHOW)
+	$hDummyF5 = GUICtrlCreateDummy()
 	Local $AccelKeys[1][2] = [["{F5}", $hDummyF5]]
 	GUISetAccelerators($AccelKeys)
+	GUISetState(@SW_SHOW)
 EndFunc   ;==>SD_GUI_Create
 
 Func SD_GUI_SetResizing()
@@ -197,7 +198,6 @@ Func SD_GUI_SetResizing()
 	GUICtrlSetResizing($hModDown, $GUI_DOCKALL)
 	GUICtrlSetResizing($hModChangeState, $GUI_DOCKALL)
 	GUICtrlSetResizing($hModCompatibility, $GUI_DOCKALL)
-	GUICtrlSetResizing($hModMoreActions, $GUI_DOCKALL)
 	GUICtrlSetResizing($hModAdd, $GUI_DOCKLEFT + $GUI_DOCKBOTTOM + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
 	GUICtrlSetResizing($hModOpenFolder, $GUI_DOCKALL)
 	GUICtrlSetResizing($hGroupInfo, $GUI_DOCKLEFT + $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKBOTTOM)
@@ -218,7 +218,6 @@ Func SD_GUI_Events_Register()
 	GUICtrlSetOnEvent($hModDown, "SD_GUI_Mod_Move_Down")
 	GUICtrlSetOnEvent($hModChangeState, "SD_GUI_Mod_EnableDisableEvent")
 	GUICtrlSetOnEvent($hModCompatibility, "SD_GUI_Mod_Compatibility")
-	GUICtrlSetOnEvent($hModMoreActions, "SD_GUI_MoreActionsPopup")
 	GUICtrlSetOnEvent($hModPlugins, "SD_GUI_Manage_Plugins")
 	GUICtrlSetOnEvent($hModHomepage, "SD_GUI_Mod_Website")
 	GUICtrlSetOnEvent($hModDelete, "SD_GUI_Mod_Delete")
@@ -230,6 +229,7 @@ Func SD_GUI_Events_Register()
 EndFunc   ;==>SD_GUI_Events_Register
 
 Func SD_GUI_SetLng()
+	GUICtrlSetData($hLanguageMenu, Lng_Get("lang.language"))
 	GUICtrlSetData($hGroupList, Lng_Get("mod_list.caption"))
 	GUICtrlSetData($hModUp, Lng_Get("mod_list.up"))
 	GUICtrlSetData($hModDown, Lng_Get("mod_list.down"))
@@ -239,7 +239,7 @@ Func SD_GUI_SetLng()
 	GUICtrlSetData($hModCompatibility, Lng_Get("mod_list.compatibility"))
 	GUICtrlSetData($hModAdd, Lng_Get("mod_list.add_new"))
 	GUICtrlSetData($hModHomepage, Lng_Get("mod_list.homepage"))
-	GUICtrlSetData($hModMoreActions, Lng_Get("mod_list.more"))
+	GUICtrlSetData($hMoreActionsMenu, Lng_Get("mod_list.more"))
 	GUICtrlSetData($hModOpenFolder, Lng_Get("mod_list.open_dir"))
 
 	GUICtrlSetData($hGroupPlugins, Lng_GetF("plugins_list.caption", $MM_LIST_CONTENT[0][0] > 0 ? $MM_LIST_CONTENT[1][3] : ""))
@@ -252,9 +252,6 @@ Func SD_GUI_Mod_Compatibility()
 	MsgBox(4096, "", $sCompatibilityMessage, Default, $hFormMain)
 EndFunc   ;==>SD_GUI_Mod_Compatibility
 
-Func SD_GUI_MoreActionsPopup()
-	_GUICtrlMenu_TrackPopupMenu(GUICtrlGetHandle($hMoreActionsContextMenuID), $hFormMain, -1, -1, 1, 1, 1)
-EndFunc   ;==>SD_GUI_MoreActionsPopup
 
 Func SD_GUI_Mod_OpenFolder()
 	Local $iTreeViewIndex = TreeViewGetSelectedIndex()
@@ -953,7 +950,8 @@ Func SD_SwitchView($iNewView = $MM_VIEW_MODS)
 			GUICtrlSetState($hModUp, $GUI_SHOW)
 			GUICtrlSetState($hModDown, $GUI_SHOW)
 			GUICtrlSetState($hModChangeState, $GUI_SHOW)
-			GUICtrlSetState($hModMoreActions, $GUI_SHOW)
+			GUICtrlSetState($hModPlugins, $GUI_ENABLE)
+			GUICtrlSetState($hModDelete, $GUI_ENABLE)
 
 			TreeViewTryFollow($sFollowMod)
 		Case $MM_VIEW_PLUGINS
@@ -962,7 +960,8 @@ Func SD_SwitchView($iNewView = $MM_VIEW_MODS)
 			GUICtrlSetState($hModUp, $GUI_HIDE)
 			GUICtrlSetState($hModDown, $GUI_HIDE)
 			GUICtrlSetState($hModChangeState, $GUI_HIDE)
-			GUICtrlSetState($hModMoreActions, $GUI_HIDE)
+			GUICtrlSetState($hModPlugins, $GUI_DISABLE)
+			GUICtrlSetState($hModDelete, $GUI_DISABLE)
 
 			GUICtrlSetState($hGroupPlugins, $GUI_SHOW)
 			GUICtrlSetState($hPluginsList, $GUI_SHOW)
