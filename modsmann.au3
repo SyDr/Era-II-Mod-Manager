@@ -31,7 +31,7 @@ AutoItSetOption("GUICloseOnESC", 1)
 #Region Variables
 Global $hFormMain, $hLanguageMenu, $hDummyF5
 Global $aLanguages[1][2]
-Global $hMoreActionsMenu, $hModDelete, $hModAdd, $hModCompatibility, $hModPlugins, $hModHomepage, $hModOpenFolder
+Global $hMoreActionsMenu, $hModDelete, $hModAdd, $hModCompatibility, $hModPlugins, $hModHomepage, $hModOpenFolder, $hModDirChange
 
 Global $hGroupList, $hModList, $hModUp, $hModDown, $hModChangeState
 Global $auTreeView, $abModCompatibilityMap
@@ -55,6 +55,7 @@ If $CMDLine[0] > 0 And $CMDLine[1] = '/assocdel' Then
 	StartUp_Assoc_Delete()
 EndIf
 
+Settings_DefineWorkDir()
 $MM_SETTINGS_LANGUAGE = Settings_Get("Language")
 
 If $CMDLine[0] > 0 Then
@@ -95,8 +96,6 @@ Func MainLoop()
 		EndIf
 	WEnd
 EndFunc
-
-
 
 Func SD_GUI_Language_Change()
 	Local $iIndex = -1
@@ -151,6 +150,8 @@ Func SD_GUI_Create()
 	$hModCompatibility = GUICtrlCreateMenuItem("-", $hMoreActionsMenu)
 	GUICtrlCreateMenuItem("", $hMoreActionsMenu)
 	$hModOpenFolder = GUICtrlCreateMenuItem("-", $hMoreActionsMenu)
+	$hModDirChange = GUICtrlCreateMenuItem("-", $hMoreActionsMenu)
+	If Settings_Get("Portable") Then GUICtrlSetState($hModDirChange, $GUI_DISABLE)
 
 	$hGroupList = GUICtrlCreateGroup("-", $iLeftOffset, $iTopOffset, $MM_WINDOW_MIN_WIDTH / 2 - $iLeftOffset, $MM_WINDOW_MIN_HEIGHT - $iMenuHeight - $iTopOffset)
 	$hModList = GUICtrlCreateTreeView($iLeftOffset + $iItemSpacing, $iTopOffset + 4 * $iItemSpacing, _ ; left, top
@@ -223,6 +224,7 @@ Func SD_GUI_Events_Register()
 	GUICtrlSetOnEvent($hModDelete, "SD_GUI_Mod_Delete")
 	GUICtrlSetOnEvent($hModAdd, "SD_GUI_Mod_Add")
 	GUICtrlSetOnEvent($hModOpenFolder, "SD_GUI_Mod_OpenFolder")
+	GUICtrlSetOnEvent($hModDirChange, "SD_GUI_ChangeGameDir")
 	GUICtrlSetOnEvent($hDummyF5, "SD_GUI_Update")
 
 	GUICtrlSetOnEvent($hPluginsBack, "SD_GUI_Plugins_Close")
@@ -241,6 +243,7 @@ Func SD_GUI_SetLng()
 	GUICtrlSetData($hModHomepage, Lng_Get("mod_list.homepage"))
 	GUICtrlSetData($hMoreActionsMenu, Lng_Get("mod_list.more"))
 	GUICtrlSetData($hModOpenFolder, Lng_Get("mod_list.open_dir"))
+	GUICtrlSetData($hModDirChange, Lng_Get("settings.game_dir.change"))
 
 	GUICtrlSetData($hGroupPlugins, Lng_GetF("plugins_list.caption", $MM_LIST_CONTENT[0][0] > 0 ? $MM_LIST_CONTENT[1][3] : ""))
 	GUICtrlSetData($hPluginsBack, Lng_Get("plugins_list.back"))
@@ -519,10 +522,13 @@ Func SD_GUI_Mod_EnableDisableEvent()
 	SD_GUI_Mod_EnableDisable()
 EndFunc   ;==>SD_GUI_Mod_EnableDisableEvent
 
+Func SD_GUI_ChangeGameDir()
+	If Setting_AskForGameDir(False, $hFormMain) Then SD_GUI_Update()
+EndFunc
+
 Func SD_GUI_Update()
 	GUISwitch($hFormMain)
 	TreeViewMain()
-	GUICtrlSetState($auTreeView[1][0], $GUI_FOCUS)
 	TreeViewTryFollow($sFollowMod)
 EndFunc   ;==>SD_GUI_Update
 

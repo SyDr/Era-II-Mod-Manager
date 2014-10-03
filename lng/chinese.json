@@ -70,5 +70,13 @@
 		"exit" : "退出",
 		"version_installed" : "Mod 已安装 (版本: %s)",
 		"install_package" : "安装封包版本: %s"
-	}	
+	},
+	"settings" :
+	{
+		"game_dir" :
+		{
+			"change" : "Change game directory",
+			"caption" : "Select game directory"
+		}
+	}
 }
