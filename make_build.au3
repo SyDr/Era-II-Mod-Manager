@@ -4,14 +4,12 @@
 #include "const.au3"
 
 Clear()
-Global $sFull = $MM_VERSION_SUBTYPE == "release" ? $MM_VERSION : ($MM_VERSION & "." & $MM_VERSION_SUBTYPE)
-
 DirCreate(@ScriptDir & "\Mod Manager\")
 DirCreate(@ScriptDir & "\Output\")
 DirCreate(@ScriptDir & "\Publish\")
 
-If IniRead(@ScriptDir & "\ramm.au3", "Version", "#AutoIt3Wrapper_Res_Fileversion", "") <> $MM_VERSION Then
-	IniWrite(@ScriptDir & "\ramm.au3", "Version", "#AutoIt3Wrapper_Res_Fileversion", $MM_VERSION)
+If IniRead(@ScriptDir & "\ramm.au3", "Version", "#AutoIt3Wrapper_Res_Fileversion", "") <> $MM_VERSION_NUMBER Then
+	IniWrite(@ScriptDir & "\ramm.au3", "Version", "#AutoIt3Wrapper_Res_Fileversion", $MM_VERSION_NUMBER)
 EndIf
 
 ShellExecuteWait(@ProgramFilesDir & "\AutoIt3\SciTE\AutoIt3Wrapper\Autoit3wrapper.exe", "/in ramm.au3", @ScriptDir)
@@ -29,8 +27,8 @@ ShellExecuteWait(@ProgramFilesDir & "\Inno Setup 5\ISCC.exe", "setup.iss", @Scri
 IniWrite(@ScriptDir & "\Mod Manager\settings.ini", "settings", "Portable", 1)
 ShellExecuteWait(@ScriptDir & '\7z\7z.exe', 'a "RAMM.zip" "Mod Manager\*"', @ScriptDir)
 
-FileMove(@ScriptDir & "\RAMM.zip", @ScriptDir & "\Publish\RAMM_" & $sFull & ".zip", $FC_OVERWRITE)
-FileMove(@ScriptDir & "\Output\setup.exe", @ScriptDir & "\Publish\RAMM_" & $sFull & ".exe", $FC_OVERWRITE)
+FileMove(@ScriptDir & "\RAMM.zip", @ScriptDir & "\Publish\RAMM_" & $MM_VERSION & ".zip", $FC_OVERWRITE)
+FileMove(@ScriptDir & "\Output\setup.exe", @ScriptDir & "\Publish\RAMM_" & $MM_VERSION & ".exe", $FC_OVERWRITE)
 Clear()
 
 Func Clear()
