@@ -9,7 +9,7 @@
 
 
 Func StartUp_CheckRunningInstance()
-	Local $hSingleton = _Singleton("EMMat." & Hex(StringToBinary(@ScriptDir)), 1)
+	Local $hSingleton = _Singleton("RAMM {{C3125006-CAFE-4F97-B2A5-B287236A9DC6}", 1)
 
 	If $hSingleton = 0 Then
 		If WinActivate($MM_TITLE) Then Exit
