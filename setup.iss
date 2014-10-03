@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "RA Mod Manager"
-#define MyAppVersion "0.90.0"
+#define MyAppVersion GetFileVersion("Mod Manager\ramm.exe")
 #define MyAppPublisher "Aliaksei SyDr Karalenka"
 #define MyAppURL "http://wforum.heroes35.net/"
 #define MyAppExeName "ramm.exe"
