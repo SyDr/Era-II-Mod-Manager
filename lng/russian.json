@@ -3,7 +3,8 @@
 	{
 		"code" : "ru_RU",
 		"name" : "Русский",
-		"author" : "Aliaksei SyDr Karalenka"
+		"author" : "Aliaksei SyDr Karalenka",
+		"language" : "Язык"
 	},
 	"mod_list" :
 	{

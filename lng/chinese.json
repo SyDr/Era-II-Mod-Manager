@@ -3,7 +3,8 @@
 	{
 		"code" : "Cn_Simp",
 		"name" : "简体中文",
-		"author" : "kswdiy"
+		"author" : "kswdiy",
+		"language" : "Language"
 	},
 	"mod_list" :
 	{
