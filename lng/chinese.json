@@ -57,7 +57,7 @@
 		{
 			"caption" : "请稍候... 解压文件中...",
 			"scanned" : "扫描 (%i/%i)",
-			"found" : "找到 %i"
+			"found" : "找到 %i",
 			"no_mods" : "这不是一个标准的MOD目录结构的文件. \n%s\n\n可能的原因: \n1) 你使用的程序版本平台太低. \n2) 您试图添加文件不支持MOD封包目录结构(可能根本不是一个MOD). \n\n请手动安装MOD."
 		},
 		"unpacking" : "请稍等... 运行操作中...",
@@ -77,6 +77,18 @@
 		{
 			"change" : "Change game directory",
 			"caption" : "Select game directory"
+		}
+	},
+	"update" :
+	{
+		"caption" : "Check for program updates",
+		"up_to_date" : "Program is up to date. Congratulations :)",
+		"cant_check" : "Can't check program update. Open link in browser?",
+		"cant_download" : "Can't download program update. Open link in browser?",
+		"download" :
+		{
+			"caption" : "Downloading...",
+			"progress" : "Downloading program update..."
 		}
 	}
 }

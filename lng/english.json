@@ -57,7 +57,7 @@
 		{
 			"caption" : "Please wait... Unpacking files...",
 			"scanned" : "Scanned (%i/%i)",
-			"found" : "Found %i"
+			"found" : "Found %i",
 			"no_mods" : "There is no mod in the specified file. \n\nThe possible reasons are: \n1) You use an out-of-date program version. \n2) You're trying to add not supported mod file (probably not a mod at all)."
 		},
 		"unpacking" : "Please wait... Unpacking files...",
@@ -77,6 +77,18 @@
 		{
 			"change" : "Change game directory",
 			"caption" : "Select game directory"
+		}
+	},
+	"update" :
+	{
+		"caption" : "Check for program updates",
+		"up_to_date" : "Program is up to date. Congratulations :)",
+		"cant_check" : "Can't check program update. Open link in browser?",
+		"cant_download" : "Can't download program update. Open link in browser?",
+		"download" :
+		{
+			"caption" : "Downloading...",
+			"progress" : "Downloading program update..."
 		}
 	}
 }

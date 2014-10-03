@@ -37,6 +37,7 @@ AutoItSetOption("GUICloseOnESC", 1)
 Global $hFormMain, $hLanguageMenu, $hDummyF5
 Global $aLanguages[1][2]
 Global $hMoreActionsMenu, $hModDelete, $hModAdd, $hModCompatibility, $hModPlugins, $hModHomepage, $hModOpenFolder, $hModDirChange
+Global $hHelpMenu, $hCheckForUpdates
 
 Global $hGroupList, $hModList, $hModUp, $hModDown, $hModChangeState
 Global $auTreeView, $abModCompatibilityMap
@@ -158,6 +159,9 @@ Func SD_GUI_Create()
 	$hModDirChange = GUICtrlCreateMenuItem("-", $hMoreActionsMenu)
 	If Settings_Get("Portable") Then GUICtrlSetState($hModDirChange, $GUI_DISABLE)
 
+	$hHelpMenu = GUICtrlCreateMenu("?")
+	$hCheckForUpdates = GUICtrlCreateMenuItem("-", $hHelpMenu)
+
 	$hGroupList = GUICtrlCreateGroup("-", $iLeftOffset, $iTopOffset, $MM_WINDOW_MIN_WIDTH / 2 - $iLeftOffset, $MM_WINDOW_MIN_HEIGHT - $iMenuHeight - $iTopOffset)
 	$hModList = GUICtrlCreateTreeView($iLeftOffset + $iItemSpacing, $iTopOffset + 4 * $iItemSpacing, _ ; left, top
 			$MM_WINDOW_MIN_WIDTH / 2 - $iLeftOffset - 3 * $iItemSpacing - 90, $MM_WINDOW_MIN_HEIGHT - $iMenuHeight - $iTopOffset - 5 * $iItemSpacing, _ ; width, height, 90 + $iItemSpacing reserved for buttons column
@@ -233,6 +237,7 @@ Func SD_GUI_Events_Register()
 	GUICtrlSetOnEvent($hDummyF5, "SD_GUI_Update")
 
 	GUICtrlSetOnEvent($hPluginsBack, "SD_GUI_Plugins_Close")
+	GUICtrlSetOnEvent($hCheckForUpdates, "SD_GUI_CheckForUpdates")
 EndFunc   ;==>SD_GUI_Events_Register
 
 Func SD_GUI_SetLng()
@@ -254,12 +259,68 @@ Func SD_GUI_SetLng()
 	GUICtrlSetData($hPluginsBack, Lng_Get("plugins_list.back"))
 
 	GUICtrlSetData($hGroupInfo, Lng_Get("info_group.caption"))
+	GUICtrlSetData($hCheckForUpdates, Lng_Get("update.caption"))
 EndFunc   ;==>SD_GUI_SetLng
 
 Func SD_GUI_Mod_Compatibility()
 	MsgBox(4096, "", $sCompatibilityMessage, Default, $hFormMain)
 EndFunc   ;==>SD_GUI_Mod_Compatibility
 
+Func SD_GUI_CheckForUpdates()
+	GUISetState(@SW_DISABLE, $hFormMain)
+
+	Local Const $sPath = "https://dl.dropboxusercontent.com/u/24541426/RAMM"
+	Local $bVersion = InetRead($sPath & "/version.json", 1)
+	Local $iAnswer
+
+	If @error Then
+		$iAnswer = MsgBox($MB_YESNO + $MB_ICONQUESTION + $MB_TASKMODAL, "", Lng_Get("update.cant_check"), Default, $hFormMain)
+		If $iAnswer = $IDYES Then Utils_LaunchInBrowser($sPath)
+		GUISetState(@SW_ENABLE, $hFormMain)
+		GUISetState(@SW_RESTORE, $hFormMain)
+		Return
+	EndIf
+
+	Local $sVersion = BinaryToString($bVersion)
+	Local $oVersion = Jsmn_Decode($sVersion)
+	If Not IsObj($oVersion) Then
+		$iAnswer = MsgBox($MB_YESNO + $MB_ICONQUESTION + $MB_TASKMODAL, "", Lng_Get("update.cant_check"), Default, $hFormMain)
+		If $iAnswer = $IDYES Then Utils_LaunchInBrowser($sPath)
+		GUISetState(@SW_ENABLE, $hFormMain)
+		GUISetState(@SW_RESTORE, $hFormMain)
+		Return
+	EndIf
+
+	If $oVersion.Item($MM_VERSION_SUBTYPE) <> $MM_VERSION_NUMBER Then
+		ProgressOn("update.download.caption", "update.download.progress")
+		Local $sTempDir = _TempFile()
+		Local $sFileName = "RAMM_" & $MM_VERSION & ".exe"
+		DirCreate($sTempDir)
+
+		Local $iDownload = InetGet($sPath & "/" & $MM_VERSION_SUBTYPE & "/" & $sFileName, $sTempDir & "\" & $sFileName, Default, 1)
+
+		While Not InetGetInfo($iDownload, 2) And Not InetGetInfo($iDownload, 3) And Not InetGetInfo($iDownload, 4)
+			Sleep(10)
+			ProgressSet(InetGetInfo($iDownload, 0) / InetGetInfo($iDownload, 1) * 100)
+		WEnd
+
+		Local $bIsSuccess = InetGetInfo($iDownload, 3)
+
+		InetClose($iDownload)
+		ProgressOff()
+		If $bIsSuccess Then
+			ShellExecute($sTempDir & "\" & $sFileName)
+		Else
+			MsgBox($MB_YESNO + $MB_ICONQUESTION + $MB_TASKMODAL, "", Lng_Get("update.cant_download"), Default, $hFormMain)
+			If $iAnswer = $IDYES Then Utils_LaunchInBrowser($sPath)
+		EndIf
+	Else
+		MsgBox($MB_ICONINFORMATION + $MB_TASKMODAL, "", Lng_Get("update.up_to_date"), Default, $hFormMain)
+	EndIf
+
+	GUISetState(@SW_ENABLE, $hFormMain)
+	GUISetState(@SW_RESTORE, $hFormMain)
+EndFunc   ;==>SD_GUI_Mod_Compatibility
 
 Func SD_GUI_Mod_OpenFolder()
 	Local $iTreeViewIndex = TreeViewGetSelectedIndex()
