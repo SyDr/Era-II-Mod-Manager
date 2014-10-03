@@ -1,14 +1,18 @@
 #include <AutoItConstants.au3>
 #include <FileConstants.au3>
 
+#include "const.au3"
+
 Clear()
-Global $sVersion = IniRead(@ScriptDir & "\props.ini", "version", "version", "0.0")
-Global $sType = IniRead(@ScriptDir & "\props.ini", "version", "type", "")
-Global $sFull = $sType ? ($sVersion & "." & $sType) : $sVersion
+Global $sFull = $MM_VERSION_SUBTYPE == "release" ? $MM_VERSION : ($MM_VERSION & "." & $MM_VERSION_SUBTYPE)
 
 DirCreate(@ScriptDir & "\Mod Manager\")
 DirCreate(@ScriptDir & "\Output\")
 DirCreate(@ScriptDir & "\Publish\")
+
+If IniRead(@ScriptDir & "\ramm.au3", "Version", "#AutoIt3Wrapper_Res_Fileversion", "") <> $MM_VERSION Then
+	IniWrite(@ScriptDir & "\ramm.au3", "Version", "#AutoIt3Wrapper_Res_Fileversion", $MM_VERSION)
+EndIf
 
 ShellExecuteWait(@ProgramFilesDir & "\AutoIt3\SciTE\AutoIt3Wrapper\Autoit3wrapper.exe", "/in ramm.au3", @ScriptDir)
 
