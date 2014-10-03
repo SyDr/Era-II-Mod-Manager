@@ -292,9 +292,9 @@ Func SD_GUI_CheckForUpdates()
 	EndIf
 
 	If $oVersion.Item($MM_VERSION_SUBTYPE) <> $MM_VERSION_NUMBER Then
-		ProgressOn("update.download.caption", "update.download.progress")
+		ProgressOn(Lng_Get("update.download.caption"), Lng_Get("update.download.progress"))
 		Local $sTempDir = _TempFile()
-		Local $sFileName = "RAMM_" & $MM_VERSION & ".exe"
+		Local $sFileName = "RAMM_" & ($MM_VERSION_SUBTYPE == "release" ? $oVersion.Item($MM_VERSION_SUBTYPE) : ($oVersion.Item($MM_VERSION_SUBTYPE) & "." & $MM_VERSION_SUBTYPE)) & ".exe"
 		DirCreate($sTempDir)
 
 		Local $iDownload = InetGet($sPath & "/" & $MM_VERSION_SUBTYPE & "/" & $sFileName, $sTempDir & "\" & $sFileName, Default, 1)
