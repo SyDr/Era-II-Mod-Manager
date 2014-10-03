@@ -1,7 +1,7 @@
 #NoTrayIcon
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=icons\preferences-system.ico
-#AutoIt3Wrapper_Outfile=modsmann.exe
+#AutoIt3Wrapper_Outfile=ramm.exe
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseUpx=y
 #AutoIt3Wrapper_Res_Description=A mod manager for Era II
