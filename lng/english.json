@@ -70,5 +70,13 @@
 		"exit" : "Exit",
 		"version_installed" : "Mod is installed (version %s)",
 		"install_package" : "Install package (version %s)"
-	}	
+	},
+	"settings" :
+	{
+		"game_dir" :
+		{
+			"change" : "Change game directory",
+			"caption" : "Select game directory"
+		}
+	}
 }
