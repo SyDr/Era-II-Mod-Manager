@@ -310,6 +310,7 @@ Func SD_GUI_CheckForUpdates()
 		ProgressOff()
 		If $bIsSuccess Then
 			ShellExecute($sTempDir & "\" & $sFileName, "/SILENT")
+			Exit
 		Else
 			MsgBox($MB_YESNO + $MB_ICONQUESTION + $MB_TASKMODAL, "", Lng_Get("update.cant_download"), Default, $hFormMain)
 			If $iAnswer = $IDYES Then Utils_LaunchInBrowser($sPath)
