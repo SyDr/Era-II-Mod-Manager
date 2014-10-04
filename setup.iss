@@ -31,6 +31,15 @@ ShowTasksTreeLines=True
 AlwaysShowGroupOnReadyPage=True
 AlwaysShowDirOnReadyPage=True
 AppMutex=RAMM {{C3125006-CAFE-4F97-B2A5-B287236A9DC6}
+DisableDirPage=auto
+DisableProgramGroupPage=auto
+CreateUninstallRegKey=yes
+UninstallDisplayIcon={app}\ramm.exe
+DisableWelcomePage=True
+DisableFinishedPage=True
+DisableReadyPage=True
+DisableReadyMemo=True
+AppCopyright=Aliaksei SyDr Karalenka
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -53,7 +62,7 @@ Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: 
 Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: quicklaunchicon
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#MyAppExeName}"; Flags: nowait postinstall; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"
 
 [ThirdParty]
 UseRelativePaths=True
