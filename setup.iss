@@ -36,7 +36,6 @@ DisableProgramGroupPage=auto
 CreateUninstallRegKey=yes
 UninstallDisplayIcon={app}\ramm.exe
 DisableWelcomePage=True
-DisableFinishedPage=True
 DisableReadyPage=True
 DisableReadyMemo=True
 AppCopyright=Aliaksei SyDr Karalenka
