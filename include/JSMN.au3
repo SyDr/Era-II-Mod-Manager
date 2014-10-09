@@ -2,7 +2,7 @@
 ; JSMN UDF (2013/05/19)
 ; Purpose: A Non-Strict JavaScript Object Notation (JSON) Parser UDF
 ; Author: Ward
-; Required: AutoIt v3.3.8.0
+; Required: AutoIt v3.3.14.0
 ;
 ; JSON website: http://www.json.org/index.html
 ; jsmn website: http://zserge.com/jsmn.html
@@ -17,22 +17,10 @@
 ; Public Functions:
 ; Jsmn_StringEncode($String, $Option = 0)
 ; Jsmn_StringDecode($String)
-; Jsmn_IsObject(ByRef $Object)
-; Jsmn_IsNull(ByRef $Null)
 ; Jsmn_Encode_Compact($Data, $Option = 0)
 ; Jsmn_Encode_Pretty($Data, $Option, $Indent, $ArraySep, $ObjectSep, $ColonSep, $ArrayCRLF = Default, $ObjectCRLF = Default, $NextIdent = "")
 ; Jsmn_Encode($Data, $Option = 0, $Indent = Default, $ArraySep = Default, $ObjectSep = Default, $ColonSep = Default)
 ; Jsmn_Decode($Json, $InitTokenCount = 1000)
-; Jsmn_ObjTo2DArray(ByRef $Object)
-; Jsmn_ObjFrom2DArray(ByRef $Array)
-; Jsmn_ObjCreate()
-; Jsmn_ObjPut(ByRef $Object, $Key, $Value)
-; Jsmn_ObjGet(ByRef $Object, $Key)
-; Jsmn_ObjDelete(ByRef $Object, $Key)
-; Jsmn_ObjExists(ByRef $Object, $Key)
-; Jsmn_ObjGetCount(ByRef $Object)
-; Jsmn_ObjGetKeys(ByRef $Object)
-; Jsmn_ObjClear(ByRef $Object)
 ; -----------------------------------------------------------------------------
 
 #Include-once
@@ -90,15 +78,15 @@ Func _Jsmn_Startup()
 		$_Jsmn_StringEncodePtr = $_Jsmn_CodeBufferPtr + $Offset_Encode
 		$_Jsmn_StringDecodePtr = $_Jsmn_CodeBufferPtr + $Offset_Decode
 
-		Local $Object = Jsmn_ObjCreate()
-		$_Jsmn_EmptyArray = $Object.Keys()
+		Local $Object[]
+		$_Jsmn_EmptyArray = MapKeys($Object)
 
 		OnAutoItExitRegister("_Jsmn_Shutdown")
 	EndIf
 EndFunc
 
 Func _Jsmn_Token(ByRef $Json, $Ptr, ByRef $Next)
-	If $Next = -1 Then Return Default
+	If $Next = -1 Then Return Null
 
 	Local $Token = DllStructCreate("int;int;int;int", $Ptr + ($Next * $_Jsmn_TokenSize))
 	Local $Type = DllStructGetData($Token, 1)
@@ -109,7 +97,7 @@ Func _Jsmn_Token(ByRef $Json, $Ptr, ByRef $Next)
 
 	If $Type = 0 And $Start = 0 And $End = 0 And $Size = 0 Then ; Null Item
 		$Next = -1
-		Return Default
+		Return Null
 	EndIf
 
 	Switch $Type
@@ -121,7 +109,7 @@ Func _Jsmn_Token(ByRef $Json, $Ptr, ByRef $Next)
 				Case "false"
 					Return False
 				Case "null"
-					Return Default
+					Return Null
 				Case Else
 					If StringRegExp($Primitive, "^[+\-0-9]") Then
 						Return Number($Primitive)
@@ -131,14 +119,13 @@ Func _Jsmn_Token(ByRef $Json, $Ptr, ByRef $Next)
 			EndSwitch
 
 		Case 1 ; JSMN_OBJECT
-			Local $Object = Jsmn_ObjCreate()
+			Local $Object[]
 			For $i = 0 To $Size - 1 Step 2
 				Local $Key = _Jsmn_Token($Json, $Ptr, $Next)
 				Local $Value = _Jsmn_Token($Json, $Ptr, $Next)
 				If Not IsString($Key) Then $Key = Jsmn_Encode($Key)
 
-				If $Object.Exists($Key) Then $Object.Remove($Key)
-				$Object.Add($Key, $Value)
+				$Object[$Key] = $Value
 			Next
 			Return $Object
 
@@ -173,14 +160,6 @@ Func Jsmn_StringDecode($String)
 	Return SetError($Ret[0], 0, DllStructGetData($Buffer, 1))
 EndFunc
 
-Func Jsmn_IsObject(ByRef $Object)
-	Return (IsObj($Object) And ObjName($Object) = "Dictionary")
-EndFunc
-
-Func Jsmn_IsNull(ByRef $Null)
-	Return IsKeyword($Null) Or (Not IsObj($Null) And VarGetType($Null) = "Object")
-EndFunc
-
 Func Jsmn_Encode_Compact($Data, $Option = 0)
 	Local $Json
 	Select
@@ -198,11 +177,11 @@ Func Jsmn_Encode_Compact($Data, $Option = 0)
 			If StringRight($Json, 1) = "," Then $Json = StringTrimRight($Json, 1)
 			Return $Json & "]"
 
-		Case Jsmn_IsObject($Data)
+		Case IsMap($Data)
 			$Json = "{"
-			Local $Keys = $Data.Keys()
+			Local $Keys = MapKeys($Data)
 			For $i = 0 To UBound($Keys) - 1
-				$Json &= '"' & Jsmn_StringEncode($Keys[$i], $Option) & '":' & Jsmn_Encode_Compact($Data.Item($Keys[$i]), $Option) & ","
+				$Json &= '"' & Jsmn_StringEncode($Keys[$i], $Option) & '":' & Jsmn_Encode_Compact($Data[$Keys[$i]], $Option) & ","
 			Next
 			If StringRight($Json, 1) = "," Then $Json = StringTrimRight($Json, 1)
 			Return $Json & "}"
@@ -253,8 +232,8 @@ Func Jsmn_Encode_Pretty($Data, $Option, $Indent, $ArraySep, $ObjectSep, $ColonSe
 			If $ArrayCRLF Then Return "[" & $ArrayCRLF & $Json & $ArrayCRLF & $ThisIdent & "]"
 			Return "[" & $Json & "]"
 
-		Case Jsmn_IsObject($Data)
-			If $Data.Count = 0 Then Return "{}"
+		Case IsMap($Data)
+			If UBound($Data) = 0 Then Return "{}"
 			If IsKeyword($ObjectCRLF) Then
 				$ObjectCRLF = ""
 				$Match = StringRegExp($ObjectSep, "[\r\n]+$", 3)
@@ -262,12 +241,12 @@ Func Jsmn_Encode_Pretty($Data, $Option, $Indent, $ArraySep, $ObjectSep, $ColonSe
 			EndIf
 
 			If $ObjectCRLF Then $NextIdent &= $Indent
-			Local $Keys = $Data.Keys()
+			Local $Keys = MapKeys($Data)
 			$Length = UBound($Keys) - 1
 			For $i = 0 To $Length
 				If $ObjectCRLF Then $Json &= $NextIdent
 				$Json &= Jsmn_Encode_Pretty(String($Keys[$i]), $Option, $Indent, $ArraySep, $ObjectSep, $ColonSep) & $ColonSep _
-						& Jsmn_Encode_Pretty($Data.Item($Keys[$i]), $Option, $Indent, $ArraySep, $ObjectSep, $ColonSep, $ArrayCRLF, $ObjectCRLF, $NextIdent)
+						& Jsmn_Encode_Pretty($Data[$Keys[$i]], $Option, $Indent, $ArraySep, $ObjectSep, $ColonSep, $ArrayCRLF, $ObjectCRLF, $NextIdent)
 				If $i < $Length Then $Json &= $ObjectSep
 			Next
 
@@ -336,94 +315,4 @@ Func Jsmn_Decode($Json, $InitTokenCount = 1000)
 
 	Local $Next = 0
 	Return SetError($Ret[0], 0, _Jsmn_Token($Json, DllStructGetPtr($TokenList), $Next))
-EndFunc
-
-Func Jsmn_ObjTo2DArray(ByRef $Object)
-	Local $Length
-	If Jsmn_IsObject($Object) Then
-		Local $Keys = $Object.Keys()
-		$Length = UBound($Keys)
-
-		Local $Array[$Length + 1][2]
-		$Array[0][0] = Default
-		$Array[0][1] = 'JSONObject'
-
-		For $i = 1 To $Length
-			Local $Key = $Keys[$i - 1]
-			Local $Value = $Object.Item($Key)
-
-			$Array[$i][0] = $Key
-			$Array[$i][1] = Jsmn_ObjTo2DArray($Value)
-		Next
-		Return $Array
-
-	ElseIf IsArray($Object) Then
-		$Length = UBound($Object)
-		If $Length = 0 Then Return $Object
-
-		Local $Array[$Length]
-		For $i = 0 To $Length - 1
-			$Array[$i] = Jsmn_ObjTo2DArray($Object[$i])
-		Next
-		Return $Array
-
-	Else
-		Return $Object
-	EndIf
-EndFunc
-
-Func Jsmn_ObjFrom2DArray(ByRef $Array)
-	If UBound($Array, 0) = 2 And $Array[0][0] = Default And $Array[0][1] = 'JSONObject' Then
-		Local $Object = Jsmn_ObjCreate()
-		For $i = 1 To UBound($Array) - 1
-			Jsmn_ObjPut($Object, $Array[$i][0], Jsmn_ObjFrom2DArray($Array[$i][1]))
-		Next
-		Return $Object
-
-	ElseIf IsArray($Array) Then
-		For $i = 0 To UBound($Array) - 1
-			$Array[$i] = Jsmn_ObjFrom2DArray($Array[$i])
-		Next
-		Return $Array
-
-	Else
-		Return $Array
-	EndIf
-EndFunc
-
-Func Jsmn_ObjCreate()
-	Local $Object = ObjCreate('Scripting.Dictionary')
-	$Object.CompareMode = 0
-	Return $Object
-EndFunc
-
-Func Jsmn_ObjPut(ByRef $Object, $Key, $Value)
-	$Key = String($Key)
-	If $Object.Exists($Key) Then $Object.Remove($Key)
-	$Object.Add($Key, $Value)
-EndFunc
-
-Func Jsmn_ObjGet(ByRef $Object, $Key)
-	Return $Object.Item(String($Key))
-EndFunc
-
-Func Jsmn_ObjDelete(ByRef $Object, $Key)
-	$Key = String($Key)
-	If $Object.Exists($Key) Then $Object.Remove($Key)
-EndFunc
-
-Func Jsmn_ObjExists(ByRef $Object, $Key)
-	Return $Object.Exists(String($Key))
-EndFunc
-
-Func Jsmn_ObjGetCount(ByRef $Object)
-	Return $Object.Count
-EndFunc
-
-Func Jsmn_ObjGetKeys(ByRef $Object)
-	Return $Object.Keys()
-EndFunc
-
-Func Jsmn_ObjClear(ByRef $Object)
-	Return $Object.RemoveAll()
 EndFunc

@@ -10,7 +10,7 @@
 
 Func Lng_Load()
 	Local $sText = FileRead(@ScriptDir & "\lng\" & $MM_SETTINGS_LANGUAGE)
-	If @error Then Return SetError(1, @extended, "Can't read " & @ScriptDir & "\lng\" & $MM_SETTINGS_LANGUAGE)
+	If @error Then Return SetError(1, @extended, "Can't read .\lng\" & $MM_SETTINGS_LANGUAGE)
 
 	$MM_LNG_CACHE = Jsmn_Decode($sText)
 
@@ -27,18 +27,18 @@ Func Lng_LoadList()
 		$sText = FileRead(@ScriptDir & "\lng\" & $asTemp[$i])
 
 		If @error Then
-			$asReturn[$i][1] = "Can't read file " & @ScriptDir & "\lng\" & $asTemp[$i]
+			$asReturn[$i][1] = "Can't read .\lng\" & $asTemp[$i]
 		Else
 			$vDecoded = Jsmn_Decode($sText)
 			If @error Then
-				$asReturn[$i][0] = "1 Error when parsing " & @ScriptDir & "\lng\" & $asTemp[$i]
+				$asReturn[$i][0] = StringFormat("Error '%s' when parsing .\lng\%s", @error, $asTemp[$i])
 			Else
-				If Not IsObj($vDecoded) Then
-					$asReturn[$i][0] = "2 Error when parsing " & @ScriptDir & "\lng\" & $asTemp[$i]
-				ElseIf Not IsObj($vDecoded.Item("lang")) Then
-					$asReturn[$i][0] = "3 Error when parsing " & @ScriptDir & "\lng\" & $asTemp[$i]
+				If Not IsMap($vDecoded) Then
+					$asReturn[$i][0] = StringFormat("Error '%s' when parsing .\lng\%s", '$vDecoded is not map', $asTemp[$i])
+				ElseIf Not IsMap($vDecoded["lang"]) Then
+					$asReturn[$i][0] = StringFormat("Error '%s' when parsing .\lng\%s", '$vDecoded["lang"] is not map', $asTemp[$i])
 				Else
-					$asReturn[$i][0] = $vDecoded.Item("lang").Item("name")
+					$asReturn[$i][0] = $vDecoded["lang"]["name"]
 				EndIf
 			EndIf
 		EndIf
@@ -48,21 +48,21 @@ Func Lng_LoadList()
 EndFunc
 
 Func Lng_Get(Const ByRef $sKeyName)
-	If Not IsObj($MM_LNG_CACHE) Then Lng_Load()
-	If Not IsObj($MM_LNG_CACHE) Then Return $sKeyName
+	If Not IsMap($MM_LNG_CACHE) Then Lng_Load()
+	If Not IsMap($MM_LNG_CACHE) Then Return $sKeyName
 
 	Local $sReturn
 	Local $aParts = StringSplit($sKeyName, ".")
 
 	Switch $aParts[0]
 		Case 1
-			$sReturn = $MM_LNG_CACHE.Item($aParts[1])
+			$sReturn = $MM_LNG_CACHE[$aParts[1]]
 		Case 2
-			$sReturn = $MM_LNG_CACHE.Item($aParts[1]).Item($aParts[2])
+			$sReturn = $MM_LNG_CACHE[$aParts[1]][$aParts[2]]
 		Case 3
-			$sReturn = $MM_LNG_CACHE.Item($aParts[1]).Item($aParts[2]).Item($aParts[3])
+			$sReturn = $MM_LNG_CACHE[$aParts[1]][$aParts[2]][$aParts[3]]
 		Case 4
-			$sReturn = $MM_LNG_CACHE.Item($aParts[1]).Item($aParts[2]).Item($aParts[3]).Item($aParts[4])
+			$sReturn = $MM_LNG_CACHE[$aParts[1]][$aParts[2]][$aParts[3]][$aParts[4]] ; who need recursion anyway? :)
 	EndSwitch
 
 	Return $sReturn ? $sReturn : $sKeyName
