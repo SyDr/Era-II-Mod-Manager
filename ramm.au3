@@ -283,7 +283,7 @@ Func SD_GUI_CheckForUpdates()
 
 	Local $sVersion = BinaryToString($bVersion)
 	Local $oVersion = Jsmn_Decode($sVersion)
-	If Not IsObj($oVersion) Then
+	If Not IsMap($oVersion) Then
 		$iAnswer = MsgBox($MB_YESNO + $MB_ICONQUESTION + $MB_TASKMODAL, "", Lng_Get("update.cant_check"), Default, $hFormMain)
 		If $iAnswer = $IDYES Then Utils_LaunchInBrowser($sPath)
 		GUISetState(@SW_ENABLE, $hFormMain)
@@ -291,10 +291,10 @@ Func SD_GUI_CheckForUpdates()
 		Return
 	EndIf
 
-	If $oVersion.Item($MM_VERSION_SUBTYPE) <> $MM_VERSION_NUMBER Then
+	If $oVersion[$MM_VERSION_SUBTYPE] <> $MM_VERSION_NUMBER Then
 		ProgressOn(Lng_Get("update.download.caption"), Lng_Get("update.download.progress"))
 		Local $sTempDir = _TempFile()
-		Local $sFileName = "RAMM_" & ($MM_VERSION_SUBTYPE == "release" ? $oVersion.Item($MM_VERSION_SUBTYPE) : ($oVersion.Item($MM_VERSION_SUBTYPE) & "." & $MM_VERSION_SUBTYPE)) & ".exe"
+		Local $sFileName = "RAMM_" & ($MM_VERSION_SUBTYPE == "release" ? $oVersion[$MM_VERSION_SUBTYPE] : ($oVersion[$MM_VERSION_SUBTYPE] & "." & $MM_VERSION_SUBTYPE)) & ".exe"
 		DirCreate($sTempDir)
 
 		Local $iDownload = InetGet($sPath & "/" & $MM_VERSION_SUBTYPE & "/" & $sFileName, $sTempDir & "\" & $sFileName, Default, 1)
