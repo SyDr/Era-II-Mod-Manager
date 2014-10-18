@@ -8,6 +8,7 @@
 	},
 	"mod_list" :
 	{
+		"mod" : "Mod",	
 		"caption" : "Mod list",
 		"up" : "Move up",
 		"down" : "Move down",

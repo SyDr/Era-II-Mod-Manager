@@ -1,14 +1,9 @@
 ; Author:         Aliaksei SyDr Karalenka
 
-#include <EditConstants.au3>
-#include <GUIConstantsEx.au3>
-
-#include "data_fwd.au3"
+#include-once
+#include "include_fwd.au3"
 #include "folder_mods.au3"
 #include "lng.au3"
-
-#include-once
-
 
 Func PackedMod_IsPackedMod($sFilePath)
 	Local $sModName = PackedMod_GetPackedName($sFilePath)

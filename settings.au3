@@ -1,12 +1,8 @@
 ; Author:         Aliaksei SyDr Karalenka
 
-#include <FileConstants.au3>
-
-#include "data_fwd.au3"
-#include "lng.au3"
-
 #include-once
-
+#include "include_fwd.au3"
+#include "lng.au3"
 
 Func Settings_Get($sName)
 	Switch $sName

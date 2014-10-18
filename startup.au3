@@ -1,12 +1,8 @@
 ; Author:         Aliaksei SyDr Karalenka
 
-#include <Misc.au3>
-
-#include "data_fwd.au3"
-#include "folder_mods.au3"
-
 #include-once
-
+#include "include_fwd.au3"
+#include "folder_mods.au3"
 
 Func StartUp_CheckRunningInstance()
 	Local $hSingleton = _Singleton("RAMM {{C3125006-CAFE-4F97-B2A5-B287236A9DC6}", 1)
