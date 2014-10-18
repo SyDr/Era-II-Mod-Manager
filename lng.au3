@@ -1,50 +1,49 @@
 ; Author:         Aliaksei SyDr Karalenka
 
-#include <Array.au3>
-#include <File.au3>
-
-#include "include\JSMN.au3"
-#include "data_fwd.au3"
-
 #include-once
+#include "include_fwd.au3"
 
 Func Lng_Load()
 	Local $sText = FileRead(@ScriptDir & "\lng\" & $MM_SETTINGS_LANGUAGE)
 	If @error Then Return SetError(1, @extended, "Can't read .\lng\" & $MM_SETTINGS_LANGUAGE)
 
 	$MM_LNG_CACHE = Jsmn_Decode($sText)
+	$MM_LANGUAGE_CODE = IsMap($MM_LNG_CACHE) ? (IsMap($MM_LNG_CACHE["lang"]) ? $MM_LNG_CACHE["lang"]["code"] : "fail") : "fail"
 
 	Return SetError(0, 0, "") ; everething ok
 EndFunc   ;==>Lng_Load
 
 Func Lng_LoadList()
 	Local $asTemp = _FileListToArray(@ScriptDir & "\lng\", "*.json", 1)
-	Local $asReturn[UBound($asTemp, $UBOUND_ROWS)][2] = [[$asTemp[0]]]
+	Local $asReturn[UBound($asTemp, $UBOUND_ROWS)][$MM_LNG_TOTAL] = [[$asTemp[0]]]
 	Local $sText, $vDecoded
 
 	For $i = 1 To $asTemp[0]
-		$asReturn[$i][1] = $asTemp[$i]
+		$asReturn[$i][$MM_LNG_FILE] = $asTemp[$i]
 		$sText = FileRead(@ScriptDir & "\lng\" & $asTemp[$i])
 
 		If @error Then
 			$asReturn[$i][1] = "Can't read .\lng\" & $asTemp[$i]
 		Else
 			$vDecoded = Jsmn_Decode($sText)
+			$asReturn[$i][$MM_LNG_CODE] = "fail"
+			$asReturn[$i][$MM_LNG_MENU_ID] = 0
+
 			If @error Then
-				$asReturn[$i][0] = StringFormat("Error '%s' when parsing .\lng\%s", @error, $asTemp[$i])
+				$asReturn[$i][$MM_LNG_NAME] = StringFormat("Error '%s' when parsing .\lng\%s", @error, $asTemp[$i])
 			Else
 				If Not IsMap($vDecoded) Then
-					$asReturn[$i][0] = StringFormat("Error '%s' when parsing .\lng\%s", '$vDecoded is not map', $asTemp[$i])
+					$asReturn[$i][$MM_LNG_NAME] = StringFormat("Error '%s' when parsing .\lng\%s", '$vDecoded is not map', $asTemp[$i])
 				ElseIf Not IsMap($vDecoded["lang"]) Then
-					$asReturn[$i][0] = StringFormat("Error '%s' when parsing .\lng\%s", '$vDecoded["lang"] is not map', $asTemp[$i])
+					$asReturn[$i][$MM_LNG_NAME] = StringFormat("Error '%s' when parsing .\lng\%s", '$vDecoded["lang"] is not map', $asTemp[$i])
 				Else
-					$asReturn[$i][0] = $vDecoded["lang"]["name"]
+					$asReturn[$i][$MM_LNG_NAME] = $vDecoded["lang"]["name"]
+					$asReturn[$i][$MM_LNG_CODE] = $vDecoded["lang"]["code"]
 				EndIf
 			EndIf
 		EndIf
 	Next
-
-	Return $asReturn
+	$MM_LNG_LIST = $asReturn
 EndFunc
 
 Func Lng_Get(Const ByRef $sKeyName)

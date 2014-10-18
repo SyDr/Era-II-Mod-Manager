@@ -1,7 +1,4 @@
-#include <AutoItConstants.au3>
-#include <FileConstants.au3>
-
-#include "const.au3"
+#include "include_fwd.au3"
 
 Clear()
 DirCreate(@ScriptDir & "\Mod Manager\")

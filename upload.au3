@@ -1,7 +1,4 @@
-#include <FileConstants.au3>
-
-#include "include\JSMN.au3"
-#include "const.au3"
+#include "include_fwd.au3"
 
 Global $sPath = @UserProfileDir & "\Dropbox\Public\RAMM"
 Global $sVersionPath = $sPath & "\version.json"
