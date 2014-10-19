@@ -607,7 +607,7 @@ Func SD_GUI_Update()
 	ConsoleWrite('@@ (617) :(' & @MIN & ':' & @SEC & ') SD_GUI_Update()' & @CR) ;### Function Trace
 	GUISwitch($hGUI.MainForm)
 	TreeViewMain()
-	TreeViewTryFollow($sFollowMod)
+	If $MM_VIEW_CURRENT = $MM_VIEW_MODS Then TreeViewTryFollow($sFollowMod)
 EndFunc   ;==>SD_GUI_Update
 
 Func TreeViewMain()
