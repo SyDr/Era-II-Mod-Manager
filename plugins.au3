@@ -2,6 +2,8 @@
 
 #include-once
 #include "include_fwd.au3"
+
+#include "folder_mods.au3"
 #include "lng.au3"
 
 Func Plugins_ModHavePlugins(Const ByRef $sModID)
@@ -31,25 +33,25 @@ Func Plugins_ListLoad(Const ByRef $sModID)
 	$MM_PLUGINS_PART_PRESENT[$PLUGIN_GROUP_BEFORE] = False
 	$MM_PLUGINS_PART_PRESENT[$PLUGIN_GROUP_AFTER] = False
 
-	__Plugins_ListLoadFromFolder($aPluginList, $aGlobal, $sPath & "\EraPlugins", $sModID, $PLUGIN_GROUP_GLOBAL, $iTotalPlugins)
-	__Plugins_ListLoadFromFolder($aPluginList, $aBeforeWog, $sPath & "\EraPlugins\BeforeWoG", $sModID, $PLUGIN_GROUP_BEFORE, $iTotalPlugins)
-	__Plugins_ListLoadFromFolder($aPluginList, $aAfterWog, $sPath & "\EraPlugins\AfterWoG", $sModID, $PLUGIN_GROUP_AFTER, $iTotalPlugins)
+	__Plugins_ListLoadFromFolder($aPluginList, $aGlobal, $sPath & "\EraPlugins", $PLUGIN_GROUP_GLOBAL, $iTotalPlugins)
+	__Plugins_ListLoadFromFolder($aPluginList, $aBeforeWog, $sPath & "\EraPlugins\BeforeWoG", $PLUGIN_GROUP_BEFORE, $iTotalPlugins)
+	__Plugins_ListLoadFromFolder($aPluginList, $aAfterWog, $sPath & "\EraPlugins\AfterWoG", $PLUGIN_GROUP_AFTER, $iTotalPlugins)
 
 	$aPluginList[0][0] = $iTotalPlugins
 	ReDim $aPluginList[$iTotalPlugins + 1][$PLUGIN_TOTAL]
 
-	$aPluginList[0][$PLUGIN_PATH] = "Path"
-	$aPluginList[0][$PLUGIN_GROUP] = "Group Enum"
-	$aPluginList[0][$PLUGIN_CAPTION] = "Caption"
-	$aPluginList[0][$PLUGIN_DESCRIPTION] = "Description"
-	$aPluginList[0][$PLUGIN_STATE] = "State"
-	$aPluginList[0][$PLUGIN_DEFAULT_STATE] = "Default state"
-	$aPluginList[0][$PLUGIN_HIDDEN] = "Hidden"
+	$aPluginList[0][$PLUGIN_PATH] = "$PLUGIN_PATH"
+	$aPluginList[0][$PLUGIN_GROUP] = "$PLUGIN_GROUP"
+	$aPluginList[0][$PLUGIN_CAPTION] = "$PLUGIN_CAPTION"
+	$aPluginList[0][$PLUGIN_DESCRIPTION] = "$PLUGIN_DESCRIPTION"
+	$aPluginList[0][$PLUGIN_STATE] = "$PLUGIN_STATE"
+	$aPluginList[0][$PLUGIN_DEFAULT_STATE] = "$PLUGIN_DEFAULT_STATE"
+	$aPluginList[0][$PLUGIN_HIDDEN] = "$PLUGIN_HIDDEN"
 
 	$MM_PLUGINS_CONTENT = $aPluginList
 EndFunc
 
-Func __Plugins_ListLoadFromFolder(ByRef $aPluginList, Const ByRef $aFileList, Const $sPath, Const ByRef $sModID, Const $iGroupId, ByRef $iPrevPos)
+Func __Plugins_ListLoadFromFolder(ByRef $aPluginList, Const ByRef $aFileList, Const $sPath, Const $iGroupId, ByRef $iPrevPos)
 	Local $bIsEnabled, $sFileName
 	If IsArray($aFileList) Then
 		ReDim $aPluginList[UBound($aPluginList, $UBOUND_ROWS) + $aFileList[0]][$PLUGIN_TOTAL]
@@ -62,11 +64,11 @@ Func __Plugins_ListLoadFromFolder(ByRef $aPluginList, Const ByRef $aFileList, Co
 				$aPluginList[$iPrevPos][$PLUGIN_FILENAME] = $sFileName
 				$aPluginList[$iPrevPos][$PLUGIN_PATH] = $sPath & "\" & $sFileName
 				$aPluginList[$iPrevPos][$PLUGIN_GROUP] = $iGroupId
-				$aPluginList[$iPrevPos][$PLUGIN_CAPTION] = IniRead($MM_LIST_DIR_PATH & "\" & $sModID & "\mod_info.ini", "Plugins", $sFileName & ".Caption." & Lng_Get("lang.code"), IniRead($MM_LIST_DIR_PATH & "\" & $sModID & "\mod_info.ini", "Plugins", $sFileName & ".Caption", $sFileName))
-				$aPluginList[$iPrevPos][$PLUGIN_DESCRIPTION] = IniRead($MM_LIST_DIR_PATH & "\" & $sModID & "\mod_info.ini", "Plugins", $sFileName & ".Description." & Lng_Get("lang.code"), IniRead($MM_LIST_DIR_PATH & "\" & $sModID & "\mod_info.ini", "Plugins", $sFileName & ".Description", $sFileName))
+				$aPluginList[$iPrevPos][$PLUGIN_CAPTION] = Mod_Get("plugins\" & $sFileName & "\caption")
+				$aPluginList[$iPrevPos][$PLUGIN_DESCRIPTION] = Mod_Get("plugins\" & $sFileName & "\description")
 				$aPluginList[$iPrevPos][$PLUGIN_STATE] = $bIsEnabled
-				$aPluginList[$iPrevPos][$PLUGIN_DEFAULT_STATE] = Int(IniRead($MM_LIST_DIR_PATH & "\" & $sModID & "\mod_info.ini", "Plugins", $sFileName & ".Default", $bIsEnabled)) > 0
-				$aPluginList[$iPrevPos][$PLUGIN_HIDDEN] = Int(IniRead($MM_LIST_DIR_PATH & "\" & $sModID & "\mod_info.ini", "Plugins", $sFileName & ".Hidden", 0)) > 0
+				$aPluginList[$iPrevPos][$PLUGIN_DEFAULT_STATE] = Mod_Get("plugins\" & $sFileName & "\default")
+				$aPluginList[$iPrevPos][$PLUGIN_HIDDEN] = Mod_Get("plugins\" & $sFileName & "\hidden")
 			EndIf
 		Next
 	EndIf

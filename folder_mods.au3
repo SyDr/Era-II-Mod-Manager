@@ -92,6 +92,7 @@ Func _ModInfoNormalize(ByRef $Map, Const $sDir)
 	If Not MapExists($Map["compatibility"], "class") Then $Map["compatibility"]["class"] = "default"
 	If $Map["compatibility"]["class"] <> "default" And $Map["compatibility"]["class"] <> "all" And $Map["compatibility"]["class"] <> "none" Then $Map["compatibility"]["class"] = "default"
 	If Not MapExists($Map["compatibility"], "entries") Then $Map["compatibility"]["entries"] = MapEmpty()
+	If Not MapExists($Map, "plugins") Then $Map["plugins"] = MapEmpty()
 EndFunc
 
 Func _ModLoadInfoFromINI(ByRef $Map, Const $sDir)
@@ -122,9 +123,10 @@ Func _ModLoadInfoFromINI(ByRef $Map, Const $sDir)
 	EndIf
 EndFunc
 
-Func Mod_Get(Const $sPath, Const $iModIndex = -1)
+Func Mod_Get(Const $sPath, $iModIndex = -1)
 	Local $vReturn = ""
 	Local $aParts = StringSplit($sPath, "\")
+	If $iModIndex = -1 Then $iModIndex = $MM_SELECTED_MOD
 
 	If $sPath = "id" Then
 		$vReturn = $MM_LIST_CONTENT[$iModIndex][$MOD_ID]
@@ -135,6 +137,25 @@ Func Mod_Get(Const $sPath, Const $iModIndex = -1)
 	ElseIf $aParts[1] = "description" Then
 		$vReturn = ($MM_LIST_CONTENT[$iModIndex][$MOD_INFO_PARSED])["description"][$aParts[2]][$MM_LANGUAGE_CODE]
 		If $vReturn = "" Then $vReturn = ($MM_LIST_CONTENT[$iModIndex][$MOD_INFO_PARSED])["description"][$aParts[2]]["en_US"]
+		If $vReturn = "" Then $vReturn = Lng_Get("info_group.no_info")
+	ElseIf $aParts[1] = "plugins" And Not MapExists(($MM_LIST_CONTENT[$iModIndex][$MOD_INFO_PARSED])["plugins"], $aParts[2]) Then
+		Switch $aParts[3]
+			Case "caption"
+				$vReturn = $aParts[2]
+			Case "description"
+				$vReturn = Lng_Get("info_group.no_info")
+			Case "default"
+				$vReturn = False
+			Case "hidden"
+				$vReturn = False
+		EndSwitch
+	ElseIf $aParts[1] = "plugins" And $aParts[3] = "caption" Then
+		$vReturn = ($MM_LIST_CONTENT[$iModIndex][$MOD_INFO_PARSED])["plugins"][$aParts[2]]["caption"][$MM_LANGUAGE_CODE]
+		If $vReturn = "" Then $vReturn = ($MM_LIST_CONTENT[$iModIndex][$MOD_INFO_PARSED])["plugins"][$aParts[2]]["caption"]["en_US"]
+		If $vReturn = "" Then $vReturn = $aParts[2]
+	ElseIf $aParts[1] = "plugins" And $aParts[3] = "description" Then
+		$vReturn = ($MM_LIST_CONTENT[$iModIndex][$MOD_INFO_PARSED])["plugins"][$aParts[2]]["description"][$MM_LANGUAGE_CODE]
+		If $vReturn = "" Then $vReturn = ($MM_LIST_CONTENT[$iModIndex][$MOD_INFO_PARSED])["plugins"][$aParts[2]]["description"]["en_US"]
 		If $vReturn = "" Then $vReturn = Lng_Get("info_group.no_info")
 	Else
 		Switch $aParts[0]
