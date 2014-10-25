@@ -87,6 +87,11 @@ Func _ModInfoNormalize(ByRef $Map, Const $sDir)
 	$Map["priority"] = Int($Map["priority"])
 	If $Map["priority"] < -100 Then $Map["priority"] = -100
 	If $Map["priority"] > 100 Then $Map["priority"] = 100
+
+	If Not MapExists($Map, "compatibility") Then $Map["compatibility"] = MapEmpty()
+	If Not MapExists($Map["compatibility"], "class") Then $Map["compatibility"]["class"] = "default"
+	If $Map["compatibility"]["class"] <> "default" And $Map["compatibility"]["class"] <> "all" And $Map["compatibility"]["class"] <> "none" Then $Map["compatibility"]["class"] = "default"
+	If Not MapExists($Map["compatibility"], "entries") Then $Map["compatibility"]["entries"] = MapEmpty()
 EndFunc
 
 Func _ModLoadInfoFromINI(ByRef $Map, Const $sDir)
@@ -106,6 +111,15 @@ Func _ModLoadInfoFromINI(ByRef $Map, Const $sDir)
 	$Map["version"] = MapEmpty()
 	$Map["version"]["mod"] = IniRead($sDir & "\mod_info.ini", "info", "Version", "0.0")
 	$Map["priority"] = IniRead($sDir & "\mod_info.ini", "info", "Priority", 0)
+	$Map["compatibility"] = MapEmpty()
+	$Map["compatibility"]["class"] = IniRead($sDir & "\mod_info.ini", "info", "Compatibility Class", "Default")
+	$Map["compatibility"]["entries"] = MapEmpty()
+	Local $aTemp = IniReadSection($sDir & "\mod_info.ini", "Compatibility")
+	If Not @error Then
+		For $i = 1 To $aTemp[0][0]
+			$Map["compatibility"]["entries"][$aTemp[$i][0]] = Int($aTemp[$i][0]) > 0 ? True : False
+		Next
+	EndIf
 EndFunc
 
 Func Mod_Get(Const $sPath, Const $iModIndex = -1)
@@ -191,19 +205,19 @@ Func Mod_CompatibilityMapLoad()
 			If Not $MM_LIST_CONTENT[$iCount][$MOD_IS_ENABLED] Or Not $MM_LIST_CONTENT[$jCount][$MOD_IS_ENABLED] Then
 				$MM_LIST_COMPATIBILITY[$sModID1][$sModID2] = True
 			Else
-				Local $sType1 = IniRead($MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iCount][0] & "\mod_info.ini", "info", "Compatibility Class", "Default")
-				Local $sType2 = IniRead($MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$jCount][0] & "\mod_info.ini", "info", "Compatibility Class", "Default")
-				Local $i1To2 = IniRead($MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iCount][0] & "\mod_info.ini", "Compatibility", $MM_LIST_CONTENT[$jCount][0], 0)
-				Local $i2To1 = IniRead($MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$jCount][0] & "\mod_info.ini", "Compatibility", $MM_LIST_CONTENT[$iCount][0], 0)
-				If $i1To2 == 1 Then
+				Local $sType1 = Mod_Get("compatibility\class", $iCount)
+				Local $sType2 = Mod_Get("compatibility\class", $jCount)
+				Local $i1To2 = Mod_Get("compatibility\entries" & Mod_Get("id", $jCount), $iCount)
+				Local $i2To1 = Mod_Get("compatibility\entries" & Mod_Get("id", $iCount), $jCount)
+				If $i1To2 > 0 Then
 					$MM_LIST_COMPATIBILITY[$sModID1][$sModID2] = True
-				ElseIf $i1To2 == -1 Then
+				ElseIf $i1To2 < 0 Then
 					$MM_LIST_COMPATIBILITY[$sModID1][$sModID2] = False
-				ElseIf $i2To1 == 1 Then
+				ElseIf $i2To1 > 0 Then
 					$MM_LIST_COMPATIBILITY[$sModID1][$sModID2] = True
-				ElseIf $i2To1 == -1 Then
+				ElseIf $i2To1 < 0 Then
 					$MM_LIST_COMPATIBILITY[$sModID1][$sModID2] = False
-				ElseIf ($sType1 = "None" And ($sType2 = "None" Or $sType2 = "Default")) Or ($sType2 = "None" And ($sType1 = "None" Or $sType1 = "Default")) Then
+				ElseIf ($sType1 = "none" And ($sType2 = "none" Or $sType2 = "default")) Or ($sType2 = "none" And ($sType1 = "none" Or $sType1 = "default")) Then
 					$MM_LIST_COMPATIBILITY[$sModID1][$sModID2] = False
 				Else
 					$MM_LIST_COMPATIBILITY[$sModID1][$sModID2] = True
