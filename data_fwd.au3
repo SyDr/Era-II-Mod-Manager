@@ -21,6 +21,7 @@ Global $MM_VIEW_CURRENT
 
 Global $MM_LIST_FILE_CONTENT ; folder_mods.au3
 Global $MM_LIST_CONTENT[1][$MOD_TOTAL] ; a loaded list of mods
+Global $MM_SELECTED_MOD
 
 Global $MM_PLUGINS_CONTENT[1][$PLUGIN_TOTAL] ; a loaded list of plugins
 Global $MM_PLUGINS_PART_PRESENT[3] ; state if a plugins from some group exist

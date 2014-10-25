@@ -658,6 +658,7 @@ Func SD_GUI_Mod_SelectionChanged()
 		SD_GUI_Mod_Controls_Disable()
 	Else
 		Local $iModIndex = $iSelected
+		$MM_SELECTED_MOD = $iModIndex
 		Local $iModIndexPrev = $iSelected > 1 ? $iSelected - 1 : -1
 		Local $iModIndexNext = $iSelected < $MM_LIST_CONTENT[0][0] ? $iSelected + 1 : -1
 
