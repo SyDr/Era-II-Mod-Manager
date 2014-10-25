@@ -668,6 +668,7 @@ Func SD_GUI_Mod_Controls_Disable()
 	GUICtrlSetState($hGUI.MenuMod.Plugins, $GUI_DISABLE)
 	GUICtrlSetState($hGUI.MenuMod.OpenHomepage, $GUI_DISABLE)
 	GUICtrlSetState($hGUI.MenuMod.OpenFolder, $GUI_DISABLE)
+	GUICtrlSetState($hGUI.MenuMod.Menu, $GUI_DISABLE)
 	GUICtrlSetData($hModInfo, Lng_Get("info_group.no_info"))
 ;~ 	$sFollowMod = ""
 EndFunc   ;==>SD_GUI_Mod_Controls_Disable
@@ -742,9 +743,11 @@ Func SD_GUI_Mod_SelectionChanged()
 		If Not $MM_LIST_CONTENT[$iModIndex][$MOD_IS_EXIST] Then
 			GUICtrlSetState($hGUI.MenuMod.Delete, $GUI_DISABLE)
 			GUICtrlSetState($hGUI.MenuMod.OpenFolder, $GUI_DISABLE)
+			GUICtrlSetState($hGUI.MenuMod.Menu, $GUI_DISABLE)
 		Else
 			GUICtrlSetState($hGUI.MenuMod.Delete, $GUI_ENABLE)
 			GUICtrlSetState($hGUI.MenuMod.OpenFolder, $GUI_ENABLE)
+			GUICtrlSetState($hGUI.MenuMod.Menu, $GUI_ENABLE)
 		EndIf
 	EndIf
 EndFunc   ;==>SD_GUI_Mod_SelectionChanged
