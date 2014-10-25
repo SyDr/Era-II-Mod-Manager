@@ -18,20 +18,22 @@ Func MapEmpty()
 	Return $mMap
 EndFunc
 
-Func MapTo2DArray(ByRef $Map)
-	Local $Keys = MapKeys($Map)
-	Local $Length = UBound($Keys)
+Func VersionCompare(Const $s1, Const $s2)
+	Local $aVersion1 = StringSplit($s1, ".", 2)
+	Local $aVersion2 = StringSplit($s2, ".", 2)
 
-	Local $Array[$Length + 1][2]
-	$Array[0][0] = $Length
-	$Array[0][1] = ''
+	Local $iSize = UBound($aVersion1) > UBound($aVersion2) ? UBound($aVersion1) : UBound($aVersion2)
+	ReDim $aVersion1[$iSize]
+	ReDim $aVersion2[$iSize]
+	; 1.0.0 and 1.0 is same version
 
-	For $i = 1 To $Length
-		Local $Key = $Keys[$i - 1]
-		Local $Value = $Map[$Key]
-
-		$Array[$i][0] = VarGetType($Key) & ":" & $Key
-		$Array[$i][1] = VarGetType($Value) & ":" & IsKeyword($Value) & ":" & $Value
+	For $i = 0 To $iSize - 1
+		If Number($aVersion1[$i]) > Number($aVersion2[$i]) Then
+			Return $i+1
+		ElseIf Number($aVersion1[$i]) < Number($aVersion2[$i]) Then
+			Return -($i+1)
+		EndIf
 	Next
-	Return $Array
+
+	Return 0
 EndFunc
