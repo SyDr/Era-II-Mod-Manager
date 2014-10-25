@@ -53,6 +53,11 @@ Func Lng_Get(Const ByRef $sKeyName)
 	Local $sReturn
 	Local $aParts = StringSplit($sKeyName, ".")
 
+	If $aParts[0] > 0 And Not IsMap($MM_LNG_CACHE) Then Return $sKeyName
+	If $aParts[0] > 1 And Not IsMap($MM_LNG_CACHE[$aParts[1]]) Then Return $sKeyName
+	If $aParts[0] > 2 And Not IsMap($MM_LNG_CACHE[$aParts[1]][$aParts[2]]) Then Return $sKeyName
+	If $aParts[0] > 3 And Not IsMap($MM_LNG_CACHE[$aParts[1]][$aParts[2]][$aParts[3]]) Then Return $sKeyName
+
 	Switch $aParts[0]
 		Case 1
 			$sReturn = $MM_LNG_CACHE[$aParts[1]]
