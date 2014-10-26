@@ -90,6 +90,7 @@ Func _ModInfoNormalize(ByRef $Map, Const $sDir)
 
 	If Not MapExists($Map, "compatibility") Then $Map["compatibility"] = MapEmpty()
 	If Not MapExists($Map["compatibility"], "class") Then $Map["compatibility"]["class"] = "default"
+	$Map["compatibility"]["class"] = StringLower($Map["compatibility"]["class"])
 	If $Map["compatibility"]["class"] <> "default" And $Map["compatibility"]["class"] <> "all" And $Map["compatibility"]["class"] <> "none" Then $Map["compatibility"]["class"] = "default"
 	If Not MapExists($Map["compatibility"], "entries") Then $Map["compatibility"]["entries"] = MapEmpty()
 	If Not MapExists($Map, "plugins") Then $Map["plugins"] = MapEmpty()
@@ -118,7 +119,7 @@ Func _ModLoadInfoFromINI(ByRef $Map, Const $sDir)
 	Local $aTemp = IniReadSection($sDir & "\mod_info.ini", "Compatibility")
 	If Not @error Then
 		For $i = 1 To $aTemp[0][0]
-			$Map["compatibility"]["entries"][$aTemp[$i][0]] = Int($aTemp[$i][0]) > 0 ? True : False
+			$Map["compatibility"]["entries"][$aTemp[$i][0]] = Int($aTemp[$i][1]) > 0 ? True : False
 		Next
 	EndIf
 EndFunc

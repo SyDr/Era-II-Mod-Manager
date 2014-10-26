@@ -61,6 +61,8 @@ EndIf
 
 Settings_DefineWorkDir()
 $MM_SETTINGS_LANGUAGE = Settings_Get("Language")
+Lng_LoadList()
+Lng_Load()
 
 If $CMDLine[0] > 0 Then
 	If Not SD_CLI_Mod_Add() Then Exit
@@ -68,12 +70,18 @@ EndIf
 
 StartUp_CheckRunningInstance()
 
-SD_GUI_LoadSize()
-SD_GUI_Create()
-TreeViewMain()
-TreeViewTryFollow($MM_LIST_CONTENT[0][0] > 0 ? $MM_LIST_CONTENT[1][$MOD_ID] : "")
-SD_SwitchView()
-MainLoop()
+If Not IsDeclared("__MM_NO_UI") Then
+	UI_Main()
+EndIf
+
+Func UI_Main()
+	SD_GUI_LoadSize()
+	SD_GUI_Create()
+	TreeViewMain()
+	TreeViewTryFollow($MM_LIST_CONTENT[0][0] > 0 ? $MM_LIST_CONTENT[1][$MOD_ID] : "")
+	SD_SwitchView()
+	MainLoop()
+EndFunc
 
 Func MainLoop()
 	Local $bGUINeedUpdate = False
@@ -136,7 +144,6 @@ Func SD_GUI_Create()
 	GUISetState(@SW_HIDE) ; this is a dirty workaround (https://www.autoitscript.com/trac/autoit/ticket/2920)
 
 	$hGUI.MenuLanguage = GUICtrlCreateMenu("-")
-	Lng_LoadList()
 	For $iCount = 1 To $MM_LNG_LIST[0][0]
 		$MM_LNG_LIST[$iCount][$MM_LNG_MENU_ID] = GUICtrlCreateMenuItem($MM_LNG_LIST[$iCount][$MM_LNG_NAME], $hGUI.MenuLanguage, Default, 1)
 		If $MM_LNG_LIST[$iCount][$MM_LNG_FILE] = $MM_SETTINGS_LANGUAGE Then GUICtrlSetState($MM_LNG_LIST[$iCount][$MM_LNG_MENU_ID], $GUI_CHECKED)
