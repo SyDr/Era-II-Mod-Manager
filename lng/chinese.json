@@ -83,13 +83,20 @@
 	"update" :
 	{
 		"caption" : "Check for program updates",
-		"up_to_date" : "Program is up to date. Congratulations :)",
+		"current_version" : "Installed version: %s",
+		"available_versions" : "Available to download:",
+		"wait" : "wait...",
+		"select_from_list" : "select from list...",
+		"check_path" : "Check path:",
+		"update_group" : "Selected update",
+		"download_and_install" : "Download update and install automatically",
+		"only_download" : "Only download",
+		"change_dir" : "Change",
+		"select_dir" : "Select directory",
+		"start" : "Start",
+		"close" : "Close",
 		"cant_check" : "Can't check program update. Open link in browser?",
 		"cant_download" : "Can't download program update. Open link in browser?",
-		"download" :
-		{
-			"caption" : "Downloading...",
-			"progress" : "Downloading program update..."
-		}
+		"info_invalid" : "invalid format...",
 	}
 }

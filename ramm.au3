@@ -25,6 +25,7 @@
 #include "plugins.au3"
 #include "settings.au3"
 #include "startup.au3"
+#include "update.au3"
 
 AutoItSetOption("MustDeclareVars", 1)
 AutoItSetOption("GUIOnEventMode", 1)
@@ -270,55 +271,7 @@ EndFunc   ;==>SD_GUI_Mod_Compatibility
 Func SD_GUI_CheckForUpdates()
 	GUISetState(@SW_DISABLE, $hGUI.MainForm)
 
-	Local Const $sPath = "https://dl.dropboxusercontent.com/u/24541426/RAMM"
-	Local $bVersion = InetRead($sPath & "/version.json", 1)
-	Local $iAnswer
-
-	If @error Then
-		$iAnswer = MsgBox($MB_YESNO + $MB_ICONQUESTION + $MB_TASKMODAL, "", Lng_Get("update.cant_check"), Default, $hGUI.MainForm)
-		If $iAnswer = $IDYES Then Utils_LaunchInBrowser($sPath)
-		GUISetState(@SW_ENABLE, $hGUI.MainForm)
-		GUISetState(@SW_RESTORE, $hGUI.MainForm)
-		Return
-	EndIf
-
-	Local $sVersion = BinaryToString($bVersion)
-	Local $oVersion = Jsmn_Decode($sVersion)
-	If Not IsMap($oVersion) Then
-		$iAnswer = MsgBox($MB_YESNO + $MB_ICONQUESTION + $MB_TASKMODAL, "", Lng_Get("update.cant_check"), Default, $hGUI.MainForm)
-		If $iAnswer = $IDYES Then Utils_LaunchInBrowser($sPath)
-		GUISetState(@SW_ENABLE, $hGUI.MainForm)
-		GUISetState(@SW_RESTORE, $hGUI.MainForm)
-		Return
-	EndIf
-
-	If $oVersion[$MM_VERSION_SUBTYPE] <> $MM_VERSION_NUMBER Then
-		ProgressOn(Lng_Get("update.download.caption"), Lng_Get("update.download.progress"))
-		Local $sTempDir = _TempFile()
-		Local $sFileName = "RAMM_" & ($MM_VERSION_SUBTYPE == "release" ? $oVersion[$MM_VERSION_SUBTYPE] : ($oVersion[$MM_VERSION_SUBTYPE] & "." & $MM_VERSION_SUBTYPE)) & ".exe"
-		DirCreate($sTempDir)
-
-		Local $iDownload = InetGet($sPath & "/" & $MM_VERSION_SUBTYPE & "/" & $sFileName, $sTempDir & "\" & $sFileName, Default, 1)
-
-		While Not InetGetInfo($iDownload, 2) And Not InetGetInfo($iDownload, 3) And Not InetGetInfo($iDownload, 4)
-			Sleep(10)
-			ProgressSet(InetGetInfo($iDownload, 0) / InetGetInfo($iDownload, 1) * 100)
-		WEnd
-
-		Local $bIsSuccess = InetGetInfo($iDownload, 3)
-
-		InetClose($iDownload)
-		ProgressOff()
-		If $bIsSuccess Then
-			ShellExecute($sTempDir & "\" & $sFileName, "/SILENT")
-			If Not @error Then Exit
-		Else
-			MsgBox($MB_YESNO + $MB_ICONQUESTION + $MB_TASKMODAL, "", Lng_Get("update.cant_download"), Default, $hGUI.MainForm)
-			If $iAnswer = $IDYES Then Utils_LaunchInBrowser($sPath)
-		EndIf
-	Else
-		MsgBox($MB_ICONINFORMATION + $MB_TASKMODAL, "", Lng_Get("update.up_to_date"), Default, $hGUI.MainForm)
-	EndIf
+	Update_CheckNewPorgram(Settings_Get("Portable"))
 
 	GUISetState(@SW_ENABLE, $hGUI.MainForm)
 	GUISetState(@SW_RESTORE, $hGUI.MainForm)
