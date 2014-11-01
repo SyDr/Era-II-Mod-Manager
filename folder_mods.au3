@@ -4,6 +4,7 @@
 #include "include_fwd.au3"
 #include "lng.au3"
 #include "settings.au3"
+#include "utils.au3"
 
 Func Mod_ListLoad()
 	Local $aModList_Dir, $aModList_File
