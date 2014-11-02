@@ -149,6 +149,8 @@ Func Update_CheckNewPorgram(Const $bIsPortable)
 		__Update_ProcessUserInput($hGUI)
 	WEnd
 
+	GUIDelete($hGUI.Form)
+
 	AutoItSetOption("GUIOnEventMode", $iOptionGUIOnEventMode)
 	AutoItSetOption("GUICoordMode", $iOptionGUICoordMode)
 EndFunc
