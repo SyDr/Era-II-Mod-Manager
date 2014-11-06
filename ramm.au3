@@ -36,9 +36,9 @@ Global $hGUI[]
 $hGUI.MenuMod = MapEmpty()
 $hGUI.MenuMore = MapEmpty()
 $hGUI.MenuHelp = MapEmpty()
+$hGUI.ModList = MapEmpty()
 Global $hDummyF5
 
-Global $hGroupList, $hModList, $hModUp, $hModDown, $hModChangeState
 Global $aModListGroups[1][3]; group item id, is enabled, priority
 
 Global $hGroupPlugins, $hPluginsList, $hPluginsBack
@@ -165,21 +165,29 @@ Func SD_GUI_Create()
 	$hGUI.MenuHelp.Menu = GUICtrlCreateMenu("?")
 	$hGUI.MenuHelp.CheckForUpdates = GUICtrlCreateMenuItem("-", $hGUI.MenuHelp.Menu)
 
-	$hGroupList = GUICtrlCreateGroup("-", $iLeftOffset, $iTopOffset, $MM_WINDOW_MIN_WIDTH / 2 - $iLeftOffset, $MM_WINDOW_MIN_HEIGHT - $iMenuHeight - $iTopOffset)
-	$hModList = GUICtrlCreateTreeView($iLeftOffset + $iItemSpacing, $iTopOffset + 4 * $iItemSpacing, _ ; left, top
+	$hGUI.ModList.Group = GUICtrlCreateGroup("-", $iLeftOffset, $iTopOffset, $MM_WINDOW_MIN_WIDTH / 2 - $iLeftOffset, $MM_WINDOW_MIN_HEIGHT - $iMenuHeight - $iTopOffset)
+	GUICtrlSetResizing(Default, $GUI_DOCKLEFT + $GUI_DOCKTOP + $GUI_DOCKBOTTOM + $GUI_DOCKWIDTH)
+	$hGUI.ModList.List = GUICtrlCreateTreeView($iLeftOffset + $iItemSpacing, $iTopOffset + 4 * $iItemSpacing, _ ; left, top
 			$MM_WINDOW_MIN_WIDTH / 2 - $iLeftOffset - 3 * $iItemSpacing - 90, $MM_WINDOW_MIN_HEIGHT - $iMenuHeight - $iTopOffset - 5 * $iItemSpacing, _ ; width, height, 90 + $iItemSpacing reserved for buttons column
 			BitOR($TVS_FULLROWSELECT, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
-	$hModUp = GUICtrlCreateButton("", $MM_WINDOW_MIN_WIDTH / 2 - 90 - $iItemSpacing, $iTopOffset + 4 * $iItemSpacing - 1, 90, 25)
-	$hModDown = GUICtrlCreateButton("", $MM_WINDOW_MIN_WIDTH / 2 - 90 - $iItemSpacing, $iTopOffset + 5 * $iItemSpacing - 1 + 25, 90, 25)
-	$hModChangeState = GUICtrlCreateButton("", $MM_WINDOW_MIN_WIDTH / 2 - 90 - $iItemSpacing, $iTopOffset + 6 * $iItemSpacing - 1 + 2 * 25, 90, 25)
+	GUICtrlSetResizing(Default, $GUI_DOCKLEFT + $GUI_DOCKTOP + $GUI_DOCKBOTTOM + $GUI_DOCKWIDTH)
+	$hGUI.ModList.Up = GUICtrlCreateButton("", $MM_WINDOW_MIN_WIDTH / 2 - 90 - $iItemSpacing, $iTopOffset + 4 * $iItemSpacing - 1, 90, 25)
+	GUICtrlSetResizing(Default, $GUI_DOCKALL)
+	$hGUI.ModList.Down = GUICtrlCreateButton("", $MM_WINDOW_MIN_WIDTH / 2 - 90 - $iItemSpacing, $iTopOffset + 5 * $iItemSpacing - 1 + 25, 90, 25)
+	GUICtrlSetResizing(Default, $GUI_DOCKALL)
+	$hGUI.ModList.ChangeState = GUICtrlCreateButton("", $MM_WINDOW_MIN_WIDTH / 2 - 90 - $iItemSpacing, $iTopOffset + 6 * $iItemSpacing - 1 + 2 * 25, 90, 25)
+	GUICtrlSetResizing(Default, $GUI_DOCKALL)
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
 
 
 	$hGroupPlugins = GUICtrlCreateGroup("-", $iLeftOffset, $iTopOffset, $MM_WINDOW_MIN_WIDTH / 2 - $iLeftOffset, $MM_WINDOW_MIN_HEIGHT - $iMenuHeight - $iTopOffset)
+	GUICtrlSetState($hGroupPlugins, $GUI_HIDE)
 	$hPluginsList = GUICtrlCreateTreeView($iLeftOffset + $iItemSpacing, $iTopOffset + 4 * $iItemSpacing, _ ; left, top
 			$MM_WINDOW_MIN_WIDTH / 2 - $iLeftOffset - 3 * $iItemSpacing - 90, $MM_WINDOW_MIN_HEIGHT - $iMenuHeight - $iTopOffset - 5 * $iItemSpacing, _ ; width, height, 90 + $iItemSpacing reserved for buttons column
 			BitOR($TVS_FULLROWSELECT, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
+	GUICtrlSetState($hPluginsList, $GUI_HIDE)
 	$hPluginsBack = GUICtrlCreateButton("", $MM_WINDOW_MIN_WIDTH / 2 - 90 - $iItemSpacing, $iTopOffset + 4 * $iItemSpacing - 1, 90, 25)
+	GUICtrlSetState($hPluginsBack, $GUI_HIDE)
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
 
 	$hGroupInfo = GUICtrlCreateGroup("-", $MM_WINDOW_MIN_WIDTH / 2 + $iItemSpacing, $iTopOffset, _
@@ -203,11 +211,6 @@ Func SD_GUI_Create()
 EndFunc   ;==>SD_GUI_Create
 
 Func SD_GUI_SetResizing()
-	GUICtrlSetResizing($hModList, $GUI_DOCKLEFT + $GUI_DOCKTOP + $GUI_DOCKBOTTOM + $GUI_DOCKWIDTH)
-	GUICtrlSetResizing($hGroupList, $GUI_DOCKLEFT + $GUI_DOCKTOP + $GUI_DOCKBOTTOM + $GUI_DOCKWIDTH)
-	GUICtrlSetResizing($hModUp, $GUI_DOCKALL)
-	GUICtrlSetResizing($hModDown, $GUI_DOCKALL)
-	GUICtrlSetResizing($hModChangeState, $GUI_DOCKALL)
 	GUICtrlSetResizing($hGroupInfo, $GUI_DOCKLEFT + $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKBOTTOM)
 	GUICtrlSetResizing($hModInfo, $GUI_DOCKLEFT + $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKBOTTOM)
 EndFunc   ;==>SD_GUI_SetResizing
@@ -222,9 +225,9 @@ Func SD_GUI_Events_Register()
 		GUICtrlSetOnEvent($MM_LNG_LIST[$iCount][$MM_LNG_MENU_ID], "SD_GUI_Language_Change")
 	Next
 
-	GUICtrlSetOnEvent($hModUp, "SD_GUI_Mod_Move_Up")
-	GUICtrlSetOnEvent($hModDown, "SD_GUI_Mod_Move_Down")
-	GUICtrlSetOnEvent($hModChangeState, "SD_GUI_Mod_EnableDisable")
+	GUICtrlSetOnEvent($hGUI.ModList.Up, "SD_GUI_Mod_Move_Up")
+	GUICtrlSetOnEvent($hGUI.ModList.Down, "SD_GUI_Mod_Move_Down")
+	GUICtrlSetOnEvent($hGUI.ModList.ChangeState, "SD_GUI_Mod_EnableDisable")
 	GUICtrlSetOnEvent($hGUI.MenuMore.Compatibility, "SD_GUI_Mod_Compatibility")
 	GUICtrlSetOnEvent($hGUI.MenuMod.Plugins, "SD_GUI_Manage_Plugins")
 	GUICtrlSetOnEvent($hGUI.MenuMod.OpenHomepage, "SD_GUI_Mod_Website")
@@ -240,10 +243,10 @@ EndFunc   ;==>SD_GUI_Events_Register
 
 Func SD_GUI_SetLng()
 	GUICtrlSetData($hGUI.MenuLanguage, Lng_Get("lang.language"))
-	GUICtrlSetData($hGroupList, Lng_Get("mod_list.caption"))
-	GUICtrlSetData($hModUp, Lng_Get("mod_list.up"))
-	GUICtrlSetData($hModDown, Lng_Get("mod_list.down"))
-	GUICtrlSetData($hModChangeState, Lng_Get("mod_list.enable"))
+	GUICtrlSetData($hGUI.ModList.Group, Lng_Get("mod_list.caption"))
+	GUICtrlSetData($hGUI.ModList.Up, Lng_Get("mod_list.up"))
+	GUICtrlSetData($hGUI.ModList.Down, Lng_Get("mod_list.down"))
+	GUICtrlSetData($hGUI.ModList.ChangeState, Lng_Get("mod_list.enable"))
 
 	GUICtrlSetData($hGUI.MenuMod.Menu, Lng_Get("mod_list.mod"))
 	GUICtrlSetData($hGUI.MenuMod.Delete, Lng_Get("mod_list.delete"))
@@ -546,9 +549,9 @@ Func TreeViewMain()
 	Mod_ListLoad()
 	Mod_CompatibilityMapLoad()
 
-	_GUICtrlTreeView_BeginUpdate($hModList)
-	_GUICtrlTreeView_DeleteAll($hModList)
-	_GUICtrlTreeView_EndUpdate($hModList)
+	_GUICtrlTreeView_BeginUpdate($hGUI.ModList.List)
+	_GUICtrlTreeView_DeleteAll($hGUI.ModList.List)
+	_GUICtrlTreeView_EndUpdate($hGUI.ModList.List)
 
 	TreeViewFill()
 EndFunc   ;==>TreeViewMain
@@ -590,9 +593,9 @@ Func SD_GUI_PluginsDisplay()
 EndFunc   ;==>SD_GUI_PluginsDisplay
 
 Func SD_GUI_Mod_Controls_Disable()
-	GUICtrlSetState($hModUp, $GUI_DISABLE)
-	GUICtrlSetState($hModDown, $GUI_DISABLE)
-	GUICtrlSetState($hModChangeState, $GUI_DISABLE)
+	GUICtrlSetState($hGUI.ModList.Up, $GUI_DISABLE)
+	GUICtrlSetState($hGUI.ModList.Down, $GUI_DISABLE)
+	GUICtrlSetState($hGUI.ModList.ChangeState, $GUI_DISABLE)
 	GUICtrlSetState($hGUI.MenuMod.Delete, $GUI_DISABLE)
 	GUICtrlSetState($hGUI.MenuMod.Plugins, $GUI_DISABLE)
 	GUICtrlSetState($hGUI.MenuMod.OpenHomepage, $GUI_DISABLE)
@@ -629,28 +632,28 @@ Func SD_GUI_Mod_SelectionChanged()
 
 		; MoveUp (2)
 		If $iModIndexPrev <> -1 And $MM_LIST_CONTENT[$iModIndex][$MOD_IS_ENABLED] And $MM_LIST_CONTENT[$iModIndexPrev][$MOD_IS_ENABLED] And (Mod_Get("priority", $iModIndex) = Mod_Get("priority", $iModIndexPrev)) Then
-			GUICtrlSetState($hModUp, $GUI_ENABLE)
+			GUICtrlSetState($hGUI.ModList.Up, $GUI_ENABLE)
 		Else
-			GUICtrlSetState($hModUp, $GUI_DISABLE)
+			GUICtrlSetState($hGUI.ModList.Up, $GUI_DISABLE)
 		EndIf
 
 		; MoveDown (2)
 		If $iModIndexNext <> -1 And $MM_LIST_CONTENT[$iModIndex][$MOD_IS_ENABLED] And $MM_LIST_CONTENT[$iModIndexNext][$MOD_IS_ENABLED] And (Mod_Get("priority", $iModIndex) = Mod_Get("priority", $iModIndexNext)) Then
-			GUICtrlSetState($hModDown, $GUI_ENABLE)
+			GUICtrlSetState($hGUI.ModList.Down, $GUI_ENABLE)
 		Else
-			GUICtrlSetState($hModDown, $GUI_DISABLE)
+			GUICtrlSetState($hGUI.ModList.Down, $GUI_DISABLE)
 		EndIf
 
 		; Enable/Disable/Remove (1,2)
 
-		GUICtrlSetState($hModChangeState, $GUI_ENABLE)
+		GUICtrlSetState($hGUI.ModList.ChangeState, $GUI_ENABLE)
 
 		If Not $MM_LIST_CONTENT[$iModIndex][$MOD_IS_ENABLED] Then
-			GUICtrlSetData($hModChangeState, Lng_Get("mod_list.enable"))
+			GUICtrlSetData($hGUI.ModList.ChangeState, Lng_Get("mod_list.enable"))
 		ElseIf Not $MM_LIST_CONTENT[$iModIndex][$MOD_IS_EXIST] Then ; Not exist
-			GUICtrlSetData($hModChangeState, Lng_Get("mod_list.remove"))
+			GUICtrlSetData($hGUI.ModList.ChangeState, Lng_Get("mod_list.remove"))
 		Else
-			GUICtrlSetData($hModChangeState, Lng_Get("mod_list.disable"))
+			GUICtrlSetData($hGUI.ModList.ChangeState, Lng_Get("mod_list.disable"))
 		EndIf
 
 		; Plugins
@@ -698,7 +701,7 @@ Func SD_GUI_Plugin_SelectionChanged()
 EndFunc   ;==>SD_GUI_Plugin_SelectionChanged
 
 Func TreeViewFill()
-	_GUICtrlTreeView_BeginUpdate($hModList)
+	_GUICtrlTreeView_BeginUpdate($hGUI.ModList.List)
 
 	Local $bCurrentGroupEnabled = True
 
@@ -727,13 +730,13 @@ Func TreeViewFill()
 			$iCurrentGroup = $aModListGroups[0][0]
 			ReDim $aModListGroups[$iCurrentGroup + 1][3]
 
-			$aModListGroups[$iCurrentGroup][0] = GUICtrlCreateTreeViewItem($sText, $hModList)
+			$aModListGroups[$iCurrentGroup][0] = GUICtrlCreateTreeViewItem($sText, $hGUI.ModList.List)
 			GUICtrlSetColor($aModListGroups[$iCurrentGroup][0], 0x0000C0)
 
 			If $bEnabled Then
-				_GUICtrlTreeView_SetIcon($hModList, $aModListGroups[$iCurrentGroup][0], @ScriptDir & "\icons\folder-green.ico", 0, 6)
+				_GUICtrlTreeView_SetIcon($hGUI.ModList.List, $aModListGroups[$iCurrentGroup][0], @ScriptDir & "\icons\folder-green.ico", 0, 6)
 			Else
-				_GUICtrlTreeView_SetIcon($hModList, $aModListGroups[$iCurrentGroup][0], @ScriptDir & "\icons\folder-red.ico", 0, 6)
+				_GUICtrlTreeView_SetIcon($hGUI.ModList.List, $aModListGroups[$iCurrentGroup][0], @ScriptDir & "\icons\folder-red.ico", 0, 6)
 			EndIf
 
 			$aModListGroups[$iCurrentGroup][1] = $bEnabled
@@ -746,9 +749,9 @@ Func TreeViewFill()
 		$MM_LIST_CONTENT[$iCount][$MOD_ITEM_ID] = GUICtrlCreateTreeViewItem($sCaption, $aModListGroups[$MM_LIST_CONTENT[$iCount][$MOD_PARENT_ID]][0])
 
 		If Mod_Get("icon\file", $iCount) <> "" And FileExists($MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iCount][$MOD_ID] & "\" & Mod_Get("icon\file", $iCount)) Then
-			_GUICtrlTreeView_SetIcon($hModList, $MM_LIST_CONTENT[$iCount][$MOD_ITEM_ID], $MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iCount][0] & "\" & Mod_Get("icon\file", $iCount), Mod_Get("icon\index", $iCount), 6)
+			_GUICtrlTreeView_SetIcon($hGUI.ModList.List, $MM_LIST_CONTENT[$iCount][$MOD_ITEM_ID], $MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iCount][0] & "\" & Mod_Get("icon\file", $iCount), Mod_Get("icon\index", $iCount), 6)
 		Else
-			_GUICtrlTreeView_SetIcon($hModList, $MM_LIST_CONTENT[$iCount][$MOD_ITEM_ID], @ScriptDir & "\icons\folder-grey.ico", 0, 6)
+			_GUICtrlTreeView_SetIcon($hGUI.ModList.List, $MM_LIST_CONTENT[$iCount][$MOD_ITEM_ID], @ScriptDir & "\icons\folder-grey.ico", 0, 6)
 		EndIf
 	Next
 
@@ -757,7 +760,7 @@ Func TreeViewFill()
 	Next
 
 	TreeViewColor()
-	_GUICtrlTreeView_EndUpdate($hModList)
+	_GUICtrlTreeView_EndUpdate($hGUI.ModList.List)
 EndFunc   ;==>TreeViewFill
 
 Func TreeViewColor()
@@ -793,33 +796,33 @@ Func TreeViewColor()
 EndFunc   ;==>TreeViewColor
 
 Func TreeViewSwap($iIndex1, $iIndex2)
-	_GUICtrlTreeView_BeginUpdate($hModList)
+	_GUICtrlTreeView_BeginUpdate($hGUI.ModList.List)
 
 	Local $vTemp
 
-	$vTemp = _GUICtrlTreeView_GetText($hModList, $MM_LIST_CONTENT[$iIndex1][$MOD_ITEM_ID])
-	_GUICtrlTreeView_SetText($hModList, $MM_LIST_CONTENT[$iIndex1][$MOD_ITEM_ID], _GUICtrlTreeView_GetText($hModList, $MM_LIST_CONTENT[$iIndex2][$MOD_ITEM_ID]))
-	_GUICtrlTreeView_SetText($hModList, $MM_LIST_CONTENT[$iIndex2][$MOD_ITEM_ID], $vTemp)
+	$vTemp = _GUICtrlTreeView_GetText($hGUI.ModList.List, $MM_LIST_CONTENT[$iIndex1][$MOD_ITEM_ID])
+	_GUICtrlTreeView_SetText($hGUI.ModList.List, $MM_LIST_CONTENT[$iIndex1][$MOD_ITEM_ID], _GUICtrlTreeView_GetText($hGUI.ModList.List, $MM_LIST_CONTENT[$iIndex2][$MOD_ITEM_ID]))
+	_GUICtrlTreeView_SetText($hGUI.ModList.List, $MM_LIST_CONTENT[$iIndex2][$MOD_ITEM_ID], $vTemp)
 
-	$vTemp = _GUICtrlTreeView_GetImageIndex($hModList, $MM_LIST_CONTENT[$iIndex1][$MOD_ITEM_ID])
-	_GUICtrlTreeView_SetImageIndex($hModList, $MM_LIST_CONTENT[$iIndex1][$MOD_ITEM_ID], _GUICtrlTreeView_GetImageIndex($hModList, $MM_LIST_CONTENT[$iIndex2][$MOD_ITEM_ID]))
-	_GUICtrlTreeView_SetImageIndex($hModList, $MM_LIST_CONTENT[$iIndex2][$MOD_ITEM_ID], $vTemp)
+	$vTemp = _GUICtrlTreeView_GetImageIndex($hGUI.ModList.List, $MM_LIST_CONTENT[$iIndex1][$MOD_ITEM_ID])
+	_GUICtrlTreeView_SetImageIndex($hGUI.ModList.List, $MM_LIST_CONTENT[$iIndex1][$MOD_ITEM_ID], _GUICtrlTreeView_GetImageIndex($hGUI.ModList.List, $MM_LIST_CONTENT[$iIndex2][$MOD_ITEM_ID]))
+	_GUICtrlTreeView_SetImageIndex($hGUI.ModList.List, $MM_LIST_CONTENT[$iIndex2][$MOD_ITEM_ID], $vTemp)
 
-	$vTemp = _GUICtrlTreeView_GetStateImageIndex($hModList, $MM_LIST_CONTENT[$iIndex1][$MOD_ITEM_ID])
-	_GUICtrlTreeView_SetStateImageIndex($hModList, $MM_LIST_CONTENT[$iIndex1][$MOD_ITEM_ID], _GUICtrlTreeView_GetStateImageIndex($hModList, $MM_LIST_CONTENT[$iIndex2][$MOD_ITEM_ID]))
-	_GUICtrlTreeView_SetStateImageIndex($hModList, $MM_LIST_CONTENT[$iIndex2][$MOD_ITEM_ID], $vTemp)
+	$vTemp = _GUICtrlTreeView_GetStateImageIndex($hGUI.ModList.List, $MM_LIST_CONTENT[$iIndex1][$MOD_ITEM_ID])
+	_GUICtrlTreeView_SetStateImageIndex($hGUI.ModList.List, $MM_LIST_CONTENT[$iIndex1][$MOD_ITEM_ID], _GUICtrlTreeView_GetStateImageIndex($hGUI.ModList.List, $MM_LIST_CONTENT[$iIndex2][$MOD_ITEM_ID]))
+	_GUICtrlTreeView_SetStateImageIndex($hGUI.ModList.List, $MM_LIST_CONTENT[$iIndex2][$MOD_ITEM_ID], $vTemp)
 
-	$vTemp = _GUICtrlTreeView_GetSelectedImageIndex($hModList, $MM_LIST_CONTENT[$iIndex1][$MOD_ITEM_ID])
-	_GUICtrlTreeView_SetSelectedImageIndex($hModList, $MM_LIST_CONTENT[$iIndex1][$MOD_ITEM_ID], _GUICtrlTreeView_GetSelectedImageIndex($hModList, $MM_LIST_CONTENT[$iIndex2][$MOD_ITEM_ID]))
-	_GUICtrlTreeView_SetSelectedImageIndex($hModList, $MM_LIST_CONTENT[$iIndex2][$MOD_ITEM_ID], $vTemp)
+	$vTemp = _GUICtrlTreeView_GetSelectedImageIndex($hGUI.ModList.List, $MM_LIST_CONTENT[$iIndex1][$MOD_ITEM_ID])
+	_GUICtrlTreeView_SetSelectedImageIndex($hGUI.ModList.List, $MM_LIST_CONTENT[$iIndex1][$MOD_ITEM_ID], _GUICtrlTreeView_GetSelectedImageIndex($hGUI.ModList.List, $MM_LIST_CONTENT[$iIndex2][$MOD_ITEM_ID]))
+	_GUICtrlTreeView_SetSelectedImageIndex($hGUI.ModList.List, $MM_LIST_CONTENT[$iIndex2][$MOD_ITEM_ID], $vTemp)
 
 	TreeViewColor()
 
-	_GUICtrlTreeView_EndUpdate($hModList)
+	_GUICtrlTreeView_EndUpdate($hGUI.ModList.List)
 EndFunc   ;==>TreeViewSwap
 
 Func TreeViewGetSelectedIndex()
-	Local $hSelected = GUICtrlRead($hModList)
+	Local $hSelected = GUICtrlRead($hGUI.ModList.List)
 
 	For $iCount = 1 To $MM_LIST_CONTENT[0][0]
 		If $MM_LIST_CONTENT[$iCount][$MOD_ITEM_ID] = $hSelected Then Return $iCount
@@ -851,7 +854,7 @@ Func List_ModsTryFollow($sModID)
 	Next
 
 	If $iModIndex = 0 Then
-		GUICtrlSetState($hModList, $GUI_FOCUS)
+		GUICtrlSetState($hGUI.ModList.List, $GUI_FOCUS)
 		Return
 	EndIf
 
@@ -898,7 +901,7 @@ Func WM_NOTIFY($hwnd, $iMsg, $iwParam, $ilParam)
 	$iCode = DllStructGetData($tNMHDR, "Code")
 
 	Switch $hWndFrom
-		Case GUICtrlGetHandle($hModList), GUICtrlGetHandle($hPluginsList)
+		Case GUICtrlGetHandle($hGUI.ModList.List), GUICtrlGetHandle($hPluginsList)
 			Switch $iCode
 				Case $NM_DBLCLK
 					$bEnableDisable = True
@@ -921,20 +924,20 @@ Func SD_SwitchView($iNewView = $MM_VIEW_MODS)
 			GUICtrlSetState($hPluginsList, $GUI_HIDE)
 			GUICtrlSetState($hPluginsBack, $GUI_HIDE)
 
-			GUICtrlSetState($hGroupList, $GUI_SHOW)
-			GUICtrlSetState($hModList, $GUI_SHOW)
-			GUICtrlSetState($hModUp, $GUI_SHOW)
-			GUICtrlSetState($hModDown, $GUI_SHOW)
-			GUICtrlSetState($hModChangeState, $GUI_SHOW)
+			GUICtrlSetState($hGUI.ModList.Group, $GUI_SHOW)
+			GUICtrlSetState($hGUI.ModList.List, $GUI_SHOW)
+			GUICtrlSetState($hGUI.ModList.Up, $GUI_SHOW)
+			GUICtrlSetState($hGUI.ModList.Down, $GUI_SHOW)
+			GUICtrlSetState($hGUI.ModList.ChangeState, $GUI_SHOW)
 			GUICtrlSetState($hGUI.MenuMod.Menu, $GUI_ENABLE)
 
 			TreeViewTryFollow($sFollowMod)
 		Case $MM_VIEW_PLUGINS
-			GUICtrlSetState($hGroupList, $GUI_HIDE)
-			GUICtrlSetState($hModList, $GUI_HIDE)
-			GUICtrlSetState($hModUp, $GUI_HIDE)
-			GUICtrlSetState($hModDown, $GUI_HIDE)
-			GUICtrlSetState($hModChangeState, $GUI_HIDE)
+			GUICtrlSetState($hGUI.ModList.Group, $GUI_HIDE)
+			GUICtrlSetState($hGUI.ModList.List, $GUI_HIDE)
+			GUICtrlSetState($hGUI.ModList.Up, $GUI_HIDE)
+			GUICtrlSetState($hGUI.ModList.Down, $GUI_HIDE)
+			GUICtrlSetState($hGUI.ModList.ChangeState, $GUI_HIDE)
 			GUICtrlSetState($hGUI.MenuMod.Menu, $GUI_DISABLE)
 
 			GUICtrlSetState($hGroupPlugins, $GUI_SHOW)
