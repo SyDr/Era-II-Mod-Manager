@@ -1,5 +1,6 @@
 ; Author:         Aliaksei SyDr Karalenka
 
+#AutoIt3Wrapper_Version=Beta
 #include-once
 #include "include_fwd.au3"
 #include "lng.au3"
@@ -52,7 +53,8 @@ Func Settings_DefineWorkDir()
 		$MM_SETTINGS_LANGUAGE = Settings_Get("Language")
 		Setting_AskForGameDir(True)
 	Else
-		$MM_LIST_DIR_PATH = Settings_Get("Path") & "\Mods"
+		$MM_GAME_DIR = Settings_Get("Path")
+		$MM_LIST_DIR_PATH = $MM_GAME_DIR & "\Mods"
 		$MM_LIST_FILE_PATH = $MM_LIST_DIR_PATH & "\list.txt"
 	EndIf
 EndFunc
@@ -63,8 +65,9 @@ Func Setting_AskForGameDir($bExitOnCancel = False, $hParent = Default)
 		If $bExitOnCancel Then Exit
 		Return 0
 	Else
+		$MM_GAME_DIR = $sPath
 		Settings_Set("Path", $sPath)
-		$MM_LIST_DIR_PATH = $sPath & "\Mods"
+		$MM_LIST_DIR_PATH = $MM_GAME_DIR & "\Mods"
 		$MM_LIST_FILE_PATH = $MM_LIST_DIR_PATH & "\list.txt"
 	EndIf
 

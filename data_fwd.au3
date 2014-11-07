@@ -1,8 +1,10 @@
 #include-once
 #include "const.au3"
 
-Global $MM_LIST_DIR_PATH = @ScriptDir & "\..\..\Mods"
+Global $MM_GAME_DIR = @ScriptDir & "\..\.."
+Global $MM_LIST_DIR_PATH = $MM_GAME_DIR & "\Mods"
 Global $MM_LIST_FILE_PATH = $MM_LIST_DIR_PATH & "\list.txt"
+Global $MM_GAME_EXE = "h3era.exe"
 
 Global $MM_SETTINGS_PATH = @ScriptDir & "\settings.ini"
 Global $MM_SETTINGS_LANGUAGE = "english.json"
@@ -27,3 +29,6 @@ Global $MM_PLUGINS_CONTENT[1][$PLUGIN_TOTAL] ; a loaded list of plugins
 Global $MM_PLUGINS_PART_PRESENT[3] ; state if a plugins from some group exist
 
 Global $MM_LIST_COMPATIBILITY[]
+Global $MM_COMPATIBILITY_MESSAGE = ""
+
+Global $MM_UI_MAIN
