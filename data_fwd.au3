@@ -6,7 +6,7 @@ Global $MM_LIST_DIR_PATH = $MM_GAME_DIR & "\Mods"
 Global $MM_LIST_FILE_PATH = $MM_LIST_DIR_PATH & "\list.txt"
 Global $MM_GAME_EXE = "h3era.exe"
 
-Global $MM_SETTINGS_PATH = @ScriptDir & "\settings.ini"
+Global $MM_SETTINGS_PATH = @ScriptDir & "\settings.json"
 Global $MM_SETTINGS_LANGUAGE = "english.json"
 Global $MM_LANGUAGE_CODE = "en_US"
 
@@ -16,7 +16,6 @@ Global $MM_WINDOW_MAXIMIZED = False
 Global $MM_WINDOW_MIN_WIDTH_FULL
 Global $MM_WINDOW_MIN_HEIGHT_FULL
 
-Global $MM_LNG_CACHE ; lng.au3
 Global $MM_LNG_LIST[1][$MM_LNG_TOTAL] ; filename, lang code, lang full name
 
 Global $MM_VIEW_CURRENT
