@@ -9,7 +9,7 @@
 	"mod_list" :
 	{
 		"mod" : "Mod",	
-		"caption" : "Mod list",
+		"caption" : "Mod list (%s)",
 		"up" : "Move up",
 		"down" : "Move down",
 		"enable" : "Enable",

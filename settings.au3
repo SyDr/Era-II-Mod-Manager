@@ -24,7 +24,7 @@ Func Settings_Get($sName)
 		Case "Portable"
 			Return Int(IniRead($MM_SETTINGS_PATH, "settings", "Portable", "")) <> 0
 		Case "Path"
-			Return Settings_Get("Portable") ? @ScriptDir & "\..\.." : IniRead($MM_SETTINGS_PATH, "settings", "Path", "")
+			Return Settings_Get("Portable") ? _PathFull(@ScriptDir & "\..\..") : IniRead($MM_SETTINGS_PATH, "settings", "Path", "")
 	EndSwitch
 EndFunc   ;==>Settings_Get
 

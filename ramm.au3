@@ -251,7 +251,7 @@ EndFunc   ;==>SD_GUI_Events_Register
 
 Func SD_GUI_SetLng()
 	GUICtrlSetData($hGUI.MenuLanguage, Lng_Get("lang.language"))
-	GUICtrlSetData($hGUI.ModList.Group, Lng_Get("mod_list.caption"))
+	GUICtrlSetData($hGUI.ModList.Group, Lng_GetF("mod_list.caption", $MM_GAME_DIR))
 	GUICtrlSetData($hGUI.ModList.Up, Lng_Get("mod_list.up"))
 	GUICtrlSetData($hGUI.ModList.Down, Lng_Get("mod_list.down"))
 	GUICtrlSetData($hGUI.ModList.ChangeState, Lng_Get("mod_list.enable"))
@@ -551,7 +551,10 @@ Func SD_GUI_List_ChangeState()
 EndFunc   ;==>SD_GUI_List_ChangeState
 
 Func SD_GUI_ChangeGameDir()
-	If Setting_AskForGameDir(False, $MM_UI_MAIN) Then SD_GUI_Update()
+	If Setting_AskForGameDir(False, $MM_UI_MAIN) Then
+		GUICtrlSetData($hGUI.ModList.Group, Lng_GetF("mod_list.caption", $MM_GAME_DIR))
+		SD_GUI_Update()
+	EndIf
 EndFunc   ;==>SD_GUI_ChangeGameDir
 
 Func SD_GUI_Update()
