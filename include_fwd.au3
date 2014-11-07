@@ -8,6 +8,7 @@
 #include <AutoItConstants.au3>
 #include <ButtonConstants.au3>
 #include <ComboConstants.au3>
+#include <Debug.au3>
 #include <EditConstants.au3>
 #include <File.au3>
 #include <InetConstants.au3>

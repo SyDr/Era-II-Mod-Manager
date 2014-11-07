@@ -1,5 +1,6 @@
 ; Author:         Aliaksei SyDr Karalenka
 
+#AutoIt3Wrapper_Version=Beta
 #include-once
 
 #include "include_fwd.au3"
@@ -81,39 +82,28 @@ Func GUICtrlSetStateStateful(Const $idControl, Const $iState = -1)
 	EndIf
 EndFunc
 
-Func Utils_SelectFromListUI(ByRef $aList, Const $hParent = 0, Const $iSelected = 1)
-	Local Const $iOptionGUIOnEventMode = AutoItSetOption("GUIOnEventMode", 0)
-	Local Const $iOptionGUICoordMode = AutoItSetOption("GUICoordMode", 0)
-	GUISetState(@SW_DISABLE, $hParent)
-	Local Const $iItemSpacing = 4
-	Local $bClose = False
+Func GUIRegisterMsgStateful(Const $iMessage, Const ByRef $sFuncName)
+	Local Static $mRegistered = MapEmpty()
+	If Not MapExists($mRegistered, $iMessage) And $sFuncName == "" Then Return
+	If Not MapExists($mRegistered, $iMessage) And $sFuncName <> "" Then $mRegistered[$iMessage] = ArrayEmpty()
 
-	Local $hGUI = GUICreate("", 200, 324, Default, Default, Default, Default, $hParent)
-	GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
-	Local $aSize = WinGetClientSize($hGUI)
-	Local $hList = GUICtrlCreateTreeView($iItemSpacing, $iItemSpacing, _ ; left, top
-			$aSize[0] - 2 * $iItemSpacing, $aSize[1] - 3 * $iItemSpacing - 25, _
-			BitOR($TVS_FULLROWSELECT, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
-	Local $hOk = GUICtrlCreateButton("OK", $aSize[0] - 2 * $iItemSpacing - 75, GUICtrlGetPos($hList)[3] + $iItemSpacing, 75, 25)
-	Local $hListItems = $aList
-	For $i = 1 To $aList[0]
-		$hListItems[$i] = GUICtrlCreateTreeViewItem($aList[$i], $hList)
-		If $iSelected = $i Then GUICtrlSetState($hListItems[$i], $GUI_FOCUS)
-	Next
+	Local $aList = $mRegistered[$iMessage]
+	GUIRegisterMsg($iMessage, $sFuncName)
 
-	GUISetState(@SW_SHOW)
+	If $sFuncName <> "" Then
+		$aList[0] += 1
+		If UBound($aList) <= $aList[0] Then ReDim $aList[$aList[0] + 1]
+		$aList[$aList[0]] = $sFuncName
+	Else
+		$aList[0] -= 1
+		If $aList[0] <> 0 Then GUIRegisterMsg($iMessage, $aList[$aList[0]])
+	EndIf
 
-	While Not $bClose
-		Switch GUIGetMsg()
-			Case $GUI_EVENT_CLOSE, $hOk
-				$bClose = True
-		EndSwitch
-	WEnd
+	If $aList[0] <> 0 Then
+		$mRegistered[$iMessage] = $aList
+	Else
+		MapRemove($mRegistered, $iMessage)
+	EndIf
 
-	GUIDelete($hGUI)
-
-	AutoItSetOption("GUIOnEventMode", $iOptionGUIOnEventMode)
-	AutoItSetOption("GUICoordMode", $iOptionGUICoordMode)
-	GUISetState(@SW_ENABLE, $hParent)
-	GUISetState(@SW_RESTORE, $hParent)
 EndFunc
+

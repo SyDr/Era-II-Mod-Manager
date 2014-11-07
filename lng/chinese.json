@@ -31,6 +31,11 @@
 		"compatibility" : "兼容性",
 		"open_dir" : "打开MOD目录"
 	},
+	"game" : {
+		"caption" : "Game",
+		"launch" : "Launch (%s)",
+		"change" : "Change",
+	},
 	"plugins_list" :
 	{
 		"caption" : "插件 (%s)",
@@ -48,7 +53,8 @@
 	"compatibility" :
 	{
 		"part1" : "Mod %s 与如下Mod不兼容:",
-		"part2" : "禁用这些Mod以减少不必要出现的Bug :)"
+		"part2" : "禁用这些Mod以减少不必要出现的Bug :)",
+		"launch_anyway" : "Launch anyway?"
 	},
 	"add_new" :
 	{

@@ -31,6 +31,11 @@
 		"compatibility" : "Compatibility",
 		"open_dir" : "Open mod directory"
 	},
+	"game" : {
+		"caption" : "Game",
+		"launch" : "Launch (%s)",
+		"change" : "Change",
+	},
 	"plugins_list" :
 	{
 		"caption" : "Plugins (%s)",
@@ -48,7 +53,8 @@
 	"compatibility" :
 	{
 		"part1" : "Mod %s is incompatible with following mods:",
-		"part2" : "Disable these mods to reduce amount of unexpected bugs :)"
+		"part2" : "Disable these mods to reduce amount of unexpected bugs :)",
+		"launch_anyway" : "Launch anyway?"
 	},
 	"add_new" :
 	{

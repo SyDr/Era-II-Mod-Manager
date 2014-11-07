@@ -26,6 +26,7 @@
 #include "settings.au3"
 #include "startup.au3"
 #include "update.au3"
+#include "ui.au3"
 
 AutoItSetOption("MustDeclareVars", 1)
 AutoItSetOption("GUIOnEventMode", 1)
@@ -34,6 +35,7 @@ AutoItSetOption("GUICloseOnESC", 1)
 #Region Variables
 Global $hGUI[]
 $hGUI.MenuMod = MapEmpty()
+$hGUI.MenuGame = MapEmpty()
 $hGUI.MenuMore = MapEmpty()
 $hGUI.MenuHelp = MapEmpty()
 $hGUI.ModList = MapEmpty()
@@ -47,7 +49,6 @@ Global $aPlugins[1][2], $hPluginsParts[3]
 Global $hGroupInfo, $hModInfo
 
 Global $sFollowMod = ""
-Global $sCompatibilityMessage = ""
 Global $bEnableDisable, $bSelectionChanged
 Global $bInTrack = False
 #EndRegion Variables
@@ -89,11 +90,11 @@ Func MainLoop()
 
 	While True
 		Sleep(50)
-		If Not $bGUINeedUpdate And Not WinActive($hGUI.MainForm) Then
+		If Not $bGUINeedUpdate And Not WinActive($MM_UI_MAIN) Then
 			$bGUINeedUpdate = True
 		EndIf
 
-		If $bGUINeedUpdate And WinActive($hGUI.MainForm) Then
+		If $bGUINeedUpdate And WinActive($MM_UI_MAIN) Then
 			$bGUINeedUpdate = False
 			If Not Mod_ListIsActual() Then SD_GUI_Update()
 		EndIf
@@ -124,7 +125,7 @@ Func SD_GUI_Language_Change()
 
 	Local $sIsLoaded = Lng_Load()
 	If @error Then
-		MsgBox($MB_ICONINFORMATION + $MB_SYSTEMMODAL, "", $sIsLoaded, Default, $hGUI.MainForm)
+		MsgBox($MB_ICONINFORMATION + $MB_SYSTEMMODAL, "", $sIsLoaded, Default, $MM_UI_MAIN)
 	Else
 		Settings_Set("Language", $MM_SETTINGS_LANGUAGE)
 	EndIf
@@ -138,9 +139,9 @@ Func SD_GUI_Create()
 ;~ 	Local Const $iGroupAddHeight = 16
 	Local Const $iMenuHeight = 25 ; yep, this is a magic number, maybe something like 17 (real menu height) + fake group offset 8 (but specified here like 0)
 
-	$hGUI.MainForm = GUICreate($MM_TITLE, $MM_WINDOW_MIN_WIDTH, $MM_WINDOW_MIN_HEIGHT, Default, Default, BitOR($GUI_SS_DEFAULT_GUI, $WS_SIZEBOX, $WS_MAXIMIZEBOX), $WS_EX_ACCEPTFILES)
-	$MM_WINDOW_MIN_WIDTH_FULL = WinGetPos($hGUI.MainForm)[2]
-	$MM_WINDOW_MIN_HEIGHT_FULL = WinGetPos($hGUI.MainForm)[3]
+	$MM_UI_MAIN = GUICreate($MM_TITLE, $MM_WINDOW_MIN_WIDTH, $MM_WINDOW_MIN_HEIGHT, Default, Default, BitOR($GUI_SS_DEFAULT_GUI, $WS_SIZEBOX, $WS_MAXIMIZEBOX), $WS_EX_ACCEPTFILES)
+	$MM_WINDOW_MIN_WIDTH_FULL = WinGetPos($MM_UI_MAIN)[2]
+	$MM_WINDOW_MIN_HEIGHT_FULL = WinGetPos($MM_UI_MAIN)[3]
 	GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
 	GUISetState(@SW_HIDE) ; this is a dirty workaround (https://www.autoitscript.com/trac/autoit/ticket/2920)
 
@@ -155,6 +156,11 @@ Func SD_GUI_Create()
 	$hGUI.MenuMod.OpenHomepage = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
 	$hGUI.MenuMod.Delete = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
 	$hGUI.MenuMod.OpenFolder = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
+
+	$hGUI.MenuGame.Menu = GUICtrlCreateMenu("-")
+	$hGUI.MenuGame.Launch = GUICtrlCreateMenuItem("-", $hGUI.MenuGame.Menu)
+	GUICtrlCreateMenuItem("", $hGUI.MenuGame.Menu)
+	$hGUI.MenuGame.Change = GUICtrlCreateMenuItem("-", $hGUI.MenuGame.Menu)
 
 	$hGUI.MenuMore.Menu = GUICtrlCreateMenu("-")
 	$hGUI.MenuMore.Add = GUICtrlCreateMenuItem("-", $hGUI.MenuMore.Menu)
@@ -202,8 +208,8 @@ Func SD_GUI_Create()
 	SD_GUI_Events_Register()
 	SD_GUI_SetLng()
 
-	WinMove($hGUI.MainForm, '', (@DesktopWidth - $MM_WINDOW_WIDTH) / 2, (@DesktopHeight - $MM_WINDOW_HEIGHT) / 2, $MM_WINDOW_WIDTH, $MM_WINDOW_HEIGHT)
-	If $MM_WINDOW_MAXIMIZED Then WinSetState($hGUI.MainForm, '', @SW_MAXIMIZE)
+	WinMove($MM_UI_MAIN, '', (@DesktopWidth - $MM_WINDOW_WIDTH) / 2, (@DesktopHeight - $MM_WINDOW_HEIGHT) / 2, $MM_WINDOW_WIDTH, $MM_WINDOW_HEIGHT)
+	If $MM_WINDOW_MAXIMIZED Then WinSetState($MM_UI_MAIN, '', @SW_MAXIMIZE)
 	$hDummyF5 = GUICtrlCreateDummy()
 	Local $AccelKeys[1][2] = [["{F5}", $hDummyF5]]
 	GUISetAccelerators($AccelKeys)
@@ -217,9 +223,9 @@ EndFunc   ;==>SD_GUI_SetResizing
 
 Func SD_GUI_Events_Register()
 	GUISetOnEvent($GUI_EVENT_CLOSE, "SD_GUI_Close")
-	GUIRegisterMsg($WM_GETMINMAXINFO, "WM_GETMINMAXINFO") ; Limit min size
-	GUIRegisterMsg($WM_DROPFILES, "SD_GUI_Mod_AddByDnD") ; Input files
-	GUIRegisterMsg($WM_NOTIFY, "WM_NOTIFY") ;  TreeView
+	GUIRegisterMsgStateful($WM_GETMINMAXINFO, "WM_GETMINMAXINFO") ; Limit min size
+	GUIRegisterMsgStateful($WM_DROPFILES, "SD_GUI_Mod_AddByDnD") ; Input files
+	GUIRegisterMsgStateful($WM_NOTIFY, "WM_NOTIFY") ;  TreeView
 
 	For $iCount = 1 To $MM_LNG_LIST[0][0]
 		GUICtrlSetOnEvent($MM_LNG_LIST[$iCount][$MM_LNG_MENU_ID], "SD_GUI_Language_Change")
@@ -232,6 +238,8 @@ Func SD_GUI_Events_Register()
 	GUICtrlSetOnEvent($hGUI.MenuMod.Plugins, "SD_GUI_Manage_Plugins")
 	GUICtrlSetOnEvent($hGUI.MenuMod.OpenHomepage, "SD_GUI_Mod_Website")
 	GUICtrlSetOnEvent($hGUI.MenuMod.Delete, "SD_GUI_Mod_Delete")
+	GUICtrlSetOnEvent($hGUI.MenuGame.Launch, "UI_GameExeLaunch")
+	GUICtrlSetOnEvent($hGUI.MenuGame.Change, "SD_GUI_GameExeChange")
 	GUICtrlSetOnEvent($hGUI.MenuMore.Add, "SD_GUI_Mod_Add")
 	GUICtrlSetOnEvent($hGUI.MenuMod.OpenFolder, "SD_GUI_Mod_OpenFolder")
 	GUICtrlSetOnEvent($hGUI.MenuMore.ChangeModDir, "SD_GUI_ChangeGameDir")
@@ -254,6 +262,10 @@ Func SD_GUI_SetLng()
 	GUICtrlSetData($hGUI.MenuMod.OpenHomepage, Lng_Get("mod_list.homepage"))
 	GUICtrlSetData($hGUI.MenuMod.OpenFolder, Lng_Get("mod_list.open_dir"))
 
+	GUICtrlSetData($hGUI.MenuGame.Menu, Lng_Get("game.caption"))
+	GUICtrlSetData($hGUI.MenuGame.Launch, Lng_GetF("game.launch", $MM_GAME_EXE))
+	GUICtrlSetData($hGUI.MenuGame.Change, Lng_Get("game.change"))
+
 	GUICtrlSetData($hGUI.MenuMore.Menu, Lng_Get("mod_list.more"))
 	GUICtrlSetData($hGUI.MenuMore.Compatibility, Lng_Get("mod_list.compatibility"))
 	GUICtrlSetData($hGUI.MenuMore.Add, Lng_Get("mod_list.add_new"))
@@ -268,11 +280,11 @@ Func SD_GUI_SetLng()
 EndFunc   ;==>SD_GUI_SetLng
 
 Func SD_GUI_Mod_Compatibility()
-	MsgBox(4096, "", $sCompatibilityMessage, Default, $hGUI.MainForm)
+	MsgBox(4096, "", $MM_COMPATIBILITY_MESSAGE, Default, $MM_UI_MAIN)
 EndFunc   ;==>SD_GUI_Mod_Compatibility
 
 Func SD_GUI_CheckForUpdates()
-	Update_CheckNewPorgram(Settings_Get("Portable"), $hGUI.MainForm)
+	Update_CheckNewPorgram(Settings_Get("Portable"), $MM_UI_MAIN)
 EndFunc   ;==>SD_GUI_CheckForUpdates
 
 Func SD_GUI_Mod_OpenFolder()
@@ -294,6 +306,14 @@ Func SD_GUI_Plugins_Close()
 	SD_SwitchView($MM_VIEW_MODS)
 EndFunc   ;==>SD_GUI_Plugins_Close
 
+Func SD_GUI_GameExeChange()
+	Local $sNewExe = UI_SelectGameExe()
+	If $MM_GAME_EXE <> $sNewExe Then
+		$MM_GAME_EXE = $sNewExe
+		GUICtrlSetData($hGUI.MenuGame.Launch, Lng_GetF("game.launch", $MM_GAME_EXE))
+	EndIf
+EndFunc
+
 Func SD_GUI_Mod_AddByDnD($hwnd, $msg, $wParam, $lParam)
 	#forceref $hwnd, $Msg, $wParam, $lParam
 	Local $aRet = DllCall("shell32.dll", "int", "DragQueryFile", "int", $wParam, "int", -1, "ptr", Null, "int", 0)
@@ -307,24 +327,24 @@ Func SD_GUI_Mod_AddByDnD($hwnd, $msg, $wParam, $lParam)
 	DllCall("shell32.dll", "none", "DragFinish", "int", $wParam)
 	$tBuffer = 0
 
-	GUISetState(@SW_DISABLE, $hGUI.MainForm)
+	GUISetState(@SW_DISABLE, $MM_UI_MAIN)
 
 	Local $aModList = Mod_ListCheck($aDroppedFiles); FilePath, ModName, ModLocalizedName, ModLocalizedDescription, Version, MinVersion, InstalledVersion, AuthorName, ModWebSite
 
-	GUISetState(@SW_ENABLE, $hGUI.MainForm)
-	GUISetState(@SW_RESTORE, $hGUI.MainForm)
+	GUISetState(@SW_ENABLE, $MM_UI_MAIN)
+	GUISetState(@SW_RESTORE, $MM_UI_MAIN)
 
 	If $aModList[0][0] = 0 Then
-		MsgBox($MB_SYSTEMMODAL, "", StringFormat(Lng_Get("add_new.progress.no_mods"), "0_O"), Default, $hGUI.MainForm)
+		MsgBox($MB_SYSTEMMODAL, "", StringFormat(Lng_Get("add_new.progress.no_mods"), "0_O"), Default, $MM_UI_MAIN)
 		Return "GUI_RUNDEFMSG"
 	EndIf
 
-	GUISetState(@SW_DISABLE, $hGUI.MainForm)
+	GUISetState(@SW_DISABLE, $MM_UI_MAIN)
 	Local $iGUIOnEventModeState = AutoItSetOption("GUIOnEventMode", 0)
-	PackedMod_InstallGUI_Simple($aModList, $hGUI.MainForm)
+	PackedMod_InstallGUI_Simple($aModList, $MM_UI_MAIN)
 	AutoItSetOption("GUIOnEventMode", $iGUIOnEventModeState)
-	GUISetState(@SW_ENABLE, $hGUI.MainForm)
-	GUISetState(@SW_RESTORE, $hGUI.MainForm)
+	GUISetState(@SW_ENABLE, $MM_UI_MAIN)
+	GUISetState(@SW_RESTORE, $MM_UI_MAIN)
 
 	TreeViewMain()
 	TreeViewTryFollow($sFollowMod)
@@ -354,9 +374,9 @@ Func Mod_ListCheck($aFileList, $sDir = "")
 EndFunc   ;==>Mod_ListCheck
 
 Func SD_GUI_Mod_Add()
-	Local $sFileList = FileOpenDialog("", "", Lng_Get("add_new.filter"), $FD_FILEMUSTEXIST + $FD_MULTISELECT, "", $hGUI.MainForm)
+	Local $sFileList = FileOpenDialog("", "", Lng_Get("add_new.filter"), $FD_FILEMUSTEXIST + $FD_MULTISELECT, "", $MM_UI_MAIN)
 	If @error Then Return False
-	GUISetState(@SW_DISABLE, $hGUI.MainForm)
+	GUISetState(@SW_DISABLE, $MM_UI_MAIN)
 
 	Local $aFileList = StringSplit($sFileList, "|", $STR_NOCOUNT)
 
@@ -373,20 +393,20 @@ Func SD_GUI_Mod_Add()
 
 	Local $aModList = Mod_ListCheck($aFileList, $sDirPath & "\"); FilePath, ModName, ModLocalizedName, ModLocalizedDescription, Version, MinVersion, InstalledVersion, AuthorName, ModWebSite
 
-	GUISetState(@SW_ENABLE, $hGUI.MainForm)
-	GUISetState(@SW_RESTORE, $hGUI.MainForm)
+	GUISetState(@SW_ENABLE, $MM_UI_MAIN)
+	GUISetState(@SW_RESTORE, $MM_UI_MAIN)
 
 	If $aModList[0][0] = 0 Then
-		MsgBox($MB_SYSTEMMODAL, "", StringFormat(Lng_Get("add_new.progress.no_mods"), "0_O"), Default, $hGUI.MainForm)
+		MsgBox($MB_SYSTEMMODAL, "", StringFormat(Lng_Get("add_new.progress.no_mods"), "0_O"), Default, $MM_UI_MAIN)
 		Return False
 	EndIf
 
-	GUISetState(@SW_DISABLE, $hGUI.MainForm)
+	GUISetState(@SW_DISABLE, $MM_UI_MAIN)
 	Local $iGUIOnEventModeState = AutoItSetOption("GUIOnEventMode", 0)
-	PackedMod_InstallGUI_Simple($aModList, $hGUI.MainForm)
+	PackedMod_InstallGUI_Simple($aModList, $MM_UI_MAIN)
 	AutoItSetOption("GUIOnEventMode", $iGUIOnEventModeState)
-	GUISetState(@SW_ENABLE, $hGUI.MainForm)
-	GUISetState(@SW_RESTORE, $hGUI.MainForm)
+	GUISetState(@SW_ENABLE, $MM_UI_MAIN)
+	GUISetState(@SW_RESTORE, $MM_UI_MAIN)
 
 	TreeViewMain()
 	TreeViewTryFollow($sFollowMod)
@@ -410,11 +430,11 @@ Func SD_CLI_Mod_Add()
 EndFunc   ;==>SD_CLI_Mod_Add
 
 Func SD_GUI_SaveSize()
-	Local $aPos = WinGetPos($hGUI.MainForm)
+	Local $aPos = WinGetPos($MM_UI_MAIN)
 
 	$MM_WINDOW_WIDTH = $aPos[2]
 	$MM_WINDOW_HEIGHT = $aPos[3]
-	$MM_WINDOW_MAXIMIZED = BitAND(WinGetState($hGUI.MainForm), 32) ? 1 : 0
+	$MM_WINDOW_MAXIMIZED = BitAND(WinGetState($MM_UI_MAIN), 32) ? 1 : 0
 
 	Settings_Set("Maximized", $MM_WINDOW_MAXIMIZED)
 	If Not $MM_WINDOW_MAXIMIZED Then
@@ -461,13 +481,13 @@ Func SD_GUI_Mod_Swap($iModIndex1, $iModIndex2)
 	Mod_ListSwap($iModIndex1, $iModIndex2)
 	TreeViewSwap($iModIndex1, $iModIndex2)
 	TreeViewTryFollow($sFollowMod)
-;~ 	ControlFocus($hGUI.MainForm, "", @GUI_CtrlId)
+;~ 	ControlFocus($MM_UI_MAIN, "", @GUI_CtrlId)
 EndFunc   ;==>SD_GUI_Mod_Swap
 
 Func SD_GUI_Mod_Delete()
 	Local $iTreeViewIndex = TreeViewGetSelectedIndex()
 	Local $iModIndex = $iTreeViewIndex
-	Local $iAnswer = MsgBox($MB_YESNO + $MB_ICONQUESTION + $MB_DEFBUTTON2 + $MB_TASKMODAL, "", StringFormat(Lng_Get("mod_list.delete_confirm"), Mod_Get("caption", $iModIndex)), Default, $hGUI.MainForm)
+	Local $iAnswer = MsgBox($MB_YESNO + $MB_ICONQUESTION + $MB_DEFBUTTON2 + $MB_TASKMODAL, "", StringFormat(Lng_Get("mod_list.delete_confirm"), Mod_Get("caption", $iModIndex)), Default, $MM_UI_MAIN)
 	If $iAnswer = $IDNO Then Return
 
 	Mod_Delete($iModIndex)
@@ -531,11 +551,11 @@ Func SD_GUI_List_ChangeState()
 EndFunc   ;==>SD_GUI_List_ChangeState
 
 Func SD_GUI_ChangeGameDir()
-	If Setting_AskForGameDir(False, $hGUI.MainForm) Then SD_GUI_Update()
+	If Setting_AskForGameDir(False, $MM_UI_MAIN) Then SD_GUI_Update()
 EndFunc   ;==>SD_GUI_ChangeGameDir
 
 Func SD_GUI_Update()
-	GUISwitch($hGUI.MainForm)
+	GUISwitch($MM_UI_MAIN)
 	TreeViewMain()
 	If $MM_VIEW_CURRENT = $MM_VIEW_MODS Then TreeViewTryFollow($sFollowMod)
 EndFunc   ;==>SD_GUI_Update
@@ -759,7 +779,7 @@ Func TreeViewFill()
 EndFunc   ;==>TreeViewFill
 
 Func TreeViewColor()
-	$sCompatibilityMessage = ""
+	$MM_COMPATIBILITY_MESSAGE = ""
 	Local $iMasterIndex = -1
 
 	For $iModIndex = 1 To $MM_LIST_CONTENT[0][0]
@@ -772,20 +792,20 @@ Func TreeViewColor()
 				If Not Mod_IsCompatible($iModIndex, $i) Then
 					$iMasterIndex = $iModIndex
 					GUICtrlSetColor($MM_LIST_CONTENT[$iModIndex][$MOD_ITEM_ID], 0x00C000) ; This is master mod
-					$sCompatibilityMessage = StringFormat(Lng_Get("compatibility.part1"), Mod_Get("caption", $iModIndex)) & @CRLF
+					$MM_COMPATIBILITY_MESSAGE = StringFormat(Lng_Get("compatibility.part1"), Mod_Get("caption", $iModIndex)) & @CRLF
 					ExitLoop
 				EndIf
 			Next
 		ElseIf $iMasterIndex > 0 And $MM_LIST_CONTENT[$iModIndex][$MOD_IS_ENABLED] And $MM_LIST_CONTENT[$iModIndex][$MOD_IS_EXIST] Then
 			If Not Mod_IsCompatible($iMasterIndex, $iModIndex) Then
 				GUICtrlSetColor($MM_LIST_CONTENT[$iModIndex][$MOD_ITEM_ID], 0xCC0000) ; This is slave mod
-				$sCompatibilityMessage &= Mod_Get("caption", $iModIndex) & @CRLF
+				$MM_COMPATIBILITY_MESSAGE &= Mod_Get("caption", $iModIndex) & @CRLF
 			EndIf
 		EndIf
 	Next
 
-	If $sCompatibilityMessage <> "" Then
-		$sCompatibilityMessage &= @CRLF & Lng_Get("compatibility.part2")
+	If $MM_COMPATIBILITY_MESSAGE <> "" Then
+		$MM_COMPATIBILITY_MESSAGE &= @CRLF & Lng_Get("compatibility.part2")
 		GUICtrlSetState($hGUI.MenuMore.Compatibility, $GUI_ENABLE)
 	EndIf
 EndFunc   ;==>TreeViewColor
@@ -882,7 +902,7 @@ EndFunc   ;==>List_PluginsResetSelection
 Func WM_GETMINMAXINFO($hwnd, $msg, $iwParam, $ilParam)
 	#forceref $hwnd, $Msg, $iwParam, $ilParam
 
-	If $hwnd <> $hGUI.MainForm Then Return $GUI_RUNDEFMSG
+	If $hwnd <> $MM_UI_MAIN Then Return $GUI_RUNDEFMSG
 
 	Local $tagMaxinfo = DllStructCreate("int;int;int;int;int;int;int;int;int;int", $ilParam)
 	DllStructSetData($tagMaxinfo, 7, $MM_WINDOW_MIN_WIDTH_FULL) ; min X
