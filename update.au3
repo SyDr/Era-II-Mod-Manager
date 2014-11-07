@@ -9,9 +9,10 @@
 #include "utils.au3"
 
 
-Func Update_CheckNewPorgram(Const $bIsPortable)
+Func Update_CheckNewPorgram(Const $bIsPortable, Const $hParent)
 	Local Const $iOptionGUIOnEventMode = AutoItSetOption("GUIOnEventMode", 0)
 	Local Const $iOptionGUICoordMode = AutoItSetOption("GUICoordMode", 0)
+	GUISetState(@SW_DISABLE, $hParent)
 	Local Const $iMinWidth = 400
 	Local Const $iItemSpacing = 4
 
@@ -22,7 +23,8 @@ Func Update_CheckNewPorgram(Const $bIsPortable)
 	$hGUI.Access = MapEmpty()
 	$hGUI.Close = False
 
-	$hGUI.Form = GUICreate(Lng_Get("update.caption"), $iMinWidth + Round(Random(0, (@DesktopWidth - $iMinWidth)/10, 1)), 200)
+	$hGUI.Form = GUICreate(Lng_Get("update.caption"), $iMinWidth + Round(Random(0, (@DesktopWidth - $iMinWidth)/10, 1)), 200, Default, Default, Default, Default, $hParent)
+	GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
 	Local $aSize = WinGetClientSize($hGUI.Form)
 
 	$hGUI.GroupParam = GUICtrlCreateGroup(Lng_Get("update.caption"), $iItemSpacing, $iItemSpacing, $aSize[0] - 2 * $iItemSpacing, 88)
@@ -153,6 +155,9 @@ Func Update_CheckNewPorgram(Const $bIsPortable)
 
 	AutoItSetOption("GUIOnEventMode", $iOptionGUIOnEventMode)
 	AutoItSetOption("GUICoordMode", $iOptionGUICoordMode)
+
+	GUISetState(@SW_ENABLE, $hParent)
+	GUISetState(@SW_RESTORE, $hParent)
 EndFunc
 
 Func __Update_InfoFileProcess(ByRef $hGUI, Const $sFile)

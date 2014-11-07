@@ -272,12 +272,7 @@ Func SD_GUI_Mod_Compatibility()
 EndFunc   ;==>SD_GUI_Mod_Compatibility
 
 Func SD_GUI_CheckForUpdates()
-	GUISetState(@SW_DISABLE, $hGUI.MainForm)
-
-	Update_CheckNewPorgram(Settings_Get("Portable"))
-
-	GUISetState(@SW_ENABLE, $hGUI.MainForm)
-	GUISetState(@SW_RESTORE, $hGUI.MainForm)
+	Update_CheckNewPorgram(Settings_Get("Portable"), $hGUI.MainForm)
 EndFunc   ;==>SD_GUI_CheckForUpdates
 
 Func SD_GUI_Mod_OpenFolder()
@@ -884,9 +879,12 @@ Func List_PluginsResetSelection()
 	EndIf
 EndFunc   ;==>List_PluginsResetSelection
 
-Func WM_GETMINMAXINFO($hwnd, $msg, $wParam, $lParam)
-	#forceref $hwnd, $Msg, $wParam, $lParam
-	Local $tagMaxinfo = DllStructCreate("int;int;int;int;int;int;int;int;int;int", $lParam)
+Func WM_GETMINMAXINFO($hwnd, $msg, $iwParam, $ilParam)
+	#forceref $hwnd, $Msg, $iwParam, $ilParam
+
+	If $hwnd <> $hGUI.MainForm Then Return $GUI_RUNDEFMSG
+
+	Local $tagMaxinfo = DllStructCreate("int;int;int;int;int;int;int;int;int;int", $ilParam)
 	DllStructSetData($tagMaxinfo, 7, $MM_WINDOW_MIN_WIDTH_FULL) ; min X
 	DllStructSetData($tagMaxinfo, 8, $MM_WINDOW_MIN_HEIGHT_FULL) ; min Y
 	Return 0
