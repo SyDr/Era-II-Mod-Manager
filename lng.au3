@@ -3,6 +3,8 @@
 #include-once
 #include "include_fwd.au3"
 
+Global $MM_LNG_CACHE
+
 Func Lng_Load()
 	Local $sText = FileRead(@ScriptDir & "\lng\" & $MM_SETTINGS_LANGUAGE)
 	If @error Then Return SetError(1, @extended, "Can't read .\lng\" & $MM_SETTINGS_LANGUAGE)

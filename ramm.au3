@@ -62,7 +62,7 @@ If $CMDLine[0] > 0 And $CMDLine[1] = '/assocdel' Then
 EndIf
 
 Settings_DefineWorkDir()
-$MM_SETTINGS_LANGUAGE = Settings_Get("Language")
+Settings_Load()
 Lng_LoadList()
 Lng_Load()
 
@@ -311,6 +311,7 @@ Func SD_GUI_GameExeChange()
 	If $MM_GAME_EXE <> $sNewExe Then
 		$MM_GAME_EXE = $sNewExe
 		GUICtrlSetData($hGUI.MenuGame.Launch, Lng_GetF("game.launch", $MM_GAME_EXE))
+		Settings_Set("exe", $MM_GAME_EXE)
 	EndIf
 EndFunc
 
@@ -434,23 +435,24 @@ Func SD_GUI_SaveSize()
 
 	$MM_WINDOW_WIDTH = $aPos[2]
 	$MM_WINDOW_HEIGHT = $aPos[3]
-	$MM_WINDOW_MAXIMIZED = BitAND(WinGetState($MM_UI_MAIN), 32) ? 1 : 0
+	$MM_WINDOW_MAXIMIZED = BitAND(WinGetState($MM_UI_MAIN), 32) ? True : False
 
-	Settings_Set("Maximized", $MM_WINDOW_MAXIMIZED)
+	Settings_Set("maximized", $MM_WINDOW_MAXIMIZED)
 	If Not $MM_WINDOW_MAXIMIZED Then
-		Settings_Set("Width", $MM_WINDOW_WIDTH)
-		Settings_Set("Height", $MM_WINDOW_HEIGHT)
+		Settings_Set("width", $MM_WINDOW_WIDTH)
+		Settings_Set("height", $MM_WINDOW_HEIGHT)
 	EndIf
 EndFunc   ;==>SD_GUI_SaveSize
 
 Func SD_GUI_LoadSize()
-	$MM_WINDOW_WIDTH = Settings_Get("Width")
-	$MM_WINDOW_HEIGHT = Settings_Get("Height")
-	$MM_WINDOW_MAXIMIZED = Settings_Get("Maximized")
+	$MM_WINDOW_WIDTH = Settings_Get("width")
+	$MM_WINDOW_HEIGHT = Settings_Get("height")
+	$MM_WINDOW_MAXIMIZED = Settings_Get("maximized")
 EndFunc   ;==>SD_GUI_LoadSize
 
 Func SD_GUI_Close()
 	SD_GUI_SaveSize()
+	Settings_Save()
 	Exit
 EndFunc   ;==>SD_GUI_Close
 
@@ -553,6 +555,7 @@ EndFunc   ;==>SD_GUI_List_ChangeState
 Func SD_GUI_ChangeGameDir()
 	If Setting_AskForGameDir(False, $MM_UI_MAIN) Then
 		GUICtrlSetData($hGUI.ModList.Group, Lng_GetF("mod_list.caption", $MM_GAME_DIR))
+		GUICtrlSetData($hGUI.MenuGame.Launch, Lng_GetF("game.launch", $MM_GAME_EXE))
 		SD_GUI_Update()
 	EndIf
 EndFunc   ;==>SD_GUI_ChangeGameDir
