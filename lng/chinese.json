@@ -10,6 +10,7 @@
 	{
 		"mod" : "Mod",
 		"caption" : "MOD的加载顺序列表 (在最前顶部加载就越优先)",
+		"no_game_dir" : "no game dir - select from \"More actions\"",
 		"up" : "上 移",
 		"down" : "下 移",
 		"enable" : "激 活",

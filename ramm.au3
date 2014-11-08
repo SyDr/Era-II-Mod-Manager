@@ -61,8 +61,7 @@ If $CMDLine[0] > 0 And $CMDLine[1] = '/assocdel' Then
 	StartUp_Assoc_Delete()
 EndIf
 
-Settings_DefineWorkDir()
-Settings_Load()
+$MM_SETTINGS_LANGUAGE = Settings_Get("language")
 Lng_LoadList()
 Lng_Load()
 
@@ -156,17 +155,21 @@ Func SD_GUI_Create()
 	$hGUI.MenuMod.OpenHomepage = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
 	$hGUI.MenuMod.Delete = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
 	$hGUI.MenuMod.OpenFolder = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
+	If $MM_GAME_NO_DIR Then GUICtrlSetState($hGUI.MenuMod.Menu, $GUI_DISABLE)
 
 	$hGUI.MenuGame.Menu = GUICtrlCreateMenu("-")
 	$hGUI.MenuGame.Launch = GUICtrlCreateMenuItem("-", $hGUI.MenuGame.Menu)
+	GUICtrlSetState($hGUI.MenuGame.Launch, $MM_GAME_EXE = "" ? $GUI_DISABLE : $GUI_ENABLE)
 	GUICtrlCreateMenuItem("", $hGUI.MenuGame.Menu)
 	$hGUI.MenuGame.Change = GUICtrlCreateMenuItem("-", $hGUI.MenuGame.Menu)
+	If $MM_GAME_NO_DIR Then GUICtrlSetState($hGUI.MenuGame.Menu, $GUI_DISABLE)
 
 	$hGUI.MenuMore.Menu = GUICtrlCreateMenu("-")
 	$hGUI.MenuMore.Add = GUICtrlCreateMenuItem("-", $hGUI.MenuMore.Menu)
 	$hGUI.MenuMore.Compatibility = GUICtrlCreateMenuItem("-", $hGUI.MenuMore.Menu)
 	$hGUI.MenuMore.ChangeModDir = GUICtrlCreateMenuItem("-", $hGUI.MenuMore.Menu)
-	If Settings_Get("Portable") Then GUICtrlSetState($hGUI.MenuMore.ChangeModDir, $GUI_DISABLE)
+	If $MM_GAME_NO_DIR Then GUICtrlSetState($hGUI.MenuMore.Add, $GUI_DISABLE)
+	If $MM_SETTINGS_PORTABLE Then GUICtrlSetState($hGUI.MenuMore.ChangeModDir, $GUI_DISABLE)
 
 	$hGUI.MenuHelp.Menu = GUICtrlCreateMenu("?")
 	$hGUI.MenuHelp.CheckForUpdates = GUICtrlCreateMenuItem("-", $hGUI.MenuHelp.Menu)
@@ -251,7 +254,7 @@ EndFunc   ;==>SD_GUI_Events_Register
 
 Func SD_GUI_SetLng()
 	GUICtrlSetData($hGUI.MenuLanguage, Lng_Get("lang.language"))
-	GUICtrlSetData($hGUI.ModList.Group, Lng_GetF("mod_list.caption", $MM_GAME_DIR))
+	GUICtrlSetData($hGUI.ModList.Group, Lng_GetF("mod_list.caption", Not $MM_GAME_NO_DIR ? $MM_GAME_DIR : Lng_Get("mod_list.no_game_dir")))
 	GUICtrlSetData($hGUI.ModList.Up, Lng_Get("mod_list.up"))
 	GUICtrlSetData($hGUI.ModList.Down, Lng_Get("mod_list.down"))
 	GUICtrlSetData($hGUI.ModList.ChangeState, Lng_Get("mod_list.enable"))
@@ -312,6 +315,7 @@ Func SD_GUI_GameExeChange()
 		$MM_GAME_EXE = $sNewExe
 		GUICtrlSetData($hGUI.MenuGame.Launch, Lng_GetF("game.launch", $MM_GAME_EXE))
 		Settings_Set("exe", $MM_GAME_EXE)
+		GUICtrlSetState($hGUI.MenuGame.Launch, $MM_GAME_EXE = "" ? $GUI_DISABLE : $GUI_ENABLE)
 	EndIf
 EndFunc
 
@@ -553,9 +557,12 @@ Func SD_GUI_List_ChangeState()
 EndFunc   ;==>SD_GUI_List_ChangeState
 
 Func SD_GUI_ChangeGameDir()
-	If Setting_AskForGameDir(False, $MM_UI_MAIN) Then
+	If UI_SelectGameDir() Then
 		GUICtrlSetData($hGUI.ModList.Group, Lng_GetF("mod_list.caption", $MM_GAME_DIR))
 		GUICtrlSetData($hGUI.MenuGame.Launch, Lng_GetF("game.launch", $MM_GAME_EXE))
+		GUICtrlSetState($hGUI.MenuGame.Menu, $GUI_ENABLE)
+		GUICtrlSetState($hGUI.MenuMore.Add, $GUI_ENABLE)
+		GUICtrlSetState($hGUI.MenuGame.Launch, $MM_GAME_EXE = "" ? $GUI_DISABLE : $GUI_ENABLE)
 		SD_GUI_Update()
 	EndIf
 EndFunc   ;==>SD_GUI_ChangeGameDir
@@ -953,7 +960,7 @@ Func SD_SwitchView($iNewView = $MM_VIEW_MODS)
 			GUICtrlSetState($hGUI.ModList.Up, $GUI_SHOW)
 			GUICtrlSetState($hGUI.ModList.Down, $GUI_SHOW)
 			GUICtrlSetState($hGUI.ModList.ChangeState, $GUI_SHOW)
-			GUICtrlSetState($hGUI.MenuMod.Menu, $GUI_ENABLE)
+ 			If Not $MM_SETTINGS_PORTABLE Then GUICtrlSetState($hGUI.MenuMore.ChangeModDir, $GUI_ENABLE)
 
 			TreeViewTryFollow($sFollowMod)
 		Case $MM_VIEW_PLUGINS
@@ -963,6 +970,7 @@ Func SD_SwitchView($iNewView = $MM_VIEW_MODS)
 			GUICtrlSetState($hGUI.ModList.Down, $GUI_HIDE)
 			GUICtrlSetState($hGUI.ModList.ChangeState, $GUI_HIDE)
 			GUICtrlSetState($hGUI.MenuMod.Menu, $GUI_DISABLE)
+			If Not $MM_SETTINGS_PORTABLE Then GUICtrlSetState($hGUI.MenuMore.ChangeModDir, $GUI_DISABLE)
 
 			GUICtrlSetState($hGroupPlugins, $GUI_SHOW)
 			GUICtrlSetState($hPluginsList, $GUI_SHOW)
