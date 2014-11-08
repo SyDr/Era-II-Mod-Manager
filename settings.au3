@@ -6,20 +6,7 @@
 #include "lng.au3"
 #include "utils.au3"
 
-Global $MM_SETTINGS_CACHE
-
-Func Settings_Load(Const $bForceAppData = False)
-	$MM_SETTINGS_CACHE = Jsmn_Decode(FileRead($MM_SETTINGS_PATH))
-	__Settings_Validate()
-	If $bForceAppData Then $MM_SETTINGS_CACHE["portable"] = False
-	If Not $MM_SETTINGS_CACHE["portable"] And Not $bForceAppData Then
-		$MM_SETTINGS_PATH = @AppDataCommonDir & "\RAMM\settings.json"
-		Return Settings_Load(True)
-	EndIf
-
-	$MM_SETTINGS_LANGUAGE = Settings_Get("language")
-	$MM_GAME_EXE = Settings_Get("exe")
-EndFunc
+Global $MM_SETTINGS_CACHE, $MM_SETTINGS_INIT = False
 
 Func Settings_Save()
 	FileDelete($MM_SETTINGS_PATH)
@@ -45,33 +32,42 @@ Func __Settings_Validate()
 		Local $aItems = MapKeys($MM_SETTINGS_CACHE["game"]["items"])
 		For $sItem In $aItems
 			If Not IsMap($MM_SETTINGS_CACHE["game"]["items"][$sItem]) Then $MM_SETTINGS_CACHE["game"]["items"][$sItem] = MapEmpty()
-			If Not MapExists($MM_SETTINGS_CACHE["game"]["items"][$sItem], "exe") Or Not IsString($MM_SETTINGS_CACHE["game"]["items"][$sItem]["exe"]) Then $MM_SETTINGS_CACHE["game"]["items"][$sItem]["exe"] = "h3era.exe"
+			If Not MapExists($MM_SETTINGS_CACHE["game"]["items"][$sItem], "exe") Or Not IsString($MM_SETTINGS_CACHE["game"]["items"][$sItem]["exe"]) Then $MM_SETTINGS_CACHE["game"]["items"][$sItem]["exe"] = ""
 		Next
 
 		Local $sSelected = $MM_SETTINGS_CACHE["game"]["selected"]
 		If $MM_SETTINGS_CACHE["game"]["selected"] <> "" Then
 			If Not IsMap($MM_SETTINGS_CACHE["game"]["items"][$sSelected]) Then $MM_SETTINGS_CACHE["game"]["items"][$sSelected] = MapEmpty()
-			If Not MapExists($MM_SETTINGS_CACHE["game"]["items"][$sSelected], "exe") Or Not IsString($MM_SETTINGS_CACHE["game"]["items"][$sSelected]["exe"]) Then $MM_SETTINGS_CACHE["game"]["items"][$sSelected]["exe"] = "h3era.exe"
+			If Not MapExists($MM_SETTINGS_CACHE["game"]["items"][$sSelected], "exe") Or Not IsString($MM_SETTINGS_CACHE["game"]["items"][$sSelected]["exe"]) Then $MM_SETTINGS_CACHE["game"]["items"][$sSelected]["exe"] = ""
 		EndIf
 	Else
-		If Not MapExists($MM_SETTINGS_CACHE["game"], "exe") Or Not IsString($MM_SETTINGS_CACHE["game"]["exe"]) Then $MM_SETTINGS_CACHE["game"]["exe"] = "h3era.exe"
+		If Not MapExists($MM_SETTINGS_CACHE["game"], "exe") Or Not IsString($MM_SETTINGS_CACHE["game"]["exe"]) Then $MM_SETTINGS_CACHE["game"]["exe"] = ""
 	EndIf
 
 	If VersionCompare($MM_SETTINGS_CACHE["version"], $MM_VERSION_NUMBER) < 0 Then $MM_SETTINGS_CACHE["version"] = $MM_VERSION_NUMBER
 EndFunc
 
 Func Settings_Get(Const ByRef $sName)
-	If Not IsMap($MM_SETTINGS_CACHE) Then Settings_Load()
-
+	If Not $MM_SETTINGS_INIT Then __Settings_Init()
+;~ 	MsgBox(4096, $sName, Jsmn_Encode($MM_SETTINGS_CACHE, $JSMN_PRETTY_PRINT + $JSMN_UNESCAPED_UNICODE))
 	Switch $sName
 		Case "language", "portable", "version"
 			Return $MM_SETTINGS_CACHE[StringLower($sName)]
 		Case "width", "height", "maximized"
 			Return $MM_SETTINGS_CACHE["window"][StringLower($sName)]
 		Case "path"
-			Return Settings_Get("portable") ? _PathFull(@ScriptDir & "\..\..") : $MM_SETTINGS_CACHE["game"]["selected"]
+			If $MM_SETTINGS_PORTABLE Then
+				Return $MM_GAME_DIR
+			Else
+				Return $MM_SETTINGS_CACHE["game"]["selected"]
+			EndIf
 		Case "exe"
-			Return Settings_Get("portable") ? $MM_SETTINGS_CACHE["game"]["exe"] : $MM_SETTINGS_CACHE["game"]["items"][$MM_SETTINGS_CACHE["game"]["selected"]]["exe"]
+			If $MM_SETTINGS_PORTABLE Then
+				Return $MM_SETTINGS_CACHE["game"]["exe"]
+			Else
+				Local $sSelected = $MM_SETTINGS_CACHE["game"]["selected"]
+				Return $sSelected <> "" ? $MM_SETTINGS_CACHE["game"]["items"][$sSelected]["exe"] : ""
+			EndIf
 	EndSwitch
 EndFunc   ;==>Settings_Get
 
@@ -86,42 +82,40 @@ Func Settings_Set(Const ByRef $sName, Const ByRef $vValue)
 			__Settings_Validate()
 		Case "exe"
 			If Not Settings_Get("portable") Then
-				$MM_SETTINGS_CACHE["game"]["items"][$MM_SETTINGS_CACHE["game"]["selected"]]["exe"] = $vValue
+				Local $sSelected = $MM_SETTINGS_CACHE["game"]["selected"]
+				$MM_SETTINGS_CACHE["game"]["items"][$sSelected]["exe"] = $vValue
 			Else
 				$MM_SETTINGS_CACHE["game"]["exe"] = $vValue
 			EndIf
 	EndSwitch
 EndFunc   ;==>Settings_Set
 
-Func Settings_DefineWorkDir()
-	If Not Settings_Get("portable") Then
+Func __Settings_Init()
+	$MM_SETTINGS_INIT = True
+	__Settings_Load()
+	If Not $MM_SETTINGS_PORTABLE Then
 		$MM_SETTINGS_PATH = @AppDataCommonDir & "\RAMM\settings.json"
 		FileClose(FileOpen($MM_SETTINGS_PATH, $FO_APPEND + $FO_CREATEPATH))
-	EndIf
-
-	If Settings_Get("path") = "" Then
-		$MM_SETTINGS_LANGUAGE = Settings_Get("Language")
-		Setting_AskForGameDir(True)
-	Else
-		$MM_GAME_DIR = Settings_Get("path")
-		$MM_LIST_DIR_PATH = $MM_GAME_DIR & "\Mods"
-		$MM_LIST_FILE_PATH = $MM_LIST_DIR_PATH & "\list.txt"
+		__Settings_Load(True)
 	EndIf
 EndFunc
 
-Func Setting_AskForGameDir($bExitOnCancel = False, $hParent = Default)
-	Local $sPath = FileSelectFolder(Lng_Get("settings.game_dir.caption"), "", Default, Settings_Get("path"), $hParent)
-	If @error Then
-		If $bExitOnCancel Then Exit
-		Return False
-	Else
-		$MM_GAME_DIR = $sPath
-		Settings_Set("path", $sPath)
-		$MM_LIST_DIR_PATH = $MM_GAME_DIR & "\Mods"
-		$MM_LIST_FILE_PATH = $MM_LIST_DIR_PATH & "\list.txt"
-		$MM_GAME_EXE = Settings_Get("exe")
+Func __Settings_Load(Const $bForceAppData = False)
+	$MM_SETTINGS_CACHE = Jsmn_Decode(FileRead($MM_SETTINGS_PATH))
+	__Settings_Validate()
+	If $bForceAppData Then $MM_SETTINGS_CACHE["portable"] = False
+	$MM_SETTINGS_PORTABLE = $MM_SETTINGS_CACHE["portable"]
+	$MM_SETTINGS_LANGUAGE = $MM_SETTINGS_CACHE["language"]
+
+	If Not $MM_SETTINGS_PORTABLE Then
+		$MM_GAME_DIR = Settings_Get("path")
+		$MM_GAME_NO_DIR = $MM_GAME_DIR = ""
+		If Not $MM_GAME_NO_DIR Then
+			$MM_LIST_DIR_PATH = $MM_GAME_DIR & "\Mods"
+			$MM_LIST_FILE_PATH = $MM_LIST_DIR_PATH & "\list.txt"
+		EndIf
 	EndIf
 
-	Return True
+	$MM_GAME_EXE = Settings_Get("exe")
 EndFunc
 

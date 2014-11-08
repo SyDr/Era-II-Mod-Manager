@@ -20,8 +20,25 @@ Func UI_GameExeLaunch()
 	Run($MM_GAME_DIR & "\" & $MM_GAME_EXE, $MM_GAME_DIR)
 EndFunc
 
+Func UI_SelectGameDir()
+	Local $sPath = FileSelectFolder(Lng_Get("settings.game_dir.caption"), "", Default, Settings_Get("path"), $MM_UI_MAIN)
+	If @error Then
+		Return False
+	Else
+		$MM_GAME_DIR = $sPath
+		$MM_GAME_NO_DIR = $MM_GAME_DIR = ""
+		Settings_Set("path", $sPath)
+		$MM_LIST_DIR_PATH = $MM_GAME_DIR & "\Mods"
+		$MM_LIST_FILE_PATH = $MM_LIST_DIR_PATH & "\list.txt"
+		$MM_GAME_EXE = Settings_Get("exe")
+	EndIf
+
+	Return True
+EndFunc
+
 Func UI_SelectGameExe()
-	Local $aList = _FileListToArray($MM_GAME_DIR, "**.exe", $FLTA_FILES)
+	Local $aList = _FileListToArray($MM_GAME_DIR, "*.exe", $FLTA_FILES)
+	If Not IsArray($aList) Then Local $aList[1] = [0]
 	Local Const $iOptionGUIOnEventMode = AutoItSetOption("GUIOnEventMode", 0)
 	Local Const $iOptionGUICoordMode = AutoItSetOption("GUICoordMode", 0)
 	GUISetState(@SW_DISABLE, $MM_UI_MAIN)

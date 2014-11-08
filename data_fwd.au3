@@ -1,12 +1,18 @@
+#AutoIt3Wrapper_Version=Beta
 #include-once
+#include <File.au3>
 #include "const.au3"
 
-Global $MM_GAME_DIR = @ScriptDir & "\..\.."
-Global $MM_LIST_DIR_PATH = $MM_GAME_DIR & "\Mods"
-Global $MM_LIST_FILE_PATH = $MM_LIST_DIR_PATH & "\list.txt"
+Global $MM_GAME_NO_DIR = False
+Global $MM_GAME_DIR = _PathFull(@ScriptDir & "\..\..")
 Global $MM_GAME_EXE = "h3era.exe"
 
+Global $MM_LIST_DIR_PATH = $MM_GAME_DIR & "\Mods"
+Global $MM_LIST_FILE_PATH = $MM_LIST_DIR_PATH & "\list.txt"
+
 Global $MM_SETTINGS_PATH = @ScriptDir & "\settings.json"
+Global $MM_SETTINGS_PORTABLE = True
+
 Global $MM_SETTINGS_LANGUAGE = "english.json"
 Global $MM_LANGUAGE_CODE = "en_US"
 

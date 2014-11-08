@@ -10,6 +10,7 @@
 	{
 		"mod" : "Mod",	
 		"caption" : "Mod list (%s)",
+		"no_game_dir" : "no game dir - select from \"More actions\"",
 		"up" : "Move up",
 		"down" : "Move down",
 		"enable" : "Enable",
