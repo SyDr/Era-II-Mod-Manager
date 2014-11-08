@@ -1,3 +1,4 @@
+#AutoIt3Wrapper_Version=Beta
 #include "include_fwd.au3"
 
 Clear()
@@ -21,7 +22,11 @@ DirCopy("lng", "Mod Manager\lng", 1)
 FileChangeDir(@ScriptDir)
 ShellExecuteWait(@ProgramFilesDir & "\Inno Setup 5\ISCC.exe", "setup.iss", @ScriptDir)
 
-IniWrite(@ScriptDir & "\Mod Manager\settings.ini", "settings", "Portable", 1)
+Global $mSettings[]
+$mSettings["portable"] = True
+FileDelete(@ScriptDir & "\Mod Manager\settings.json")
+FileWrite(@ScriptDir & "\Mod Manager\settings.json", Jsmn_Encode($mSettings, $JSMN_PRETTY_PRINT + $JSMN_UNESCAPED_UNICODE))
+
 ShellExecuteWait(@ScriptDir & '\7z\7z.exe', 'a "RAMM.zip" "Mod Manager\*"', @ScriptDir)
 
 FileMove(@ScriptDir & "\RAMM.zip", @ScriptDir & "\Publish\RAMM_" & $MM_VERSION & ".zip", $FC_OVERWRITE)
