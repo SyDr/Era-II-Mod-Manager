@@ -41,12 +41,14 @@ Func UI_SelectGameExe()
 	If Not IsArray($aList) Then Local $aList[1] = [0]
 	Local Const $iOptionGUIOnEventMode = AutoItSetOption("GUIOnEventMode", 0)
 	Local Const $iOptionGUICoordMode = AutoItSetOption("GUICoordMode", 0)
+	Local Const $aBlacklist = Settings_Get("game.blacklist")
 	GUISetState(@SW_DISABLE, $MM_UI_MAIN)
 
 	Local Const $iItemSpacing = 4
 	Local $bClose = False
 	Local $bSelected = False
 	Local $sReturn = $MM_GAME_EXE
+	Local $bAllowName, $sSelected
 
 	Local $hGUI = GUICreate("", 200, 324, Default, Default, Default, Default, $MM_UI_MAIN)
 	Local $aSize = WinGetClientSize($hGUI)
@@ -55,12 +57,24 @@ Func UI_SelectGameExe()
 	$__UI_LIST = GUICtrlCreateTreeView($iItemSpacing, $iItemSpacing, _ ; left, top
 			$aSize[0] - 2 * $iItemSpacing, $aSize[1] - 3 * $iItemSpacing - 25, _
 			BitOR($TVS_FULLROWSELECT, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
+	Local $hShowAll = GUICtrlCreateCheckbox(Lng_Get("settings.game_exe.show_all"), 0, GUICtrlGetPos($__UI_LIST)[3] + $iItemSpacing, Default, 25)
+	GUISetCoord(GUICtrlGetPos($__UI_LIST)[0], GUICtrlGetPos($__UI_LIST)[1])
 	Local $hOk = GUICtrlCreateButton("OK", $aSize[0] - 2 * $iItemSpacing - 75, GUICtrlGetPos($__UI_LIST)[3] + $iItemSpacing, 75, 25)
 	Local $hListItems = $aList
 	For $i = 1 To $aList[0]
-		$hListItems[$i] = GUICtrlCreateTreeViewItem($aList[$i], $__UI_LIST)
-		If $aList[$i] = $MM_GAME_EXE Then GUICtrlSetState($hListItems[$i], $GUI_FOCUS)
-		_GUICtrlTreeView_SetIcon($__UI_LIST, $hListItems[$i], $MM_GAME_DIR & "\" & $aList[$i], 0, 6)
+		$bAllowName = True
+		For $j = 0 To UBound($aBlacklist) - 1
+			If StringRegExp($aList[$i], "(?i)" & $aBlacklist[$j]) Then $bAllowName = False
+			If Not $bAllowName Then ExitLoop
+		Next
+
+		If $bAllowName Or $aList[$i] = $MM_GAME_EXE Then
+			$hListItems[$i] = GUICtrlCreateTreeViewItem($aList[$i], $__UI_LIST)
+			If $aList[$i] = $MM_GAME_EXE Then GUICtrlSetState($hListItems[$i], $GUI_FOCUS)
+			If Not _GUICtrlTreeView_SetIcon($__UI_LIST, $hListItems[$i], $MM_GAME_DIR & "\" & $aList[$i], 0, 6) Then
+				 _GUICtrlTreeView_SetIcon($__UI_LIST, $hListItems[$i], "shell32.dll", -3, 6)
+			EndIf
+		EndIf
 	Next
 
 	GUISetState(@SW_SHOW)
@@ -71,6 +85,19 @@ Func UI_SelectGameExe()
 				$bClose = True
 			Case $hOk
 				$bSelected = True
+			Case $hShowAll
+				$sSelected = GUICtrlRead($__UI_LIST, 1)
+				GUICtrlSetState($hShowAll, $GUI_DISABLE)
+				_GUICtrlTreeView_BeginUpdate($__UI_LIST)
+				_GUICtrlTreeView_DeleteAll($__UI_LIST)
+				For $i = 1 To $aList[0]
+					$hListItems[$i] = GUICtrlCreateTreeViewItem($aList[$i], $__UI_LIST)
+					If $aList[$i] = $sSelected Then GUICtrlSetState($hListItems[$i], $GUI_FOCUS)
+					If Not _GUICtrlTreeView_SetIcon($__UI_LIST, $hListItems[$i], $MM_GAME_DIR & "\" & $aList[$i], 0, 6) Then
+						 _GUICtrlTreeView_SetIcon($__UI_LIST, $hListItems[$i], "shell32.dll", -3, 6)
+					EndIf
+				Next
+				_GUICtrlTreeView_EndUpdate($__UI_LIST)
 		EndSwitch
 		If $__UI_DBLCLK Then
 			$bSelected = True
@@ -79,10 +106,8 @@ Func UI_SelectGameExe()
 	WEnd
 
 	If $bSelected Then
-		Local $hSelected = GUICtrlRead($__UI_LIST)
-		For $i = 1 To $hListItems[0]
-			If $hListItems[$i] = $hSelected Then $sReturn = $aList[$i]
-		Next
+		$sSelected = GUICtrlRead($__UI_LIST, 1)
+		If $sSelected <> "" Then $sReturn = $sSelected
 	EndIf
 
 	GUIRegisterMsgStateful($WM_NOTIFY, "")

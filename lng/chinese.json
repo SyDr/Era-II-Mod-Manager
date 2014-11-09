@@ -85,6 +85,10 @@
 		{
 			"change" : "Change game directory",
 			"caption" : "Select game directory"
+		},
+		"game_exe" :
+		{
+			"show_all" : "Show all"
 		}
 	},
 	"update" :
