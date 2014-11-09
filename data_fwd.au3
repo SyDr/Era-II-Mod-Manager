@@ -24,7 +24,7 @@ Global $MM_WINDOW_MIN_HEIGHT_FULL
 
 Global $MM_LNG_LIST[1][$MM_LNG_TOTAL] ; filename, lang code, lang full name
 
-Global $MM_VIEW_CURRENT
+Global $MM_VIEW_CURRENT, $MM_SUBVIEW_CURRENT
 
 Global $MM_LIST_FILE_CONTENT ; folder_mods.au3
 Global $MM_LIST_CONTENT[1][$MOD_TOTAL] ; a loaded list of mods

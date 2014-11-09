@@ -48,7 +48,9 @@
 	},
 	"info_group" :
 	{
-		"caption" : "Mod相关信息", /* caption changed from "Mod Info" to "Info". Fix please.*/
+		"info" : "Information",
+		"desc" : "Descripton",
+		"screens" : "Screenshots",
 		"no_info" : "无任何信息"	
 	},
 	"compatibility" :

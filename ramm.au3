@@ -78,6 +78,7 @@ Func UI_Main()
 	TreeViewMain()
 	TreeViewTryFollow($MM_LIST_CONTENT[0][0] > 0 ? $MM_LIST_CONTENT[1][$MOD_ID] : "")
 	SD_SwitchView()
+	SD_SwitchSubView()
 	MainLoop()
 EndFunc
 
@@ -199,10 +200,15 @@ Func SD_GUI_Create()
 	GUICtrlSetState($hGUI.PluginsList.Back, $GUI_HIDE)
 
 	GUISetCoord(GUICtrlGetPos($hGUI.ModList.Group)[0], GUICtrlGetPos($hGUI.ModList.Group)[1])
-	$hGUI.Info.Group = GUICtrlCreateGroup("-", GUICtrlGetPos($hGUI.ModList.Group)[2] + $iItemSpacing, 0, $aSize[0] / 2 - 2 * $iItemSpacing, $aSize[1] - 2 * $iItemSpacing)
-	GUICtrlSetResizing($hGUI.Info.Group, $GUI_DOCKLEFT + $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKBOTTOM)
-	$hGUI.Info.Edit = GUICtrlCreateEdit("", 2 * $iItemSpacing, 4 * $iItemSpacing, _
-			GUICtrlGetPos($hGUI.Info.Group)[2] - 4 * $iItemSpacing, GUICtrlGetPos($hGUI.Info.Group)[3] - 6 * $iItemSpacing, _
+	$hGUI.Info.TabControl = GUICtrlCreateTab(GUICtrlGetPos($hGUI.ModList.Group)[2] + $iItemSpacing, 0, $aSize[0] / 2 - 2 * $iItemSpacing, 21, BitOR($TCS_FLATBUTTONS, $TCS_BUTTONS, $TCS_FOCUSNEVER))
+	GUICtrlSetResizing($hGUI.Info.TabControl, $GUI_DOCKLEFT + $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKHEIGHT)
+	$hGUI.Info.TabDesc = GUICtrlCreateTabItem("-")
+	$hGUI.Info.TabInfo = GUICtrlCreateTabItem("-")
+	$hGUI.Info.TabScreens = GUICtrlCreateTabItem("-")
+	GUICtrlCreateTabItem("")
+
+	$hGUI.Info.Edit = GUICtrlCreateEdit("", 2, GUICtrlGetPos($hGUI.Info.TabControl)[3] + $iItemSpacing, _
+			GUICtrlGetPos($hGUI.Info.TabControl)[2], $aSize[1] - (GUICtrlGetPos($hGUI.Info.TabControl)[1] + GUICtrlGetPos($hGUI.Info.TabControl)[3] + 2 * $iItemSpacing + 1), _
 			BitOR($ES_READONLY, $WS_VSCROLL, $WS_TABSTOP))
 	GUICtrlSetResizing($hGUI.Info.Edit, $GUI_DOCKLEFT + $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKBOTTOM)
 
@@ -246,6 +252,8 @@ Func SD_GUI_Events_Register()
 
 	GUICtrlSetOnEvent($hGUI.PluginsList.Back, "SD_GUI_Plugins_Close")
 	GUICtrlSetOnEvent($hGUI.MenuHelp.CheckForUpdates, "SD_GUI_CheckForUpdates")
+
+	GUICtrlSetOnEvent($hGUI.Info.TabControl, "SD_GUI_TabChanged")
 EndFunc   ;==>SD_GUI_Events_Register
 
 Func SD_GUI_SetLng()
@@ -275,7 +283,9 @@ Func SD_GUI_SetLng()
 	GUICtrlSetData($hGUI.PluginsList.Group, Lng_GetF("plugins_list.caption", $MM_LIST_CONTENT[0][0] > 0 ? $MM_LIST_CONTENT[1][$MOD_ID] : ""))
 	GUICtrlSetData($hGUI.PluginsList.Back, Lng_Get("plugins_list.back"))
 
-	GUICtrlSetData($hGUI.Info.Group, Lng_Get("info_group.caption"))
+	GUICtrlSetData($hGUI.Info.TabDesc, Lng_Get("info_group.desc"))
+	GUICtrlSetData($hGUI.Info.TabInfo, Lng_Get("info_group.info"))
+	GUICtrlSetData($hGUI.Info.TabScreens, Lng_Get("info_group.screens"))
 EndFunc   ;==>SD_GUI_SetLng
 
 Func SD_GUI_Mod_Compatibility()
@@ -940,7 +950,18 @@ Func WM_NOTIFY($hwnd, $iMsg, $iwParam, $ilParam)
 	Return $GUI_RUNDEFMSG
 EndFunc   ;==>WM_NOTIFY
 
-Func SD_SwitchView($iNewView = $MM_VIEW_MODS)
+Func SD_GUI_TabChanged()
+	Switch GUICtrlRead($hGUI.Info.TabControl, 1)
+		Case $hGUI.Info.TabDesc
+			SD_SwitchSubView($MM_SUBVIEW_DESC)
+		Case $hGUI.Info.TabInfo
+			SD_SwitchSubView($MM_SUBVIEW_INFO)
+		Case $hGUI.Info.TabScreens
+			SD_SwitchSubView($MM_SUBVIEW_SCREENS)
+	EndSwitch
+EndFunc
+
+Func SD_SwitchView(Const $iNewView = $MM_VIEW_MODS)
 	GUICtrlSetData($hGUI.Info.Edit, "")
 
 	$MM_VIEW_CURRENT = $iNewView
@@ -976,3 +997,16 @@ Func SD_SwitchView($iNewView = $MM_VIEW_MODS)
 		Case $MM_VIEW_INSTALL
 	EndSwitch
 EndFunc   ;==>SD_SwitchView
+
+Func SD_SwitchSubView(Const $iNewView = $MM_SUBVIEW_DESC)
+	$MM_SUBVIEW_CURRENT = $iNewView
+
+	Switch $iNewView
+		Case $MM_SUBVIEW_DESC
+			GUICtrlSetState($hGUI.Info.Edit, $GUI_SHOW)
+		Case $MM_SUBVIEW_INFO
+			GUICtrlSetState($hGUI.Info.Edit, $GUI_HIDE)
+		Case $MM_SUBVIEW_SCREENS
+			GUICtrlSetState($hGUI.Info.Edit, $GUI_HIDE)
+	EndSwitch
+EndFunc
