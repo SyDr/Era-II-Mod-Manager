@@ -55,7 +55,7 @@ Func __Settings_Validate()
 
 	$i = 0
 	While $i < UBound($aItems) - 1
-		If Not IsString($aItems[$i]) Then _ArrayDelete($aItems, $i)
+		If Not IsString($aItems[$i]) Or $aItems[$i] = "" Then _ArrayDelete($aItems, $i)
 		$i += 1
 	WEnd
 	$MM_SETTINGS_CACHE["game"]["blacklist"] = $aItems
