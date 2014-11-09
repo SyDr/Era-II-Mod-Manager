@@ -151,6 +151,7 @@ Func Update_CheckNewPorgram(Const $bIsPortable, Const $hParent)
 		__Update_ProcessUserInput($hGUI)
 	WEnd
 
+	InetClose($hGUI.Info.Handle)
 	GUIDelete($hGUI.Form)
 
 	AutoItSetOption("GUIOnEventMode", $iOptionGUIOnEventMode)
