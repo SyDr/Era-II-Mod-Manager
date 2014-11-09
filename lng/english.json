@@ -48,7 +48,9 @@
 	},
 	"info_group" :
 	{
-		"caption" : "Info",
+		"info" : "Information",
+		"desc" : "Descripton",
+		"screens" : "Screenshots",
 		"no_info" : "No info available"	
 	},
 	"compatibility" :
