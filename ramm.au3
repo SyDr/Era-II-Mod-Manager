@@ -211,6 +211,7 @@ Func SD_GUI_Create()
 			GUICtrlGetPos($hGUI.Info.TabControl)[2], $aSize[1] - (GUICtrlGetPos($hGUI.Info.TabControl)[1] + GUICtrlGetPos($hGUI.Info.TabControl)[3] + 2 * $iItemSpacing + 1), _
 			BitOR($ES_READONLY, $WS_VSCROLL, $WS_TABSTOP))
 	GUICtrlSetResizing($hGUI.Info.Edit, $GUI_DOCKLEFT + $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKBOTTOM)
+	$hGUI.Info.Desc = _GUICtrlSysLink_Create($MM_UI_MAIN, "-", GUICtrlGetPos($hGUI.Info.Edit)[0], GUICtrlGetPos($hGUI.Info.Edit)[1], GUICtrlGetPos($hGUI.Info.Edit)[2], GUICtrlGetPos($hGUI.Info.Edit)[3])
 
 	SD_GUI_Mod_Controls_Disable()
 	SD_GUI_Events_Register()
@@ -284,8 +285,10 @@ Func SD_GUI_SetLng()
 	GUICtrlSetData($hGUI.PluginsList.Back, Lng_Get("plugins_list.back"))
 
 	GUICtrlSetData($hGUI.Info.TabDesc, Lng_Get("info_group.desc"))
-	GUICtrlSetData($hGUI.Info.TabInfo, Lng_Get("info_group.info"))
+	GUICtrlSetData($hGUI.Info.TabInfo, Lng_Get("info_group.info.caption"))
 	GUICtrlSetData($hGUI.Info.TabScreens, Lng_Get("info_group.screens"))
+
+	_GUICtrlSysLink_SetText($hGUI.Info.Desc, SD_FormatDescription())
 EndFunc   ;==>SD_GUI_SetLng
 
 Func SD_GUI_Mod_Compatibility()
@@ -636,6 +639,7 @@ Func SD_GUI_Mod_Controls_Disable()
 	GUICtrlSetState($hGUI.MenuMod.OpenFolder, $GUI_DISABLE)
 	GUICtrlSetState($hGUI.MenuMod.Menu, $GUI_DISABLE)
 	GUICtrlSetData($hGUI.Info.Edit, Lng_Get("info_group.no_info"))
+	_GUICtrlSysLink_SetText($hGUI.Info.Desc, "")
 ;~ 	$sFollowMod = ""
 EndFunc   ;==>SD_GUI_Mod_Controls_Disable
 
@@ -714,6 +718,8 @@ Func SD_GUI_Mod_SelectionChanged()
 			GUICtrlSetState($hGUI.MenuMod.OpenFolder, $GUI_ENABLE)
 			GUICtrlSetState($hGUI.MenuMod.Menu, $GUI_ENABLE)
 		EndIf
+
+		_GUICtrlSysLink_SetText($hGUI.Info.Desc, SD_FormatDescription())
 	EndIf
 EndFunc   ;==>SD_GUI_Mod_SelectionChanged
 
@@ -1004,9 +1010,28 @@ Func SD_SwitchSubView(Const $iNewView = $MM_SUBVIEW_DESC)
 	Switch $iNewView
 		Case $MM_SUBVIEW_DESC
 			GUICtrlSetState($hGUI.Info.Edit, $GUI_SHOW)
+			ControlHide($MM_UI_MAIN, '', $hGUI.Info.Desc)
 		Case $MM_SUBVIEW_INFO
 			GUICtrlSetState($hGUI.Info.Edit, $GUI_HIDE)
+			ControlShow($MM_UI_MAIN, '', $hGUI.Info.Desc)
 		Case $MM_SUBVIEW_SCREENS
 			GUICtrlSetState($hGUI.Info.Edit, $GUI_HIDE)
+			ControlHide($MM_UI_MAIN, '', $hGUI.Info.Desc)
 	EndSwitch
+EndFunc
+
+Func SD_FormatDescription()
+	If $MM_SELECTED_MOD < 0 Then Return ""
+	Local $sText
+	If Mod_Get("id") <> Mod_Get("caption") Then
+		$sText = Lng_GetF("info_group.info.mod_caption", Mod_Get("caption"), Mod_Get("id"))
+	Else
+		$sText = Lng_GetF("info_group.info.mod_caption_s", Mod_Get("caption"))
+	EndIf
+
+	If Mod_Get("version\mod") <> "0.0" Then	$sText &= @CRLF & Lng_GetF("info_group.info.version", Mod_Get("version\mod"))
+	If Mod_Get("author") <> "" Then	$sText &= @CRLF & Lng_GetF("info_group.info.author", Mod_Get("author"))
+	If Mod_Get("homepage") <> "" Then	$sText &= @CRLF & Lng_GetF("info_group.info.link", Mod_Get("homepage"))
+
+	Return $sText
 EndFunc

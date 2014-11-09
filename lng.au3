@@ -74,7 +74,7 @@ Func Lng_Get(Const ByRef $sKeyName)
 	Return $sReturn ? $sReturn : $sKeyName
 EndFunc   ;==>Lng_Get
 
-Func Lng_GetF(Const ByRef $sKeyName, $vParam1, $vParam2 = Default)
+Func Lng_GetF(Const ByRef $sKeyName, Const $vParam1, Const $vParam2 = Default)
 	If IsKeyword($vParam2) == $KEYWORD_DEFAULT Then
 		Return StringFormat(Lng_Get($sKeyName), $vParam1)
 	Else

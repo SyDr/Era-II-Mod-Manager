@@ -19,8 +19,9 @@
 #include <Misc.au3>
 #include <ProgressConstants.au3>
 #include <StaticConstants.au3>
-#include "TabConstants.au3"
+#include <TabConstants.au3>
 #include <WindowsConstants.au3>
 
 #include "include\JSMN.au3"
+#include "include\GUISysLink.au3"
 #include "data_fwd.au3"

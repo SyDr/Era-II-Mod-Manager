@@ -48,10 +48,18 @@
 	},
 	"info_group" :
 	{
-		"info" : "Информация",
 		"desc" : "Описание",
 		"screens" : "Скриншоты",
-		"no_info" : "Нет доступной информации"	
+		"no_info" : "Нет описания",
+		"info" :
+		{
+			"caption" : "Информация",
+			"mod_caption" : "Мод %s (%s)",
+			"mod_caption_s" : "Мод %s",
+			"version" : "Версия: %s",
+			"author" : "Автор(ы): %s",
+			"link" : "Посетить домашнюю <A HREF=\"%s\">страницу</A> мода"
+		}
 	},
 	"compatibility" :
 	{

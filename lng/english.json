@@ -48,10 +48,18 @@
 	},
 	"info_group" :
 	{
-		"info" : "Information",
 		"desc" : "Descripton",
 		"screens" : "Screenshots",
-		"no_info" : "No info available"	
+		"no_info" : "No description available",
+		"info" :
+		{
+			"caption" : "Information",
+			"mod_caption" : "Mod %s (%s)",
+			"mod_caption_s" : "Mod %s",
+			"version" : "Version: %s",
+			"author" : "Author(s): %s",
+			"link" : "Visit mod <A HREF=\"%s\">homepage</A>"
+		}
 	},
 	"compatibility" :
 	{
