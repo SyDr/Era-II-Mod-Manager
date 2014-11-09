@@ -14,6 +14,7 @@ Func Settings_Save()
 EndFunc
 
 Func __Settings_Validate()
+	Local $aItems, $i
 	If Not IsMap($MM_SETTINGS_CACHE) Then $MM_SETTINGS_CACHE = MapEmpty()
 	If Not MapExists($MM_SETTINGS_CACHE, "version") Or Not IsString($MM_SETTINGS_CACHE["version"]) Then $MM_SETTINGS_CACHE["version"] = $MM_VERSION_NUMBER
 	If Not MapExists($MM_SETTINGS_CACHE, "portable") Or Not IsBool($MM_SETTINGS_CACHE["portable"]) Then $MM_SETTINGS_CACHE["portable"] = False
@@ -29,7 +30,7 @@ Func __Settings_Validate()
 		If Not MapExists($MM_SETTINGS_CACHE["game"], "selected") Or Not IsString($MM_SETTINGS_CACHE["game"]["selected"]) Then $MM_SETTINGS_CACHE["game"]["selected"] = ""
 		If Not MapExists($MM_SETTINGS_CACHE["game"], "items") Or Not IsMap($MM_SETTINGS_CACHE["game"]["items"]) Then $MM_SETTINGS_CACHE["game"]["items"] = MapEmpty()
 
-		Local $aItems = MapKeys($MM_SETTINGS_CACHE["game"]["items"])
+		$aItems = MapKeys($MM_SETTINGS_CACHE["game"]["items"])
 		For $sItem In $aItems
 			If Not IsMap($MM_SETTINGS_CACHE["game"]["items"][$sItem]) Then $MM_SETTINGS_CACHE["game"]["items"][$sItem] = MapEmpty()
 			If Not MapExists($MM_SETTINGS_CACHE["game"]["items"][$sItem], "exe") Or Not IsString($MM_SETTINGS_CACHE["game"]["items"][$sItem]["exe"]) Then $MM_SETTINGS_CACHE["game"]["items"][$sItem]["exe"] = ""
@@ -43,6 +44,22 @@ Func __Settings_Validate()
 	Else
 		If Not MapExists($MM_SETTINGS_CACHE["game"], "exe") Or Not IsString($MM_SETTINGS_CACHE["game"]["exe"]) Then $MM_SETTINGS_CACHE["game"]["exe"] = ""
 	EndIf
+
+	; 0.90.4.2
+	If Not MapExists($MM_SETTINGS_CACHE["game"], "blacklist") Or Not IsArray($MM_SETTINGS_CACHE["game"]["blacklist"]) Then
+		$aItems = StringSplit(".*?cmp.*?###.*?map.*?###.*?back.*?###.*?int.*?###.*?upd.*?###.*?unin.*?", "###", $STR_ENTIRESPLIT + $STR_NOCOUNT)
+		$MM_SETTINGS_CACHE["game"]["blacklist"] = $aItems
+	Else
+		$aItems = $MM_SETTINGS_CACHE["game"]["blacklist"]
+	EndIf
+
+	$i = 0
+	While $i < UBound($aItems) - 1
+		If Not IsString($aItems[$i]) Then _ArrayDelete($aItems, $i)
+		$i += 1
+	WEnd
+	$MM_SETTINGS_CACHE["game"]["blacklist"] = $aItems
+
 
 	If VersionCompare($MM_SETTINGS_CACHE["version"], $MM_VERSION_NUMBER) < 0 Then $MM_SETTINGS_CACHE["version"] = $MM_VERSION_NUMBER
 EndFunc
@@ -68,6 +85,8 @@ Func Settings_Get(Const ByRef $sName)
 				Local $sSelected = $MM_SETTINGS_CACHE["game"]["selected"]
 				Return $sSelected <> "" ? $MM_SETTINGS_CACHE["game"]["items"][$sSelected]["exe"] : ""
 			EndIf
+		Case "game.blacklist"
+			Return $MM_SETTINGS_CACHE["game"]["blacklist"]
 	EndSwitch
 EndFunc   ;==>Settings_Get
 
