@@ -58,7 +58,7 @@
 			"mod_caption_s" : "Мод %s",
 			"version" : "Версия: %s",
 			"author" : "Автор(ы): %s",
-			"link" : "Посетить домашнюю <A HREF=\"%s\">страницу</A> мода"
+			"link" : "Посетить домашнюю <A HREF=\"homepage\">страницу</A> мода"
 		}
 	},
 	"compatibility" :

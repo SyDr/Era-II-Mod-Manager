@@ -43,8 +43,8 @@
 		"global" : "Global",
 		"before_wog" : "BeforeWoG",
 		"after_wog" : "AfterWoG",
-		"back" : "Back", /* Translate this, please*/
-		"default" : "Default" /* Translate this, please*/
+		"back" : "Back",
+		"default" : "Default"
 	},
 	"info_group" :
 	{
@@ -58,7 +58,7 @@
 			"mod_caption_s" : "Mod %s",
 			"version" : "Version: %s",
 			"author" : "Author(s): %s",
-			"link" : "Visit mod <A HREF=\"%s\">homepage</A>"
+			"link" : "Visit mod <A HREF=\"homepage\">homepage</A>"
 		}
 	},
 	"compatibility" :
