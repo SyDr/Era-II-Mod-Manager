@@ -41,7 +41,7 @@ $hGUI.MenuHelp = MapEmpty()
 $hGUI.ModList = MapEmpty()
 $hGUI.PluginsList = MapEmpty()
 $hGUI.Info = MapEmpty()
-Global $hDummyF5
+Global $hDummyF5, $hDummyLinks
 
 Global $aModListGroups[1][3]; group item id, is enabled, priority
 Global $aPlugins[1][2], $hPluginsParts[3]
@@ -213,15 +213,19 @@ Func SD_GUI_Create()
 	GUICtrlSetResizing($hGUI.Info.Edit, $GUI_DOCKLEFT + $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKBOTTOM)
 	$hGUI.Info.Desc = _GUICtrlSysLink_Create($MM_UI_MAIN, "-", GUICtrlGetPos($hGUI.Info.Edit)[0], GUICtrlGetPos($hGUI.Info.Edit)[1], GUICtrlGetPos($hGUI.Info.Edit)[2], GUICtrlGetPos($hGUI.Info.Edit)[3])
 
+	$hDummyF5 = GUICtrlCreateDummy()
+	$hDummyLinks = GUICtrlCreateDummy()
+
+	Local $AccelKeys[1][2] = [["{F5}", $hDummyF5]]
+	GUISetAccelerators($AccelKeys)
+
 	SD_GUI_Mod_Controls_Disable()
 	SD_GUI_Events_Register()
 	SD_GUI_SetLng()
 
 	WinMove($MM_UI_MAIN, '', (@DesktopWidth - $MM_WINDOW_WIDTH) / 2, (@DesktopHeight - $MM_WINDOW_HEIGHT) / 2, $MM_WINDOW_WIDTH, $MM_WINDOW_HEIGHT)
 	If $MM_WINDOW_MAXIMIZED Then WinSetState($MM_UI_MAIN, '', @SW_MAXIMIZE)
-	$hDummyF5 = GUICtrlCreateDummy()
-	Local $AccelKeys[1][2] = [["{F5}", $hDummyF5]]
-	GUISetAccelerators($AccelKeys)
+
 	GUISetState(@SW_SHOW)
 	AutoItSetOption("GUICoordMode", $iOptionGUICoordMode)
 EndFunc   ;==>SD_GUI_Create
@@ -249,12 +253,14 @@ Func SD_GUI_Events_Register()
 	GUICtrlSetOnEvent($hGUI.MenuMore.Add, "SD_GUI_Mod_Add")
 	GUICtrlSetOnEvent($hGUI.MenuMod.OpenFolder, "SD_GUI_Mod_OpenFolder")
 	GUICtrlSetOnEvent($hGUI.MenuMore.ChangeModDir, "SD_GUI_ChangeGameDir")
-	GUICtrlSetOnEvent($hDummyF5, "SD_GUI_Update")
 
 	GUICtrlSetOnEvent($hGUI.PluginsList.Back, "SD_GUI_Plugins_Close")
 	GUICtrlSetOnEvent($hGUI.MenuHelp.CheckForUpdates, "SD_GUI_CheckForUpdates")
 
 	GUICtrlSetOnEvent($hGUI.Info.TabControl, "SD_GUI_TabChanged")
+
+	GUICtrlSetOnEvent($hDummyF5, "SD_GUI_Update")
+	GUICtrlSetOnEvent($hDummyLinks, "SD_GUI_Mod_Website")
 EndFunc   ;==>SD_GUI_Events_Register
 
 Func SD_GUI_SetLng()
@@ -950,6 +956,13 @@ Func WM_NOTIFY($hwnd, $iMsg, $iwParam, $ilParam)
 					$bEnableDisable = True
 				Case $TVN_SELCHANGEDA, $TVN_SELCHANGEDW
 					$bSelectionChanged = True
+			EndSwitch
+		Case $hGUI.Info.Desc
+			Local $tNMLINK = DllStructCreate($tagNMLINK, $ilParam)
+			Local $ID = DllStructGetData($tNMLINK, "Code")
+			Switch $ID
+				Case $NM_CLICK, $NM_RETURN
+					GUICtrlSendToDummy($hDummyLinks, DllStructGetData($tNMLINK, "Link"))
 			EndSwitch
 	EndSwitch
 
