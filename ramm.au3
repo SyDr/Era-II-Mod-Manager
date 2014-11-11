@@ -140,7 +140,6 @@ Func SD_GUI_Create()
 	$MM_WINDOW_MIN_WIDTH_FULL = WinGetPos($MM_UI_MAIN)[2]
 	$MM_WINDOW_MIN_HEIGHT_FULL = WinGetPos($MM_UI_MAIN)[3]
 	GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
-	GUISetState(@SW_HIDE) ; this is a dirty workaround (https://www.autoitscript.com/trac/autoit/ticket/2920)
 
 	$hGUI.MenuLanguage = GUICtrlCreateMenu("-")
 	For $iCount = 1 To $MM_LNG_LIST[0][0]
