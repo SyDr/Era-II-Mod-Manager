@@ -41,7 +41,9 @@ $hGUI.MenuHelp = MapEmpty()
 $hGUI.ModList = MapEmpty()
 $hGUI.PluginsList = MapEmpty()
 $hGUI.Info = MapEmpty()
+$hGUI.WindowResizeInProgress = False
 Global $hDummyF5, $hDummyLinks
+Global Const $iItemSpacing = 4
 
 Global $aModListGroups[1][3]; group item id, is enabled, priority
 Global $aPlugins[1][2], $hPluginsParts[3]
@@ -132,7 +134,6 @@ Func SD_GUI_Language_Change()
 EndFunc   ;==>SD_GUI_Language_Change
 
 Func SD_GUI_Create()
-	Local Const $iItemSpacing = 4
 	Local Const $iOptionGUICoordMode = AutoItSetOption("GUICoordMode", 0)
 
 	$MM_UI_MAIN = GUICreate($MM_TITLE, $MM_WINDOW_MIN_WIDTH, $MM_WINDOW_MIN_HEIGHT, Default, Default, BitOR($GUI_SS_DEFAULT_GUI, $WS_SIZEBOX, $WS_MAXIMIZEBOX), $WS_EX_ACCEPTFILES)
@@ -171,47 +172,28 @@ Func SD_GUI_Create()
 	$hGUI.MenuHelp.Menu = GUICtrlCreateMenu("?")
 	$hGUI.MenuHelp.CheckForUpdates = GUICtrlCreateMenuItem("-", $hGUI.MenuHelp.Menu)
 
-	Local $aSize = WinGetClientSize($MM_UI_MAIN)
+	$hGUI.ModList.Group = GUICtrlCreateGroup("-", 0, 0)
+	$hGUI.PluginsList.Group = GUICtrlCreateGroup("-", 0, 0)
 
-	$hGUI.ModList.Group = GUICtrlCreateGroup("-", $iItemSpacing, $iItemSpacing, $aSize[0] / 2 - $iItemSpacing, $aSize[1] - 2 * $iItemSpacing)
-	$hGUI.PluginsList.Group = GUICtrlCreateGroup("-", 0, 0, GUICtrlGetPos($hGUI.ModList.Group)[2], GUICtrlGetPos($hGUI.ModList.Group)[3])
-	GUICtrlSetResizing($hGUI.ModList.Group, $GUI_DOCKLEFT + $GUI_DOCKTOP + $GUI_DOCKBOTTOM + $GUI_DOCKWIDTH)
-	GUICtrlSetResizing($hGUI.PluginsList.Group, $GUI_DOCKLEFT + $GUI_DOCKTOP + $GUI_DOCKBOTTOM + $GUI_DOCKWIDTH)
+	$hGUI.ModList.List = GUICtrlCreateTreeView(0, 0, Default, Default, BitOR($TVS_FULLROWSELECT, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
+	$hGUI.PluginsList.List = GUICtrlCreateTreeView(0, 0, Default, Default, BitOR($TVS_FULLROWSELECT, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
 
-	$hGUI.ModList.List = GUICtrlCreateTreeView(2 * $iItemSpacing, 4 * $iItemSpacing, _ ; left, top
-			GUICtrlGetPos($hGUI.ModList.Group)[2] - 4 * $iItemSpacing - 90, GUICtrlGetPos($hGUI.ModList.Group)[3] - 6 * $iItemSpacing, _ ; width, height
-			BitOR($TVS_FULLROWSELECT, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
-	$hGUI.PluginsList.List = GUICtrlCreateTreeView(0, 0, GUICtrlGetPos($hGUI.ModList.List)[2], GUICtrlGetPos($hGUI.ModList.List)[3], _
-			BitOR($TVS_FULLROWSELECT, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
-	GUICtrlSetResizing($hGUI.ModList.List, $GUI_DOCKLEFT + $GUI_DOCKTOP + $GUI_DOCKBOTTOM + $GUI_DOCKWIDTH)
-	GUICtrlSetResizing($hGUI.PluginsList.List, $GUI_DOCKLEFT + $GUI_DOCKTOP + $GUI_DOCKBOTTOM + $GUI_DOCKWIDTH)
-
-	$hGUI.ModList.Up = GUICtrlCreateButton("", GUICtrlGetPos($hGUI.ModList.List)[2] + $iItemSpacing, 0, 90, 25)
-	GUICtrlSetPos($hGUI.ModList.Up, Default, GUICtrlGetPos($hGUI.ModList.List)[1] - 1) ; workaround for a stupid AutoIt logic
+	$hGUI.ModList.Up = GUICtrlCreateButton("", 0, 0, 90, 25)
 	$hGUI.PluginsList.Back = GUICtrlCreateButton("", 0, 0, 90, 25)
-	GUICtrlSetResizing($hGUI.ModList.Up, $GUI_DOCKALL)
-	GUICtrlSetResizing($hGUI.PluginsList.Back, $GUI_DOCKALL)
-	$hGUI.ModList.Down = GUICtrlCreateButton("", 0, GUICtrlGetPos($hGUI.ModList.Up)[3] + $iItemSpacing, 90, 25)
-	GUICtrlSetResizing($hGUI.ModList.Down, $GUI_DOCKALL)
-	$hGUI.ModList.ChangeState = GUICtrlCreateButton("", 0, GUICtrlGetPos($hGUI.ModList.Down)[3] + $iItemSpacing, 90, 25)
-	GUICtrlSetResizing($hGUI.ModList.ChangeState, $GUI_DOCKALL)
+	$hGUI.ModList.Down = GUICtrlCreateButton("", 0, 0, 90, 25)
+	$hGUI.ModList.ChangeState = GUICtrlCreateButton("", 0, 0, 90, 25)
 	GUICtrlSetState($hGUI.PluginsList.Group, $GUI_HIDE)
 	GUICtrlSetState($hGUI.PluginsList.List, $GUI_HIDE)
 	GUICtrlSetState($hGUI.PluginsList.Back, $GUI_HIDE)
 
-	GUISetCoord(GUICtrlGetPos($hGUI.ModList.Group)[0], GUICtrlGetPos($hGUI.ModList.Group)[1])
-	$hGUI.Info.TabControl = GUICtrlCreateTab(GUICtrlGetPos($hGUI.ModList.Group)[2] + $iItemSpacing, 0, $aSize[0] / 2 - 2 * $iItemSpacing, 21, BitOR($TCS_FLATBUTTONS, $TCS_BUTTONS, $TCS_FOCUSNEVER))
-	GUICtrlSetResizing($hGUI.Info.TabControl, $GUI_DOCKLEFT + $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKHEIGHT)
+	$hGUI.Info.TabControl = GUICtrlCreateTab(0, 0, Default, Default, BitOR($TCS_FLATBUTTONS, $TCS_BUTTONS, $TCS_FOCUSNEVER))
 	$hGUI.Info.TabDesc = GUICtrlCreateTabItem("-")
 	$hGUI.Info.TabInfo = GUICtrlCreateTabItem("-")
 	$hGUI.Info.TabScreens = GUICtrlCreateTabItem("-")
 	GUICtrlCreateTabItem("")
 
-	$hGUI.Info.Edit = GUICtrlCreateEdit("", 2, GUICtrlGetPos($hGUI.Info.TabControl)[3] + $iItemSpacing, _
-			GUICtrlGetPos($hGUI.Info.TabControl)[2], $aSize[1] - (GUICtrlGetPos($hGUI.Info.TabControl)[1] + GUICtrlGetPos($hGUI.Info.TabControl)[3] + 2 * $iItemSpacing + 1), _
-			BitOR($ES_READONLY, $WS_VSCROLL, $WS_TABSTOP))
-	GUICtrlSetResizing($hGUI.Info.Edit, $GUI_DOCKLEFT + $GUI_DOCKRIGHT + $GUI_DOCKTOP + $GUI_DOCKBOTTOM)
-	$hGUI.Info.Desc = _GUICtrlSysLink_Create($MM_UI_MAIN, "-", GUICtrlGetPos($hGUI.Info.Edit)[0], GUICtrlGetPos($hGUI.Info.Edit)[1], GUICtrlGetPos($hGUI.Info.Edit)[2], GUICtrlGetPos($hGUI.Info.Edit)[3])
+	$hGUI.Info.Edit = GUICtrlCreateEdit("", 0, 0, 0, 0, BitOR($ES_READONLY, $WS_VSCROLL, $WS_TABSTOP))
+	$hGUI.Info.Desc = _GUICtrlSysLink_Create($MM_UI_MAIN, "-", 0, 0, 0, 0)
 
 	$hDummyF5 = GUICtrlCreateDummy()
 	$hDummyLinks = GUICtrlCreateDummy()
@@ -222,6 +204,7 @@ Func SD_GUI_Create()
 	SD_GUI_Mod_Controls_Disable()
 	SD_GUI_Events_Register()
 	SD_GUI_SetLng()
+	SD_GUI_MainWindowResize()
 
 	WinMove($MM_UI_MAIN, '', (@DesktopWidth - $MM_WINDOW_WIDTH) / 2, (@DesktopHeight - $MM_WINDOW_HEIGHT) / 2, $MM_WINDOW_WIDTH, $MM_WINDOW_HEIGHT)
 	If $MM_WINDOW_MAXIMIZED Then WinSetState($MM_UI_MAIN, '', @SW_MAXIMIZE)
@@ -230,12 +213,54 @@ Func SD_GUI_Create()
 	AutoItSetOption("GUICoordMode", $iOptionGUICoordMode)
 EndFunc   ;==>SD_GUI_Create
 
+Func WM_SIZE()
+	If Not $hGUI.WindowResizeInProgress Then SD_GUI_MainWindowResize()
+	Return 0
+EndFunc
+
+Func WM_ENTERSIZEMOVE()
+	$hGUI.WindowResizeInProgress = True
+EndFunc
+
+Func WM_EXITSIZEMOVE()
+	SD_GUI_MainWindowResize()
+	$hGUI.WindowResizeInProgress = False
+EndFunc
+
+Func SD_GUI_MainWindowResize()
+	Local $aSize = WinGetClientSize($MM_UI_MAIN)
+	If $aSize[0] <> $MM_WINDOW_CLIENT_WIDTH Or $aSize[1] <> $MM_WINDOW_CLIENT_HEIGHT Then
+		$MM_WINDOW_CLIENT_WIDTH = $aSize[0]
+		$MM_WINDOW_CLIENT_HEIGHT = $aSize[1]
+	Else
+		Return
+	EndIf
+
+	Local Const $iListLength = 400 + ($MM_WINDOW_CLIENT_WIDTH - 800) / 4
+	GUICtrlSetPos($hGUI.ModList.Group, $iItemSpacing, $iItemSpacing, $iListLength, $MM_WINDOW_CLIENT_HEIGHT - 2 * $iItemSpacing)
+	GUICtrlSetPos($hGUI.PluginsList.Group, GUICtrlGetPos($hGUI.ModList.Group)[0], GUICtrlGetPos($hGUI.ModList.Group)[1], GUICtrlGetPos($hGUI.ModList.Group)[2], GUICtrlGetPos($hGUI.ModList.Group)[3])
+	GUICtrlSetPos($hGUI.ModList.List, GUICtrlGetPos($hGUI.ModList.Group)[0] + 2 * $iItemSpacing, GUICtrlGetPos($hGUI.ModList.Group)[1] + 4 * $iItemSpacing, _
+			GUICtrlGetPos($hGUI.ModList.Group)[2] - 4 * $iItemSpacing - 90, GUICtrlGetPos($hGUI.ModList.Group)[3] - 6 * $iItemSpacing)
+	GUICtrlSetPos($hGUI.PluginsList.List, GUICtrlGetPos($hGUI.ModList.List)[0], GUICtrlGetPos($hGUI.ModList.List)[1], GUICtrlGetPos($hGUI.ModList.List)[2], GUICtrlGetPos($hGUI.ModList.List)[3])
+	GUICtrlSetPos($hGUI.ModList.Up, GUICtrlGetPos($hGUI.ModList.List)[0] + GUICtrlGetPos($hGUI.ModList.List)[2] + $iItemSpacing, GUICtrlGetPos($hGUI.ModList.List)[1] - 1, 90, 25)
+	GUICtrlSetPos($hGUI.PluginsList.Back, GUICtrlGetPos($hGUI.ModList.Up)[0], GUICtrlGetPos($hGUI.ModList.Up)[1], 90, 25)
+	GUICtrlSetPos($hGUI.ModList.Down, GUICtrlGetPos($hGUI.ModList.Up)[0], GUICtrlGetPos($hGUI.ModList.Up)[1] + GUICtrlGetPos($hGUI.ModList.Up)[3] + $iItemSpacing, 90, 25)
+	GUICtrlSetPos($hGUI.ModList.ChangeState, GUICtrlGetPos($hGUI.ModList.Down)[0], GUICtrlGetPos($hGUI.ModList.Down)[1] + GUICtrlGetPos($hGUI.ModList.Down)[3] + $iItemSpacing, 90, 25)
+
+	GUICtrlSetPos($hGUI.Info.TabControl, GUICtrlGetPos($hGUI.ModList.Group)[0] + GUICtrlGetPos($hGUI.ModList.Group)[2] + $iItemSpacing, GUICtrlGetPos($hGUI.ModList.Group)[1], $MM_WINDOW_CLIENT_WIDTH - $iListLength - 3 * $iItemSpacing, 19)
+	GUICtrlSetPos($hGUI.Info.Edit, GUICtrlGetPos($hGUI.Info.TabControl)[0] + 2, GUICtrlGetPos($hGUI.Info.TabControl)[1] + GUICtrlGetPos($hGUI.Info.TabControl)[3] + $iItemSpacing, _
+			GUICtrlGetPos($hGUI.Info.TabControl)[2] - 2, $MM_WINDOW_CLIENT_HEIGHT - (GUICtrlGetPos($hGUI.Info.TabControl)[1] + GUICtrlGetPos($hGUI.Info.TabControl)[3] + 2 * $iItemSpacing))
+	ControlMove($hGUI.Info.Desc, '', 0, GUICtrlGetPos($hGUI.Info.Edit)[0], GUICtrlGetPos($hGUI.Info.Edit)[1], GUICtrlGetPos($hGUI.Info.Edit)[2], GUICtrlGetPos($hGUI.Info.Edit)[3])
+EndFunc
 
 Func SD_GUI_Events_Register()
 	GUISetOnEvent($GUI_EVENT_CLOSE, "SD_GUI_Close")
 	GUIRegisterMsgStateful($WM_GETMINMAXINFO, "WM_GETMINMAXINFO") ; Limit min size
 	GUIRegisterMsgStateful($WM_DROPFILES, "SD_GUI_Mod_AddByDnD") ; Input files
-	GUIRegisterMsgStateful($WM_NOTIFY, "WM_NOTIFY") ;  TreeView
+	GUIRegisterMsgStateful($WM_NOTIFY, "WM_NOTIFY")
+	GUIRegisterMsgStateful($WM_SIZE, "WM_SIZE")
+	GUIRegisterMsgStateful($WM_ENTERSIZEMOVE, "WM_ENTERSIZEMOVE")
+	GUIRegisterMsgStateful($WM_EXITSIZEMOVE, "WM_EXITSIZEMOVE")
 
 	For $iCount = 1 To $MM_LNG_LIST[0][0]
 		GUICtrlSetOnEvent($MM_LNG_LIST[$iCount][$MM_LNG_MENU_ID], "SD_GUI_Language_Change")
