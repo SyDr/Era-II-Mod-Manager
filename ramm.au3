@@ -31,6 +31,7 @@
 AutoItSetOption("MustDeclareVars", 1)
 AutoItSetOption("GUIOnEventMode", 1)
 AutoItSetOption("GUICloseOnESC", 1)
+If Not @Compiled Then AutoItSetOption("TrayIconHide", 0)
 
 #Region Variables
 Global $hGUI[]
