@@ -1005,53 +1005,36 @@ Func SD_SwitchView(Const $iNewView = $MM_VIEW_MODS)
 	$MM_VIEW_CURRENT = $iNewView
 	SD_GUI_MainWindowResize()
 
-	Switch $MM_VIEW_CURRENT
-		Case $MM_VIEW_MODS
-			GUICtrlSetState($hGUI.PluginsList.Group, $GUI_HIDE)
-			GUICtrlSetState($hGUI.PluginsList.List, $GUI_HIDE)
-			GUICtrlSetState($hGUI.PluginsList.Back, $GUI_HIDE)
+	GUICtrlSetState($hGUI.ModList.Group, $MM_VIEW_CURRENT = $MM_VIEW_MODS ? $GUI_SHOW : $GUI_HIDE)
+	GUICtrlSetState($hGUI.ModList.List, $MM_VIEW_CURRENT = $MM_VIEW_MODS ? $GUI_SHOW : $GUI_HIDE)
+	GUICtrlSetState($hGUI.ModList.Up, $MM_VIEW_CURRENT = $MM_VIEW_MODS ? $GUI_SHOW : $GUI_HIDE)
+	GUICtrlSetState($hGUI.ModList.Down, $MM_VIEW_CURRENT = $MM_VIEW_MODS ? $GUI_SHOW : $GUI_HIDE)
+	GUICtrlSetState($hGUI.ModList.ChangeState, $MM_VIEW_CURRENT = $MM_VIEW_MODS ? $GUI_SHOW : $GUI_HIDE)
+	If Not $MM_SETTINGS_PORTABLE Then GUICtrlSetState($hGUI.MenuMore.ChangeModDir, $MM_VIEW_CURRENT = $MM_VIEW_MODS ? $GUI_ENABLE : $GUI_DISABLE)
 
-			GUICtrlSetState($hGUI.ModList.Group, $GUI_SHOW)
-			GUICtrlSetState($hGUI.ModList.List, $GUI_SHOW)
-			GUICtrlSetState($hGUI.ModList.Up, $GUI_SHOW)
-			GUICtrlSetState($hGUI.ModList.Down, $GUI_SHOW)
-			GUICtrlSetState($hGUI.ModList.ChangeState, $GUI_SHOW)
- 			If Not $MM_SETTINGS_PORTABLE Then GUICtrlSetState($hGUI.MenuMore.ChangeModDir, $GUI_ENABLE)
+	GUICtrlSetState($hGUI.PluginsList.Group, $MM_VIEW_CURRENT = $MM_VIEW_PLUGINS ? $GUI_SHOW : $GUI_HIDE)
+	GUICtrlSetState($hGUI.PluginsList.List, $MM_VIEW_CURRENT = $MM_VIEW_PLUGINS ? $GUI_SHOW : $GUI_HIDE)
+	GUICtrlSetState($hGUI.PluginsList.Back, $MM_VIEW_CURRENT = $MM_VIEW_PLUGINS ? $GUI_SHOW : $GUI_HIDE)
 
-			TreeViewTryFollow($sFollowMod)
-		Case $MM_VIEW_PLUGINS
-			GUICtrlSetState($hGUI.ModList.Group, $GUI_HIDE)
-			GUICtrlSetState($hGUI.ModList.List, $GUI_HIDE)
-			GUICtrlSetState($hGUI.ModList.Up, $GUI_HIDE)
-			GUICtrlSetState($hGUI.ModList.Down, $GUI_HIDE)
-			GUICtrlSetState($hGUI.ModList.ChangeState, $GUI_HIDE)
-			GUICtrlSetState($hGUI.MenuMod.Menu, $GUI_DISABLE)
-			If Not $MM_SETTINGS_PORTABLE Then GUICtrlSetState($hGUI.MenuMore.ChangeModDir, $GUI_DISABLE)
-
-			GUICtrlSetState($hGUI.PluginsList.Group, $GUI_SHOW)
-			GUICtrlSetState($hGUI.PluginsList.List, $GUI_SHOW)
-			GUICtrlSetState($hGUI.PluginsList.Back, $GUI_SHOW)
-
-			TreeViewTryFollow("")
-		Case $MM_VIEW_INSTALL
-	EndSwitch
+	If $MM_VIEW_CURRENT = $MM_VIEW_MODS Then
+		TreeViewTryFollow($sFollowMod)
+	ElseIf $MM_VIEW_CURRENT = $MM_VIEW_PLUGINS Then
+		GUICtrlSetState($hGUI.MenuMod.Menu, $GUI_DISABLE)
+		TreeViewTryFollow("")
+	EndIf
 EndFunc   ;==>SD_SwitchView
 
 Func SD_SwitchSubView(Const $iNewView = $MM_SUBVIEW_DESC)
 	$MM_SUBVIEW_CURRENT = $iNewView
 	SD_GUI_MainWindowResize()
 
-	Switch $iNewView
-		Case $MM_SUBVIEW_DESC
-			GUICtrlSetState($hGUI.Info.Edit, $GUI_SHOW)
-			ControlHide($MM_UI_MAIN, '', $hGUI.Info.Desc)
-		Case $MM_SUBVIEW_INFO
-			GUICtrlSetState($hGUI.Info.Edit, $GUI_HIDE)
-			ControlShow($MM_UI_MAIN, '', $hGUI.Info.Desc)
-		Case $MM_SUBVIEW_SCREENS
-			GUICtrlSetState($hGUI.Info.Edit, $GUI_HIDE)
-			ControlHide($MM_UI_MAIN, '', $hGUI.Info.Desc)
-	EndSwitch
+	GUICtrlSetState($hGUI.Info.Edit, $MM_SUBVIEW_CURRENT = $MM_SUBVIEW_DESC ? $GUI_SHOW : $GUI_HIDE)
+
+	If $MM_SUBVIEW_CURRENT = $MM_SUBVIEW_INFO Then
+		ControlShow($MM_UI_MAIN, '', $hGUI.Info.Desc)
+	Else
+		ControlHide($MM_UI_MAIN, '', $hGUI.Info.Desc)
+	EndIf
 EndFunc
 
 Func SD_FormatDescription()
