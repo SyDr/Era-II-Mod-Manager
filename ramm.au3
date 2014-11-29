@@ -42,7 +42,6 @@ $hGUI.MenuHelp = MapEmpty()
 $hGUI.ModList = MapEmpty()
 $hGUI.PluginsList = MapEmpty()
 $hGUI.Info = MapEmpty()
-$hGUI.WindowResizeInProgress = False
 Global $hDummyF5, $hDummyLinks
 Global Const $iItemSpacing = 4
 
@@ -214,43 +213,40 @@ Func SD_GUI_Create()
 EndFunc   ;==>SD_GUI_Create
 
 Func WM_SIZE()
-	If Not $hGUI.WindowResizeInProgress Then SD_GUI_MainWindowResize()
-	Return 0
-EndFunc
-
-Func WM_ENTERSIZEMOVE()
-	$hGUI.WindowResizeInProgress = True
-EndFunc
-
-Func WM_EXITSIZEMOVE()
 	SD_GUI_MainWindowResize()
-	$hGUI.WindowResizeInProgress = False
+	Return 0
 EndFunc
 
 Func SD_GUI_MainWindowResize()
 	Local $aSize = WinGetClientSize($MM_UI_MAIN)
-	If $aSize[0] <> $MM_WINDOW_CLIENT_WIDTH Or $aSize[1] <> $MM_WINDOW_CLIENT_HEIGHT Then
-		$MM_WINDOW_CLIENT_WIDTH = $aSize[0]
-		$MM_WINDOW_CLIENT_HEIGHT = $aSize[1]
-	Else
-		Return
+	$MM_WINDOW_CLIENT_WIDTH = $aSize[0]
+	$MM_WINDOW_CLIENT_HEIGHT = $aSize[1]
+
+	GUISetState(@SW_LOCK)
+	Local Const $iListLength = 400 + ($MM_WINDOW_CLIENT_WIDTH - 800) / 4
+	Local Const $iButtonWidth = 90, $iButtonLeft = $iListLength - $iButtonWidth
+
+	If $MM_VIEW_CURRENT = $MM_VIEW_MODS Then
+		GUICtrlSetPos($hGUI.ModList.Group, $iItemSpacing, 0, $iListLength, $MM_WINDOW_CLIENT_HEIGHT - $iItemSpacing)
+		GUICtrlSetPos($hGUI.ModList.List, 2 * $iItemSpacing, 17, $iListLength - 3 * $iItemSpacing - $iButtonWidth, $MM_WINDOW_CLIENT_HEIGHT - 6 * $iItemSpacing)
+		GUICtrlSetPos($hGUI.ModList.Up, $iButtonLeft, 16, $iButtonWidth, 25)
+		GUICtrlSetPos($hGUI.ModList.Down, $iButtonLeft, 16 + 25 + $iItemSpacing, $iButtonWidth, 25)
+		GUICtrlSetPos($hGUI.ModList.ChangeState, $iButtonLeft, 16 + 50 + 2 * $iItemSpacing, $iButtonWidth, 25)
+	ElseIf $MM_VIEW_CURRENT = $MM_VIEW_PLUGINS Then
+		GUICtrlSetPos($hGUI.PluginsList.Group, $iItemSpacing, 0, $iListLength, $MM_WINDOW_CLIENT_HEIGHT - $iItemSpacing)
+		GUICtrlSetPos($hGUI.PluginsList.List, 2 * $iItemSpacing, 17, $iListLength - 3 * $iItemSpacing - $iButtonWidth, $MM_WINDOW_CLIENT_HEIGHT - 6 * $iItemSpacing)
+		GUICtrlSetPos($hGUI.PluginsList.Back, $iButtonLeft, 16, $iButtonWidth, 25)
 	EndIf
 
-	Local Const $iListLength = 400 + ($MM_WINDOW_CLIENT_WIDTH - 800) / 4
-	GUICtrlSetPos($hGUI.ModList.Group, $iItemSpacing, $iItemSpacing, $iListLength, $MM_WINDOW_CLIENT_HEIGHT - 2 * $iItemSpacing)
-	GUICtrlSetPos($hGUI.PluginsList.Group, GUICtrlGetPos($hGUI.ModList.Group)[0], GUICtrlGetPos($hGUI.ModList.Group)[1], GUICtrlGetPos($hGUI.ModList.Group)[2], GUICtrlGetPos($hGUI.ModList.Group)[3])
-	GUICtrlSetPos($hGUI.ModList.List, GUICtrlGetPos($hGUI.ModList.Group)[0] + 2 * $iItemSpacing, GUICtrlGetPos($hGUI.ModList.Group)[1] + 4 * $iItemSpacing, _
-			GUICtrlGetPos($hGUI.ModList.Group)[2] - 4 * $iItemSpacing - 90, GUICtrlGetPos($hGUI.ModList.Group)[3] - 6 * $iItemSpacing)
-	GUICtrlSetPos($hGUI.PluginsList.List, GUICtrlGetPos($hGUI.ModList.List)[0], GUICtrlGetPos($hGUI.ModList.List)[1], GUICtrlGetPos($hGUI.ModList.List)[2], GUICtrlGetPos($hGUI.ModList.List)[3])
-	GUICtrlSetPos($hGUI.ModList.Up, GUICtrlGetPos($hGUI.ModList.List)[0] + GUICtrlGetPos($hGUI.ModList.List)[2] + $iItemSpacing, GUICtrlGetPos($hGUI.ModList.List)[1] - 1, 90, 25)
-	GUICtrlSetPos($hGUI.PluginsList.Back, GUICtrlGetPos($hGUI.ModList.Up)[0], GUICtrlGetPos($hGUI.ModList.Up)[1], 90, 25)
-	GUICtrlSetPos($hGUI.ModList.Down, GUICtrlGetPos($hGUI.ModList.Up)[0], GUICtrlGetPos($hGUI.ModList.Up)[1] + GUICtrlGetPos($hGUI.ModList.Up)[3] + $iItemSpacing, 90, 25)
-	GUICtrlSetPos($hGUI.ModList.ChangeState, GUICtrlGetPos($hGUI.ModList.Down)[0], GUICtrlGetPos($hGUI.ModList.Down)[1] + GUICtrlGetPos($hGUI.ModList.Down)[3] + $iItemSpacing, 90, 25)
+	GUICtrlSetPos($hGUI.Info.TabControl, $iListLength + $iItemSpacing, 2 * $iItemSpacing - 2, $MM_WINDOW_CLIENT_WIDTH - $iListLength - 3 * $iItemSpacing, 19)
 
-	GUICtrlSetPos($hGUI.Info.TabControl, GUICtrlGetPos($hGUI.ModList.Group)[0] + GUICtrlGetPos($hGUI.ModList.Group)[2] + $iItemSpacing, GUICtrlGetPos($hGUI.ModList.Group)[1], $MM_WINDOW_CLIENT_WIDTH - $iListLength - 3 * $iItemSpacing, 19)
-	GUICtrlSetPos($hGUI.Info.Edit, GUICtrlGetPos($hGUI.Info.TabControl)[0] + 2, GUICtrlGetPos($hGUI.Info.TabControl)[1] + GUICtrlGetPos($hGUI.Info.TabControl)[3] + $iItemSpacing, _
-			GUICtrlGetPos($hGUI.Info.TabControl)[2] - 2, $MM_WINDOW_CLIENT_HEIGHT - (GUICtrlGetPos($hGUI.Info.TabControl)[1] + GUICtrlGetPos($hGUI.Info.TabControl)[3] + 2 * $iItemSpacing))
-	ControlMove($hGUI.Info.Desc, '', 0, GUICtrlGetPos($hGUI.Info.Edit)[0], GUICtrlGetPos($hGUI.Info.Edit)[1], GUICtrlGetPos($hGUI.Info.Edit)[2], GUICtrlGetPos($hGUI.Info.Edit)[3])
+	If $MM_SUBVIEW_CURRENT = $MM_SUBVIEW_DESC Then
+		GUICtrlSetPos($hGUI.Info.Edit, $iListLength + $iItemSpacing + 2, 3 * $iItemSpacing + 17, $MM_WINDOW_CLIENT_WIDTH - $iListLength - 2 * $iItemSpacing - 2, $MM_WINDOW_CLIENT_HEIGHT - (4 * $iItemSpacing + 17))
+	ElseIf $MM_SUBVIEW_CURRENT = $MM_SUBVIEW_INFO Then
+		ControlMove($hGUI.Info.Desc, '', 0, $iListLength + 2 * $iItemSpacing + 2, 3 * $iItemSpacing + 17, $MM_WINDOW_CLIENT_WIDTH - $iListLength - 3 * $iItemSpacing - 2, $MM_WINDOW_CLIENT_HEIGHT - (4 * $iItemSpacing + 17))
+	EndIf
+
+	GUISetState(@SW_UNLOCK)
 EndFunc
 
 Func SD_GUI_Events_Register()
@@ -259,8 +255,6 @@ Func SD_GUI_Events_Register()
 	GUIRegisterMsgStateful($WM_DROPFILES, "SD_GUI_Mod_AddByDnD") ; Input files
 	GUIRegisterMsgStateful($WM_NOTIFY, "WM_NOTIFY")
 	GUIRegisterMsgStateful($WM_SIZE, "WM_SIZE")
-	GUIRegisterMsgStateful($WM_ENTERSIZEMOVE, "WM_ENTERSIZEMOVE")
-	GUIRegisterMsgStateful($WM_EXITSIZEMOVE, "WM_EXITSIZEMOVE")
 
 	For $iCount = 1 To $MM_LNG_LIST[0][0]
 		GUICtrlSetOnEvent($MM_LNG_LIST[$iCount][$MM_LNG_MENU_ID], "SD_GUI_Language_Change")
@@ -1009,8 +1003,9 @@ Func SD_SwitchView(Const $iNewView = $MM_VIEW_MODS)
 	GUICtrlSetData($hGUI.Info.Edit, "")
 
 	$MM_VIEW_CURRENT = $iNewView
+	SD_GUI_MainWindowResize()
 
-	Switch $iNewView
+	Switch $MM_VIEW_CURRENT
 		Case $MM_VIEW_MODS
 			GUICtrlSetState($hGUI.PluginsList.Group, $GUI_HIDE)
 			GUICtrlSetState($hGUI.PluginsList.List, $GUI_HIDE)
@@ -1044,6 +1039,7 @@ EndFunc   ;==>SD_SwitchView
 
 Func SD_SwitchSubView(Const $iNewView = $MM_SUBVIEW_DESC)
 	$MM_SUBVIEW_CURRENT = $iNewView
+	SD_GUI_MainWindowResize()
 
 	Switch $iNewView
 		Case $MM_SUBVIEW_DESC
