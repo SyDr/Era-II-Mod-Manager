@@ -42,6 +42,8 @@ $hGUI.MenuHelp = MapEmpty()
 $hGUI.ModList = MapEmpty()
 $hGUI.PluginsList = MapEmpty()
 $hGUI.Info = MapEmpty()
+$hGUI.WindowResizeInProgress = False
+$hGUI.WindowResizeLags = False
 Global $hDummyF5, $hDummyLinks
 Global Const $iItemSpacing = 4
 
@@ -213,11 +215,21 @@ Func SD_GUI_Create()
 EndFunc   ;==>SD_GUI_Create
 
 Func WM_SIZE()
-	SD_GUI_MainWindowResize()
+	If Not $hGUI.WindowResizeInProgress Or Not $hGUI.WindowResizeLags Then SD_GUI_MainWindowResize()
 	Return 0
 EndFunc
 
+Func WM_ENTERSIZEMOVE()
+	$hGUI.WindowResizeInProgress = True
+EndFunc
+
+Func WM_EXITSIZEMOVE()
+	SD_GUI_MainWindowResize()
+	$hGUI.WindowResizeInProgress = False
+EndFunc
+
 Func SD_GUI_MainWindowResize()
+	Local $iTimer = TimerInit()
 	Local $aSize = WinGetClientSize($MM_UI_MAIN)
 	$MM_WINDOW_CLIENT_WIDTH = $aSize[0]
 	$MM_WINDOW_CLIENT_HEIGHT = $aSize[1]
@@ -247,6 +259,7 @@ Func SD_GUI_MainWindowResize()
 	EndIf
 
 	GUISetState(@SW_UNLOCK)
+	$hGUI.WindowResizeLags = TimerDiff($iTimer) > 50
 EndFunc
 
 Func SD_GUI_Events_Register()
@@ -255,6 +268,8 @@ Func SD_GUI_Events_Register()
 	GUIRegisterMsgStateful($WM_DROPFILES, "SD_GUI_Mod_AddByDnD") ; Input files
 	GUIRegisterMsgStateful($WM_NOTIFY, "WM_NOTIFY")
 	GUIRegisterMsgStateful($WM_SIZE, "WM_SIZE")
+	GUIRegisterMsgStateful($WM_ENTERSIZEMOVE, "WM_ENTERSIZEMOVE")
+	GUIRegisterMsgStateful($WM_EXITSIZEMOVE, "WM_EXITSIZEMOVE")
 
 	For $iCount = 1 To $MM_LNG_LIST[0][0]
 		GUICtrlSetOnEvent($MM_LNG_LIST[$iCount][$MM_LNG_MENU_ID], "SD_GUI_Language_Change")
