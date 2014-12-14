@@ -60,6 +60,8 @@ Func Mod_ListLoad()
 	ReDim $MM_LIST_CONTENT[1 + $MM_LIST_CONTENT[0][0]][$MOD_TOTAL]
 EndFunc   ;==>Mod_ListLoad
 
+
+
 Func _ModInfoNormalize(ByRef $Map, Const $sDir)
 	If Not IsMap($Map) Then _ModLoadInfoFromINI($Map, $sDir)
 	If Not IsMap($Map) Then $Map = MapEmpty()
@@ -317,6 +319,12 @@ Func Mod_InfoLoad(Const $sModName, Const $sFile)
 	If @error Or $sReturn = "" Then $sReturn = Lng_Get("info_group.no_info")
 	Return $sReturn
 EndFunc   ;==>Mod_InfoLoad
+
+Func Mod_ScreenListLoad(Const $sModName)
+	Local $aReturn = _FileListToArray($MM_LIST_DIR_PATH & "\" & $sModName & "\Screens\", Default, $FLTA_FILES, True)
+	If @error Then Dim $aReturn[1]
+	Return $aReturn
+EndFunc
 
 Func Mod_GetVersion($sModName)
 	Return IniRead($MM_LIST_DIR_PATH & "\" & $sModName & "\mod_info.ini", "info", "Version", "0.0")

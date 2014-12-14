@@ -44,11 +44,13 @@ $hGUI.PluginsList = MapEmpty()
 $hGUI.Info = MapEmpty()
 $hGUI.WindowResizeInProgress = False
 $hGUI.WindowResizeLags = False
+$hGUI.Screen = MapEmpty()
 Global $hDummyF5, $hDummyLinks
 Global Const $iItemSpacing = 4
 
 Global $aModListGroups[1][3]; group item id, is enabled, priority
 Global $aPlugins[1][2], $hPluginsParts[3]
+Global $aScreens[1], $iScreenIndex, $iScreenWidth, $iScreenHeight, $hScreenImage, $hScreenBitmap, $sScreenPath
 Global $sFollowMod = ""
 Global $bEnableDisable, $bSelectionChanged
 Global $bInTrack = False
@@ -77,6 +79,7 @@ If Not IsDeclared("__MM_NO_UI") Then
 EndIf
 
 Func UI_Main()
+	_GDIPlus_Startup()
 	SD_GUI_LoadSize()
 	SD_GUI_Create()
 	TreeViewMain()
@@ -196,6 +199,13 @@ Func SD_GUI_Create()
 	$hGUI.Info.Edit = GUICtrlCreateEdit("", 0, 0, 0, 0, BitOR($ES_READONLY, $WS_VSCROLL, $WS_TABSTOP))
 	$hGUI.Info.Desc = _GUICtrlSysLink_Create($MM_UI_MAIN, "-", 0, 0, 0, 0)
 
+	$hGUI.Screen.Control = GUICtrlCreatePic("", 0, 0)
+	$hGUI.Screen.Back = GUICtrlCreateButton("Back", 0, 0, 90, 25)
+	$hGUI.Screen.Forward = GUICtrlCreateButton("Forward", 0, 0, 90, 25)
+	GUICtrlSetState($hGUI.Screen.Control, $GUI_HIDE)
+	GUICtrlSetState($hGUI.Screen.Back, $GUI_HIDE)
+	GUICtrlSetState($hGUI.Screen.Forward, $GUI_HIDE)
+
 	$hDummyF5 = GUICtrlCreateDummy()
 	$hDummyLinks = GUICtrlCreateDummy()
 
@@ -214,6 +224,53 @@ Func SD_GUI_Create()
 	AutoItSetOption("GUICoordMode", $iOptionGUICoordMode)
 EndFunc   ;==>SD_GUI_Create
 
+Func SD_GUI_UpdateScreen(Const $iIndex)
+	GUISetState(@SW_LOCK)
+	If $hScreenBitmap Or $hScreenImage Then
+		_WinAPI_DeleteObject($hScreenBitmap)
+        _GDIPlus_ImageDispose($hScreenImage)
+		$hScreenImage = 0
+		$hScreenBitmap = 0
+		$iScreenWidth = 0
+		$iScreenHeight = 0
+	EndIf
+
+	$iScreenIndex = $iIndex
+	$sScreenPath = $iIndex > 0 ? $aScreens[$iIndex] : ""
+	GUICtrlSetState($hGUI.Screen.Back, $iIndex <= 1 ? $GUI_DISABLE : $GUI_ENABLE)
+	GUICtrlSetState($hGUI.Screen.Forward, $iIndex >= $aScreens[0] ? $GUI_DISABLE : $GUI_ENABLE)
+	GUICtrlSetState($hGUI.Screen.Control, $iIndex = 0 ? $GUI_DISABLE : $GUI_ENABLE)
+	If $iIndex <> 0 Then
+		$hScreenImage = _GDIPlus_ImageLoadFromFile($sScreenPath)
+		$hScreenBitmap = _GDIPlus_BitmapCreateHBITMAPFromBitmap($hScreenImage)
+		$iScreenWidth = _GDIPlus_ImageGetWidth($hScreenImage)
+		$iScreenHeight = _GDIPlus_ImageGetHeight($hScreenImage)
+		_WinAPI_DeleteObject(GUICtrlSendMsg($hGUI.Screen.Control, $STM_SETIMAGE, $IMAGE_BITMAP, $hScreenBitmap))
+		GUICtrlSetPos($hGUI.Screen.Control, 0, 0, 0, 0)
+		GUICtrlSetData($hGUI.Screen.Back, Lng_GetF("info_group.screens.back", $iScreenIndex - 1))
+		GUICtrlSetData($hGUI.Screen.Forward, Lng_GetF("info_group.screens.forward", $aScreens[0] - $iScreenIndex))
+	EndIf
+
+	SD_GUI_MainWindowResize()
+	GUISetState(@SW_UNLOCK)
+EndFunc
+
+Func SD_GUI_UpdateScreenByPath(Const $sPath)
+	For $i = 1 To $aScreens[0]
+		If $aScreens[$i] = $sPath Then Return SD_GUI_UpdateScreen($i)
+	Next
+	SD_GUI_UpdateScreen($aScreens[0] > 0 ? 1 : 0)
+EndFunc
+
+
+Func SD_GUI_NextScreen()
+	If $iScreenIndex < $aScreens[0] Then SD_GUI_UpdateScreen($iScreenIndex + 1)
+EndFunc
+
+Func SD_GUI_PrevScreen()
+	If $iScreenIndex > 0 Then SD_GUI_UpdateScreen($iScreenIndex - 1)
+EndFunc
+
 Func WM_SIZE()
 	If Not $hGUI.WindowResizeInProgress Or Not $hGUI.WindowResizeLags Then SD_GUI_MainWindowResize()
 	Return 0
@@ -228,13 +285,20 @@ Func WM_EXITSIZEMOVE()
 	$hGUI.WindowResizeInProgress = False
 EndFunc
 
+Func SD_GUI_BigScreen()
+	If $MM_VIEW_CURRENT <> $MM_VIEW_BIG_SCREEN Then
+		SD_SwitchView($MM_VIEW_BIG_SCREEN)
+	Else
+		SD_SwitchView($MM_VIEW_PREV)
+	EndIf
+EndFunc
+
 Func SD_GUI_MainWindowResize()
 	Local $iTimer = TimerInit()
 	Local $aSize = WinGetClientSize($MM_UI_MAIN)
 	$MM_WINDOW_CLIENT_WIDTH = $aSize[0]
 	$MM_WINDOW_CLIENT_HEIGHT = $aSize[1]
 
-	GUISetState(@SW_LOCK)
 	Local Const $iListLength = 400 + ($MM_WINDOW_CLIENT_WIDTH - 800) / 4
 	Local Const $iButtonWidth = 90, $iButtonLeft = $iListLength - $iButtonWidth
 
@@ -256,9 +320,39 @@ Func SD_GUI_MainWindowResize()
 		GUICtrlSetPos($hGUI.Info.Edit, $iListLength + $iItemSpacing + 2, 3 * $iItemSpacing + 17, $MM_WINDOW_CLIENT_WIDTH - $iListLength - 2 * $iItemSpacing - 2, $MM_WINDOW_CLIENT_HEIGHT - (4 * $iItemSpacing + 17))
 	ElseIf $MM_SUBVIEW_CURRENT = $MM_SUBVIEW_INFO Then
 		ControlMove($hGUI.Info.Desc, '', 0, $iListLength + 2 * $iItemSpacing + 2, 3 * $iItemSpacing + 17, $MM_WINDOW_CLIENT_WIDTH - $iListLength - 3 * $iItemSpacing - 2, $MM_WINDOW_CLIENT_HEIGHT - (4 * $iItemSpacing + 17))
+	ElseIf $MM_SUBVIEW_CURRENT = $MM_SUBVIEW_SCREENS Then
+		Local $iLeft = ($MM_VIEW_CURRENT = $MM_VIEW_BIG_SCREEN) ? $iItemSpacing : ($iListLength + $iItemSpacing + 2)
+		Local $iTop = ($MM_VIEW_CURRENT = $MM_VIEW_BIG_SCREEN) ? $iItemSpacing : (3 * $iItemSpacing + 17)
+		GUICtrlSetPos($hGUI.Screen.Back, $iLeft, $iTop, $iButtonWidth, 25)
+		GUICtrlSetPos($hGUI.Screen.Forward, $MM_WINDOW_CLIENT_WIDTH - $iButtonWidth - $iItemSpacing, $iTop, $iButtonWidth, 25)
+		Local Const $iMaxWidth = ($MM_VIEW_CURRENT = $MM_VIEW_BIG_SCREEN) ? $MM_WINDOW_CLIENT_WIDTH : ($MM_WINDOW_CLIENT_WIDTH - $iListLength - 2 * $iItemSpacing - 2)
+		Local Const $iMaxHeight =  ($MM_VIEW_CURRENT = $MM_VIEW_BIG_SCREEN) ? ($MM_WINDOW_CLIENT_HEIGHT - 25 - $iItemSpacing) : ($MM_WINDOW_CLIENT_HEIGHT - (5 * $iItemSpacing + 17 + 25))
+		Local $iWidth = _Min($iMaxWidth, $iScreenWidth)
+		Local $iHeight = _Min($iMaxHeight, $iScreenHeight)
+
+		Local $f, $fRatio
+
+		If $iScreenWidth > $iScreenHeight Then
+			$f = $iScreenWidth / $iWidth
+		Else
+			$f = $iScreenHeight / $iHeight
+		EndIf
+		$iWidth = Int($iScreenWidth / $f)
+		$iHeight = Int($iScreenHeight / $f)
+
+		If $iWidth > $iMaxWidth Then
+			$fRatio = $iMaxWidth / $iWidth
+			$iWidth = Int($iWidth * $fRatio)
+			$iHeight = Int($iHeight * $fRatio)
+		ElseIf $iHeight > $iMaxHeight Then
+			$fRatio = $iMaxHeight / $iHeight
+			$iWidth = Int($iWidth * $fRatio)
+			$iHeight = Int($iHeight * $fRatio)
+		EndIf
+
+		GUICtrlSetPos($hGUI.Screen.Control, $iLeft + ($iMaxWidth - $iWidth) / 2, $iTop + 25 + $iItemSpacing, $iWidth, $iHeight)
 	EndIf
 
-	GUISetState(@SW_UNLOCK)
 	$hGUI.WindowResizeLags = TimerDiff($iTimer) > 50
 EndFunc
 
@@ -293,6 +387,10 @@ Func SD_GUI_Events_Register()
 
 	GUICtrlSetOnEvent($hGUI.Info.TabControl, "SD_GUI_TabChanged")
 
+	GUICtrlSetOnEvent($hGUI.Screen.Back, "SD_GUI_PrevScreen")
+	GUICtrlSetOnEvent($hGUI.Screen.Forward, "SD_GUI_NextScreen")
+	GUICtrlSetOnEvent($hGUI.Screen.Control, "SD_GUI_BigScreen")
+
 	GUICtrlSetOnEvent($hDummyF5, "SD_GUI_Update")
 	GUICtrlSetOnEvent($hDummyLinks, "SD_GUI_Mod_Website")
 EndFunc   ;==>SD_GUI_Events_Register
@@ -326,8 +424,10 @@ Func SD_GUI_SetLng()
 
 	GUICtrlSetData($hGUI.Info.TabDesc, Lng_Get("info_group.desc"))
 	GUICtrlSetData($hGUI.Info.TabInfo, Lng_Get("info_group.info.caption"))
-	GUICtrlSetData($hGUI.Info.TabScreens, Lng_Get("info_group.screens"))
+	GUICtrlSetData($hGUI.Info.TabScreens, Lng_Get("info_group.screens.caption"))
 
+	GUICtrlSetData($hGUI.Screen.Back, Lng_GetF("info_group.screens.back", $iScreenIndex - 1))
+	GUICtrlSetData($hGUI.Screen.Forward, Lng_GetF("info_group.screens.forward", $aScreens[0] - $iScreenIndex))
 	_GUICtrlSysLink_SetText($hGUI.Info.Desc, SD_FormatDescription())
 EndFunc   ;==>SD_GUI_SetLng
 
@@ -506,6 +606,7 @@ EndFunc   ;==>SD_GUI_LoadSize
 Func SD_GUI_Close()
 	SD_GUI_SaveSize()
 	Settings_Save()
+	_GDIPlus_Shutdown()
 	Exit
 EndFunc   ;==>SD_GUI_Close
 
@@ -760,6 +861,9 @@ Func SD_GUI_Mod_SelectionChanged()
 		EndIf
 
 		_GUICtrlSysLink_SetText($hGUI.Info.Desc, SD_FormatDescription())
+
+		$aScreens = Mod_ScreenListLoad($MM_LIST_CONTENT[$iModIndex][$MOD_ID])
+		SD_GUI_UpdateScreenByPath($sScreenPath)
 	EndIf
 EndFunc   ;==>SD_GUI_Mod_SelectionChanged
 
@@ -1017,6 +1121,7 @@ EndFunc
 Func SD_SwitchView(Const $iNewView = $MM_VIEW_MODS)
 	GUICtrlSetData($hGUI.Info.Edit, "")
 
+	$MM_VIEW_PREV = $MM_VIEW_CURRENT
 	$MM_VIEW_CURRENT = $iNewView
 	SD_GUI_MainWindowResize()
 
@@ -1037,9 +1142,12 @@ Func SD_SwitchView(Const $iNewView = $MM_VIEW_MODS)
 		GUICtrlSetState($hGUI.MenuMod.Menu, $GUI_DISABLE)
 		TreeViewTryFollow("")
 	EndIf
+
+	GUICtrlSetState($hGUI.Info.TabControl, $MM_VIEW_CURRENT = $MM_VIEW_BIG_SCREEN ? $GUI_HIDE : $GUI_SHOW)
 EndFunc   ;==>SD_SwitchView
 
 Func SD_SwitchSubView(Const $iNewView = $MM_SUBVIEW_DESC)
+	$MM_SUBVIEW_PREV = $MM_SUBVIEW_CURRENT
 	$MM_SUBVIEW_CURRENT = $iNewView
 	SD_GUI_MainWindowResize()
 
@@ -1050,6 +1158,10 @@ Func SD_SwitchSubView(Const $iNewView = $MM_SUBVIEW_DESC)
 	Else
 		ControlHide($MM_UI_MAIN, '', $hGUI.Info.Desc)
 	EndIf
+
+	GUICtrlSetState($hGUI.Screen.Control, $MM_SUBVIEW_CURRENT = $MM_SUBVIEW_SCREENS ? $GUI_SHOW : $GUI_HIDE)
+	GUICtrlSetState($hGUI.Screen.Back, $MM_SUBVIEW_CURRENT = $MM_SUBVIEW_SCREENS ? $GUI_SHOW : $GUI_HIDE)
+	GUICtrlSetState($hGUI.Screen.Forward, $MM_SUBVIEW_CURRENT = $MM_SUBVIEW_SCREENS ? $GUI_SHOW : $GUI_HIDE)
 EndFunc
 
 Func SD_FormatDescription()

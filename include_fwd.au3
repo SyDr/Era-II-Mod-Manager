@@ -12,10 +12,12 @@
 #include <EditConstants.au3>
 #include <File.au3>
 #include <InetConstants.au3>
+#include <GDIPlus.au3>
 #include <GuiButton.au3>
 #include <GUIConstantsEx.au3>
 #include <GuiMenu.au3>
 #include <GuiTreeView.au3>
+#include <Math.au3>
 #include <Misc.au3>
 #include <ProgressConstants.au3>
 #include <StaticConstants.au3>

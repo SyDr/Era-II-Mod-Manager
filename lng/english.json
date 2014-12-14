@@ -49,7 +49,12 @@
 	"info_group" :
 	{
 		"desc" : "Descripton",
-		"screens" : "Screenshots",
+		"screens" : 
+		{
+			"caption" : "Screenshots",
+			"back" : "Back (%s)",
+			"forward" : "Forward (%s)"
+		},
 		"no_info" : "No description available",
 		"info" :
 		{
