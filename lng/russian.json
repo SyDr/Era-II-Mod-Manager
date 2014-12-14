@@ -49,7 +49,12 @@
 	"info_group" :
 	{
 		"desc" : "Описание",
-		"screens" : "Скриншоты",
+		"screens" : 
+		{
+			"caption" : "Скриншоты",
+			"back" : "Назад (%s)",
+			"forward" : "Вперёд (%s)"
+		},		
 		"no_info" : "Нет описания",
 		"info" :
 		{
