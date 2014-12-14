@@ -8,7 +8,7 @@ If Not MapExists($MM_LNG_CACHE["lang"], "language") Or Not IsString($MM_LNG_CACH
 If Not MapExists($MM_LNG_CACHE, "mod_list") Or Not IsMap($MM_LNG_CACHE["mod_list"]) Then $MM_LNG_CACHE["mod_list"] = MapEmpty()
 If Not MapExists($MM_LNG_CACHE["mod_list"], "mod") Or Not IsString($MM_LNG_CACHE["mod_list"]["mod"]) Then $MM_LNG_CACHE["mod_list"]["mod"] = "Mod"
 If Not MapExists($MM_LNG_CACHE["mod_list"], "caption") Or Not IsString($MM_LNG_CACHE["mod_list"]["caption"]) Then $MM_LNG_CACHE["mod_list"]["caption"] = "Mod list (%s)"
-If Not MapExists($MM_LNG_CACHE["mod_list"], "no_game_dir1") Or Not IsString($MM_LNG_CACHE["mod_list"]["no_game_dir1"]) Then $MM_LNG_CACHE["mod_list"]["no_game_dir1"] = "no game dir - select from ""More actions"""
+If Not MapExists($MM_LNG_CACHE["mod_list"], "no_game_dir") Or Not IsString($MM_LNG_CACHE["mod_list"]["no_game_dir"]) Then $MM_LNG_CACHE["mod_list"]["no_game_dir"] = "no game dir - select from ""More actions"""
 If Not MapExists($MM_LNG_CACHE["mod_list"], "up") Or Not IsString($MM_LNG_CACHE["mod_list"]["up"]) Then $MM_LNG_CACHE["mod_list"]["up"] = "Move up"
 If Not MapExists($MM_LNG_CACHE["mod_list"], "down") Or Not IsString($MM_LNG_CACHE["mod_list"]["down"]) Then $MM_LNG_CACHE["mod_list"]["down"] = "Move down"
 If Not MapExists($MM_LNG_CACHE["mod_list"], "enable") Or Not IsString($MM_LNG_CACHE["mod_list"]["enable"]) Then $MM_LNG_CACHE["mod_list"]["enable"] = "Enable"
