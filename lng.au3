@@ -3,6 +3,8 @@
 #include-once
 #include "include_fwd.au3"
 
+#include "utils.au3"
+
 Global $MM_LNG_CACHE
 
 Func Lng_Load()
@@ -10,10 +12,15 @@ Func Lng_Load()
 	If @error Then Return SetError(1, @extended, "Can't read .\lng\" & $MM_SETTINGS_LANGUAGE)
 
 	$MM_LNG_CACHE = Jsmn_Decode($sText)
+	__Lng_Validate()
 	$MM_LANGUAGE_CODE = IsMap($MM_LNG_CACHE) ? (IsMap($MM_LNG_CACHE["lang"]) ? $MM_LNG_CACHE["lang"]["code"] : "fail") : "fail"
 
 	Return SetError(0, 0, "") ; everething ok
 EndFunc   ;==>Lng_Load
+
+Func __Lng_Validate()
+	#include "lng_auto.au3"
+EndFunc
 
 Func Lng_LoadList()
 	Local $asTemp = _FileListToArray(@ScriptDir & "\lng\", "*.json", 1)

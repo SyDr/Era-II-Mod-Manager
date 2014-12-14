@@ -5,8 +5,6 @@
 
 #include "include_fwd.au3"
 
-#include "lng.au3"
-
 Func Utils_LaunchInBrowser($sLink)
 	Local Const $http = "http://"
 	Local Const $https = "https://"
@@ -104,6 +102,4 @@ Func GUIRegisterMsgStateful(Const $iMessage, Const ByRef $sFuncName)
 	Else
 		MapRemove($mRegistered, $iMessage)
 	EndIf
-
 EndFunc
-
