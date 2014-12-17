@@ -1,14 +1,9 @@
 ; Author:         Aliaksei SyDr Karalenka
 
-#include <EditConstants.au3>
-#include <GUIConstantsEx.au3>
-
-#include "data_fwd.au3"
+#include-once
+#include "include_fwd.au3"
 #include "folder_mods.au3"
 #include "lng.au3"
-
-#include-once
-
 
 Func PackedMod_IsPackedMod($sFilePath)
 	Local $sModName = PackedMod_GetPackedName($sFilePath)
@@ -88,7 +83,7 @@ Func PackedMod_InstallGUI_Simple($aModList, $hFormParent = 0)
 	Local $bInstall, $bClose = False
 	Local $sAction
 
-	$hGUI = GUICreate(Lng_Get("add_new.title"), 450, 370, Default, Default, Default, Default, $hFormParent)
+	$hGUI = GUICreate(Lng_Get("add_new.caption"), 450, 370, Default, Default, Default, Default, $hFormParent)
 	GUISetState(@SW_SHOW)
 
 	$hDesc = GUICtrlCreateEdit("", 8, 8, 450 - 8, 300, $ES_READONLY)
@@ -98,7 +93,7 @@ Func PackedMod_InstallGUI_Simple($aModList, $hFormParent = 0)
 	If $hFormParent = 0 Then GUICtrlSetData($hButtonClose, Lng_Get("add_new.exit"))
 
 	For $iCount = 1 To $aModList[0][0]
-		WinSetTitle($hGUI, "", StringFormat(Lng_Get("add_new.title"), $iCount, $aModList[0][0]))
+		WinSetTitle($hGUI, "", StringFormat(Lng_Get("add_new.caption"), $iCount, $aModList[0][0]))
 		Local $sDispName = $aModList[$iCount][1]
 		If $aModList[$iCount][2] <> "" And $aModList[$iCount][2] <> $aModList[$iCount][1] Then $sDispName = $aModList[$iCount][2] & " (" & $aModList[$iCount][1] & ")"
 
@@ -109,7 +104,7 @@ Func PackedMod_InstallGUI_Simple($aModList, $hFormParent = 0)
 		EndIf
 
 		$sAction = "Install"
-		$sHelpMessage &= StringFormat(Lng_Get("add_new.package.install"), $aModList[$iCount][4]) & @CRLF
+		$sHelpMessage &= StringFormat(Lng_Get("add_new.install"), $aModList[$iCount][4]) & @CRLF
 		If Mod_ModIsInstalled($aModList[$iCount][1]) Then ;Mod is installed
 			If $aModList[$iCount][6] >= $aModList[$iCount][4] Then ;Installed version is latest
 				If $aModList[$iCount][6] = $aModList[$iCount][4] Then

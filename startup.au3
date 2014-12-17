@@ -1,18 +1,14 @@
 ; Author:         Aliaksei SyDr Karalenka
 
-#include <Misc.au3>
-
-#include "data_fwd.au3"
+#include-once
+#include "include_fwd.au3"
 #include "folder_mods.au3"
 
-#include-once
-
-
-Func StartUp_CheckRunningInstance($sTitle)
-	Local $hSingleton = _Singleton("EMMat." & Hex(StringToBinary(@ScriptDir)), 1)
+Func StartUp_CheckRunningInstance()
+	Local $hSingleton = _Singleton("RAMM {{C3125006-CAFE-4F97-B2A5-B287236A9DC6}", 1)
 
 	If $hSingleton = 0 Then
-		If WinActivate($sTitle) Then Exit
+		If WinActivate($MM_TITLE) Then Exit
 	EndIf
 EndFunc   ;==>StartUp_CheckRunningInstance
 
@@ -38,13 +34,10 @@ Func StartUp_Assoc_Delete()
 
 	RegDelete("HKCR\.emp")
 	RegDelete("HKCR\Era.ModManager.Package")
-	__StartUp_Assoc_Notify_System()
-	Exit
-EndFunc   ;==>StartUp_Assoc_Delete
 
-Func __StartUp_Assoc_Notify_System()
 	Local Const $SHCNE_ASSOCCHANGED = 0x8000000
 	Local Const $SHCNF_IDLIST = 0
 
 	DllCall("shell32.dll", "none", "SHChangeNotify", "long", $SHCNE_ASSOCCHANGED, "int", $SHCNF_IDLIST, "ptr", Null, "ptr", Null)
-EndFunc   ;==>__StartUp_Assoc_Notify_System
+	Exit
+EndFunc   ;==>StartUp_Assoc_Delete
