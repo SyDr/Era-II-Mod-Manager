@@ -1,164 +1,84 @@
 ;Author:			Aliaksei SyDr Karalenka
 
-;~ #include <Array.au3>
-#include <File.au3>
-#include <GUIConstantsEx.au3>
-
-#include "lng.au3"
-#include "data_fwd.au3"
-
 #include-once
+#include "include_fwd.au3"
 
+#include "folder_mods.au3"
+#include "lng.au3"
 
-Func Plugins_ModHavePlugins($sModName)
-	Local $aGlobal, $aBeforeWog, $aAfterWog
-	Return Plugins_LoadList($sModName, $aGlobal, $aBeforeWog, $aAfterWog)
+Func Plugins_ModHavePlugins(Const ByRef $sModID)
+	Local $iReturn
+	Local $aData1 = $MM_PLUGINS_CONTENT
+	Local $aData2 = $MM_PLUGINS_PART_PRESENT
+
+	Plugins_ListLoad($sModID)
+	$iReturn = $MM_PLUGINS_CONTENT[0][0]
+
+	$MM_PLUGINS_CONTENT = $aData1
+	$MM_PLUGINS_PART_PRESENT = $aData2
+	Return $iReturn
 EndFunc   ;==>Plugins_ModHavePlugins
 
-Func Plugins_LoadList($sModName, ByRef $aGlobal, ByRef $aBeforeWog, ByRef $aAfterWog)
-	Local $Path = $MM_LIST_DIR_PATH & "\" & $sModName
-	If $sModName = "" Or Not FileExists($Path) Then
-		Return False
-	EndIf
+Func Plugins_ListLoad(Const ByRef $sModID)
+	Local $sPath = $MM_LIST_DIR_PATH & "\" & $sModID
+	Local $aPluginList[1][$PLUGIN_TOTAL]
 
-	$aGlobal = _FileListToArray($Path & "\EraPlugins\", "*", 1)
-	$aBeforeWog = _FileListToArray($Path & "\EraPlugins\BeforeWoG\", "*", 1)
-	$aAfterWog = _FileListToArray($Path & "\EraPlugins\AfterWoG\", "*", 1)
-	If IsArray($aGlobal) Then
-		For $iCount = $aGlobal[0] To 1 Step -1
-			If FileGetSize($Path & "\EraPlugins\" & $aGlobal[$iCount]) = 0 Then
-				_ArrayDelete($aGlobal, $iCount)
-				$aGlobal[0] -= 1
+	Local $aGlobal = _FileListToArray($sPath & "\EraPlugins\", "*", 1)
+	Local $aBeforeWog = _FileListToArray($sPath & "\EraPlugins\BeforeWoG\", "*", 1)
+	Local $aAfterWog = _FileListToArray($sPath & "\EraPlugins\AfterWoG\", "*", 1)
+
+	Local $iTotalPlugins = 0
+
+	$MM_PLUGINS_PART_PRESENT[$PLUGIN_GROUP_GLOBAL] = False
+	$MM_PLUGINS_PART_PRESENT[$PLUGIN_GROUP_BEFORE] = False
+	$MM_PLUGINS_PART_PRESENT[$PLUGIN_GROUP_AFTER] = False
+
+	__Plugins_ListLoadFromFolder($aPluginList, $aGlobal, $sPath & "\EraPlugins", $PLUGIN_GROUP_GLOBAL, $iTotalPlugins)
+	__Plugins_ListLoadFromFolder($aPluginList, $aBeforeWog, $sPath & "\EraPlugins\BeforeWoG", $PLUGIN_GROUP_BEFORE, $iTotalPlugins)
+	__Plugins_ListLoadFromFolder($aPluginList, $aAfterWog, $sPath & "\EraPlugins\AfterWoG", $PLUGIN_GROUP_AFTER, $iTotalPlugins)
+
+	$aPluginList[0][0] = $iTotalPlugins
+	ReDim $aPluginList[$iTotalPlugins + 1][$PLUGIN_TOTAL]
+
+	$aPluginList[0][$PLUGIN_PATH] = "$PLUGIN_PATH"
+	$aPluginList[0][$PLUGIN_GROUP] = "$PLUGIN_GROUP"
+	$aPluginList[0][$PLUGIN_CAPTION] = "$PLUGIN_CAPTION"
+	$aPluginList[0][$PLUGIN_DESCRIPTION] = "$PLUGIN_DESCRIPTION"
+	$aPluginList[0][$PLUGIN_STATE] = "$PLUGIN_STATE"
+	$aPluginList[0][$PLUGIN_DEFAULT_STATE] = "$PLUGIN_DEFAULT_STATE"
+	$aPluginList[0][$PLUGIN_HIDDEN] = "$PLUGIN_HIDDEN"
+
+	$MM_PLUGINS_CONTENT = $aPluginList
+EndFunc
+
+Func __Plugins_ListLoadFromFolder(ByRef $aPluginList, Const ByRef $aFileList, Const $sPath, Const $iGroupId, ByRef $iPrevPos)
+	Local $bIsEnabled, $sFileName
+	If IsArray($aFileList) Then
+		ReDim $aPluginList[UBound($aPluginList, $UBOUND_ROWS) + $aFileList[0]][$PLUGIN_TOTAL]
+		For $iCount = 1 To $aFileList[0]
+			If FileGetSize($sPath & "\" & $aFileList[$iCount]) <> 0 Then
+				$MM_PLUGINS_PART_PRESENT[$iGroupId] = 1
+				$iPrevPos += 1
+				$bIsEnabled = StringRight($aFileList[$iCount], 4) <> ".off"
+				$sFileName = ($bIsEnabled ? $aFileList[$iCount] : StringTrimRight($aFileList[$iCount], 4))
+				$aPluginList[$iPrevPos][$PLUGIN_FILENAME] = $sFileName
+				$aPluginList[$iPrevPos][$PLUGIN_PATH] = $sPath & "\" & $sFileName
+				$aPluginList[$iPrevPos][$PLUGIN_GROUP] = $iGroupId
+				$aPluginList[$iPrevPos][$PLUGIN_CAPTION] = Mod_Get("plugins\" & $sFileName & "\caption")
+				$aPluginList[$iPrevPos][$PLUGIN_DESCRIPTION] = Mod_Get("plugins\" & $sFileName & "\description")
+				$aPluginList[$iPrevPos][$PLUGIN_STATE] = $bIsEnabled
+				$aPluginList[$iPrevPos][$PLUGIN_DEFAULT_STATE] = Mod_Get("plugins\" & $sFileName & "\default")
+				$aPluginList[$iPrevPos][$PLUGIN_HIDDEN] = Mod_Get("plugins\" & $sFileName & "\hidden")
 			EndIf
 		Next
 	EndIf
+EndFunc
 
-	If IsArray($aBeforeWog) Then
-		For $iCount = $aBeforeWog[0] To 1 Step -1
-			If FileGetSize($Path & "\EraPlugins\BeforeWoG\" & $aBeforeWog[$iCount]) = 0 Then
-				_ArrayDelete($aBeforeWog, $iCount)
-				$aBeforeWog[0] -= 1
-			EndIf
-		Next
+Func Plugins_ChangeState($iPluginIndex)
+	Local $sSourceFile = $MM_PLUGINS_CONTENT[$iPluginIndex][$PLUGIN_PATH] & ($MM_PLUGINS_CONTENT[$iPluginIndex][$PLUGIN_STATE] ? "" : ".off")
+	Local $sTargetFile = $MM_PLUGINS_CONTENT[$iPluginIndex][$PLUGIN_PATH] & ($MM_PLUGINS_CONTENT[$iPluginIndex][$PLUGIN_STATE] ? ".off" : "")
+
+	If FileMove($sSourceFile, $sTargetFile) Then
+		$MM_PLUGINS_CONTENT[$iPluginIndex][$PLUGIN_STATE] = Not $MM_PLUGINS_CONTENT[$iPluginIndex][$PLUGIN_STATE]
 	EndIf
-
-	If IsArray($aAfterWog) Then
-		For $iCount = $aAfterWog[0] To 1 Step -1
-			If FileGetSize($Path & "\EraPlugins\AfterWoG\" & $aAfterWog[$iCount]) = 0 Then
-				_ArrayDelete($aAfterWog, $iCount)
-				$aAfterWog[0] -= 1
-			EndIf
-		Next
-	EndIf
-
-	Local $iTotalPlugins = 0, $iTotalSections = 0
-	If IsArray($aGlobal) Then
-		$iTotalPlugins += $aGlobal[0]
-		$iTotalSections += 1
-	EndIf
-	If IsArray($aBeforeWog) Then
-		$iTotalPlugins += $aBeforeWog[0]
-		$iTotalSections += 1
-	EndIf
-	If IsArray($aAfterWog) Then
-		$iTotalPlugins += $aAfterWog[0]
-		$iTotalSections += 1
-	EndIf
-
-	Return SetError(0, $iTotalSections, $iTotalPlugins)
-EndFunc   ;==>Plugins_LoadList
-
-Func Plugins_Manage($sModName, $hFormParent)
-	Local $Path = $MM_LIST_DIR_PATH & "\" & $sModName
-	If $sModName = "" Or Not FileExists($Path) Then
-		Return False
-	EndIf
-
-	Local $aGlobal, $aBeforeWog, $aAfterWog
-	Local $iTotalPlugins = Plugins_LoadList($sModName, $aGlobal, $aBeforeWog, $aAfterWog)
-	Local $iTotalSections = @extended
-	Local $hCheckboxes[1], $hNames[1], $hPathes[1]
-	Local $iBaseOffset = 8
-	Local $hGUI, $msg
-	Local $k = 0
-
-	If $iTotalPlugins > 0 Then
-		ReDim $hCheckboxes[$iTotalPlugins]
-		ReDim $hNames[$iTotalPlugins]
-		ReDim $hPathes[$iTotalPlugins]
-	EndIf
-
-	$hGUI = GUICreate(Lng_Get("plugins.title"), 252, $iBaseOffset + $iTotalPlugins * 17 + 13 + $iTotalSections * 17, Default, Default, Default, Default, $hFormParent)
-	GUISetState(@SW_SHOW)
-
-	If IsArray($aGlobal) Then
-		GUICtrlCreateGroup("Global", 1, $iBaseOffset + 1, 250, 17 * ($aGlobal[0] + 1))
-		For $i = 1 To $aGlobal[0]
-			$hCheckboxes[$k] = GUICtrlCreateCheckbox($aGlobal[$i], 8, $iBaseOffset + 16 + 17 * ($i - 1), 200, 17)
-			$hNames[$k] = $aGlobal[$i]
-			$hPathes[$k] = $Path & "\EraPlugins\" & $aGlobal[$i]
-			$k += 1
-			If StringRight($aGlobal[$i], 3) <> "off" Then GUICtrlSetState(-1, $GUI_CHECKED)
-		Next
-		GUICtrlCreateGroup("Global", 1, $iBaseOffset + 1, 250, 17 * ($aGlobal[0] + 1))
-	EndIf
-
-	Local $iGlobal
-	If IsArray($aBeforeWog) Then
-		$iGlobal = -1
-		If IsArray($aGlobal) Then $iGlobal = $aGlobal[0]
-		GUICtrlCreateGroup("BeforeWoG", 1, $iBaseOffset + 1 + 17 * ($iGlobal + 1) + 1, 250, 17 * ($aBeforeWog[0] + 1))
-		For $i = 1 To $aBeforeWog[0]
-			$hCheckboxes[$k] = GUICtrlCreateCheckbox($aBeforeWog[$i], 8, $iBaseOffset + 17 * ($iGlobal + 1) + 1 + 16 + 17 * ($i - 1), 200, 17)
-			$hNames[$k] = $aBeforeWog[$i]
-			$hPathes[$k] = $Path & "\EraPlugins\BeforeWoG\" & $aBeforeWog[$i]
-			$k += 1
-			If StringRight($aBeforeWog[$i], 3) <> "off" Then GUICtrlSetState(-1, $GUI_CHECKED)
-		Next
-		GUICtrlCreateGroup("BeforeWoG", 1, $iBaseOffset + 1 + 17 * ($iGlobal + 1) + 1, 250, 17 * ($aBeforeWog[0] + 1))
-	EndIf
-
-	If IsArray($aAfterWog) Then
-		$iGlobal = -1
-		Local $iBeforeWog = -1
-		If IsArray($aBeforeWog) Then $iBeforeWog = $aBeforeWog[0]
-		If IsArray($aGlobal) Then $iGlobal = $aGlobal[0]
-		GUICtrlCreateGroup("AfterWoG", 1, $iBaseOffset + 1 + 17 * ($iGlobal + 1) + 1 + 17 * ($iBeforeWog + 1) + 1, 250, 17 * ($aAfterWog[0] + 1))
-		For $i = 1 To $aAfterWog[0]
-			$hCheckboxes[$k] = GUICtrlCreateCheckbox($aAfterWog[$i], 8, $iBaseOffset + 17 * ($iBeforeWog + 1) + 1 + 17 * ($iGlobal + 1) + 1 + 16 + 17 * ($i - 1), 200, 17)
-			$hNames[$k] = $aAfterWog[$i]
-			$hPathes[$k] = $Path & "\EraPlugins\AfterWoG\" & $aAfterWog[$i]
-			$k += 1
-			If StringRight($aAfterWog[$i], 3) <> "off" Then GUICtrlSetState(-1, $GUI_CHECKED)
-		Next
-		GUICtrlCreateGroup("AfterWoG", 1, $iBaseOffset + 1 + 17 * ($iGlobal + 1) + 1 + 17 * ($iBeforeWog + 1) + 1, 250, 17 * ($aAfterWog[0] + 1))
-	EndIf
-
-	While 1
-		Sleep(50)
-
-		$msg = GUIGetMsg()
-		If $msg = 0 Then ContinueLoop
-		If $msg = $GUI_EVENT_CLOSE Then ExitLoop
-		If IsArray($aGlobal) Or IsArray($aBeforeWog) Or IsArray($aAfterWog) Then
-			For $i = 0 To UBound($hCheckboxes) - 1
-				If $msg = $hCheckboxes[$i] Then
-					If BitAND(GUICtrlRead($hCheckboxes[$i]), $GUI_CHECKED) Then
-						FileMove($hPathes[$i], StringTrimRight($hPathes[$i], 4))
-						$hPathes[$i] = StringTrimRight($hPathes[$i], 4)
-						$hNames[$i] = StringTrimRight($hNames[$i], 4)
-						GUICtrlSetData($hCheckboxes[$i], $hNames[$i])
-					Else
-						FileMove($hPathes[$i], $hPathes[$i] & ".off")
-						$hPathes[$i] = $hPathes[$i] & ".off"
-						$hNames[$i] = $hNames[$i] & ".off"
-						GUICtrlSetData($hCheckboxes[$i], $hNames[$i])
-					EndIf
-
-					ExitLoop
-				EndIf
-			Next
-		EndIf
-	WEnd
-	GUIDelete($hGUI)
-EndFunc   ;==>Plugins_Manage
+EndFunc

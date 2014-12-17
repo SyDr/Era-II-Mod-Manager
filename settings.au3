@@ -1,104 +1,140 @@
 ; Author:         Aliaksei SyDr Karalenka
 
-;~ #include <File.au3>
-#include <GUIConstantsEx.au3>
-
-#include "lng.au3"
-
+#AutoIt3Wrapper_Version=Beta
 #include-once
+#include "include_fwd.au3"
+#include "lng.au3"
+#include "utils.au3"
 
+Global $MM_SETTINGS_CACHE, $MM_SETTINGS_INIT = False
 
-Func Settings_GUI($hParentGUI)
-	Local $iTotalCheck = 2
-	Local $iBaseOffset = 8
-	Local $bVersion = False
+Func Settings_Save()
+	FileDelete($MM_SETTINGS_PATH)
+	FileWrite($MM_SETTINGS_PATH, Jsmn_Encode($MM_SETTINGS_CACHE, $JSMN_PRETTY_PRINT + $JSMN_UNESCAPED_UNICODE))
+EndFunc
 
-	Local $hGUI = GUICreate(Lng_Get("settings.title"), 300, 2 * $iBaseOffset + $iTotalCheck * 17, Default, Default, Default, Default, $hParentGUI)
+Func __Settings_Validate()
+	Local $aItems, $i
+	If Not IsMap($MM_SETTINGS_CACHE) Then $MM_SETTINGS_CACHE = MapEmpty()
+	If Not MapExists($MM_SETTINGS_CACHE, "version") Or Not IsString($MM_SETTINGS_CACHE["version"]) Then $MM_SETTINGS_CACHE["version"] = $MM_VERSION_NUMBER
+	If Not MapExists($MM_SETTINGS_CACHE, "portable") Or Not IsBool($MM_SETTINGS_CACHE["portable"]) Then $MM_SETTINGS_CACHE["portable"] = False
+	If Not MapExists($MM_SETTINGS_CACHE, "language") Or Not IsString($MM_SETTINGS_CACHE["language"]) Then $MM_SETTINGS_CACHE["language"] = "english.json"
+	If Not MapExists($MM_SETTINGS_CACHE, "window") Or Not IsMap($MM_SETTINGS_CACHE["window"]) Then $MM_SETTINGS_CACHE["window"] = MapEmpty()
+	If Not MapExists($MM_SETTINGS_CACHE["window"], "width") Or Not IsInt($MM_SETTINGS_CACHE["window"]["width"]) Or _
+		$MM_SETTINGS_CACHE["window"]["width"] < $MM_WINDOW_MIN_WIDTH Then $MM_SETTINGS_CACHE["window"]["width"] = $MM_WINDOW_MIN_WIDTH
+	If Not MapExists($MM_SETTINGS_CACHE["window"], "height") Or Not IsInt($MM_SETTINGS_CACHE["window"]["height"]) Or _
+		$MM_SETTINGS_CACHE["window"]["height"] < $MM_WINDOW_MIN_HEIGHT Then $MM_SETTINGS_CACHE["window"]["height"] = $MM_WINDOW_MIN_HEIGHT
+	If Not MapExists($MM_SETTINGS_CACHE["window"], "maximized") Or Not IsBool($MM_SETTINGS_CACHE["window"]["maximized"]) Then $MM_SETTINGS_CACHE["window"]["maximized"] = False
+	If Not MapExists($MM_SETTINGS_CACHE, "game") Or Not IsMap($MM_SETTINGS_CACHE["game"]) Then $MM_SETTINGS_CACHE["game"] = MapEmpty()
+	If Not $MM_SETTINGS_CACHE["portable"] Then
+		If Not MapExists($MM_SETTINGS_CACHE["game"], "selected") Or Not IsString($MM_SETTINGS_CACHE["game"]["selected"]) Then $MM_SETTINGS_CACHE["game"]["selected"] = ""
+		If Not MapExists($MM_SETTINGS_CACHE["game"], "items") Or Not IsMap($MM_SETTINGS_CACHE["game"]["items"]) Then $MM_SETTINGS_CACHE["game"]["items"] = MapEmpty()
 
-	Local $hVersion = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.display_version"), $iBaseOffset + 1, $iBaseOffset + 1 + (0) * 17)
-	If Settings_Get("DisplayVersion") Then GUICtrlSetState($hVersion, $GUI_CHECKED)
+		$aItems = MapKeys($MM_SETTINGS_CACHE["game"]["items"])
+		For $sItem In $aItems
+			If Not IsMap($MM_SETTINGS_CACHE["game"]["items"][$sItem]) Then $MM_SETTINGS_CACHE["game"]["items"][$sItem] = MapEmpty()
+			If Not MapExists($MM_SETTINGS_CACHE["game"]["items"][$sItem], "exe") Or Not IsString($MM_SETTINGS_CACHE["game"]["items"][$sItem]["exe"]) Then $MM_SETTINGS_CACHE["game"]["items"][$sItem]["exe"] = ""
+		Next
 
-	Local $hSync = GUICtrlCreateCheckbox(Lng_Get("settings.checkbox.sync_preset"), $iBaseOffset + 1, $iBaseOffset + 1 + (1) * 17)
-	GUICtrlSetTip($hSync, StringFormat(Lng_Get("settings.checkbox.sync_preset.hint"), "0_O"))
-	If Settings_Get("SyncPresetWithWS") Then GUICtrlSetState($hSync, $GUI_CHECKED)
-
-	GUISetState(@SW_SHOW)
-
-
-	While True
-		Sleep(50)
-
-        Switch GUIGetMsg()
-            Case $GUI_EVENT_CLOSE
-                ExitLoop
-			Case $hVersion
-				$bVersion = Not $bVersion
-
-				If BitAND(GUICtrlRead($hVersion), $GUI_CHECKED) Then
-					Settings_Set("DisplayVersion", "1")
-				Else
-					Settings_Set("DisplayVersion", "")
-				EndIf
-			Case $hSync
-				If BitAND(GUICtrlRead($hSync), $GUI_CHECKED) Then
-					Settings_Set("SyncPresetWithWS", "1")
-				Else
-					Settings_Set("SyncPresetWithWS", "")
-				EndIf
-        EndSwitch
-	WEnd
-
-	GUIDelete($hGUI)
-
-	If $bVersion Then
-		Return 1
+		Local $sSelected = $MM_SETTINGS_CACHE["game"]["selected"]
+		If $MM_SETTINGS_CACHE["game"]["selected"] <> "" Then
+			If Not IsMap($MM_SETTINGS_CACHE["game"]["items"][$sSelected]) Then $MM_SETTINGS_CACHE["game"]["items"][$sSelected] = MapEmpty()
+			If Not MapExists($MM_SETTINGS_CACHE["game"]["items"][$sSelected], "exe") Or Not IsString($MM_SETTINGS_CACHE["game"]["items"][$sSelected]["exe"]) Then $MM_SETTINGS_CACHE["game"]["items"][$sSelected]["exe"] = ""
+		EndIf
 	Else
-		Return 0
+		If Not MapExists($MM_SETTINGS_CACHE["game"], "exe") Or Not IsString($MM_SETTINGS_CACHE["game"]["exe"]) Then $MM_SETTINGS_CACHE["game"]["exe"] = ""
 	EndIf
-EndFunc   ;==>Settings_GUI
 
-Func Settings_Get($sName)
+	; 0.90.4.2
+	If Not MapExists($MM_SETTINGS_CACHE["game"], "blacklist") Or Not IsArray($MM_SETTINGS_CACHE["game"]["blacklist"]) Then
+		$aItems = StringSplit(".*?cmp.*?###.*?map.*?###.*?back.*?###.*?int.*?###.*?upd.*?###.*?unin.*?", "###", $STR_ENTIRESPLIT + $STR_NOCOUNT)
+		$MM_SETTINGS_CACHE["game"]["blacklist"] = $aItems
+	Else
+		$aItems = $MM_SETTINGS_CACHE["game"]["blacklist"]
+	EndIf
+
+	$i = 0
+	While $i < UBound($aItems) - 1
+		If Not IsString($aItems[$i]) Or $aItems[$i] = "" Then _ArrayDelete($aItems, $i)
+		$i += 1
+	WEnd
+	$MM_SETTINGS_CACHE["game"]["blacklist"] = $aItems
+
+
+	If VersionCompare($MM_SETTINGS_CACHE["version"], $MM_VERSION_NUMBER) < 0 Then $MM_SETTINGS_CACHE["version"] = $MM_VERSION_NUMBER
+EndFunc
+
+Func Settings_Get(Const ByRef $sName)
+	If Not $MM_SETTINGS_INIT Then __Settings_Init()
+;~ 	MsgBox(4096, $sName, Jsmn_Encode($MM_SETTINGS_CACHE, $JSMN_PRETTY_PRINT + $JSMN_UNESCAPED_UNICODE))
 	Switch $sName
-		Case "Language"
-			Local $sLanguage = IniRead($MM_SETTINGS_PATH, "settings", "Language", "english.ini")
-			If $sLanguage = "" Then $sLanguage = "english.ini"
-			Return $sLanguage
-		Case "Exe"
-			Local $sExe = IniRead($MM_SETTINGS_PATH, "settings", "Exe", "h3era.exe")
-			If $sExe = "" Then $sExe = "h3era.exe"
-			Return $sExe
-		Case "Width"
-			Local $iWidth = IniRead($MM_SETTINGS_PATH, "settings", "Width", $MM_WINDOW_MIN_WIDTH)
-			If $iWidth < $MM_WINDOW_MIN_WIDTH Then $iWidth = $MM_WINDOW_MIN_WIDTH
-			Return $iWidth
-		Case "Height"
-			Local $iHeight = IniRead($MM_SETTINGS_PATH, "settings", "Height", $MM_WINDOW_MIN_HEIGHT)
-			If $iHeight < $MM_WINDOW_MIN_HEIGHT Then $iHeight = $MM_WINDOW_MIN_HEIGHT
-			Return $iHeight
-		Case "Maximized"
-			Return Int(IniRead($MM_SETTINGS_PATH, "settings", "Maximized", "")) <> 0
-		Case "SyncPresetWithWS"
-			Return IniRead($MM_SETTINGS_PATH, "settings", "SyncPresetWithWS", "")
-		Case "DisplayVersion"
-			Return IniRead($MM_SETTINGS_PATH, "settings", "DisplayVersion", True)
+		Case "language", "portable", "version"
+			Return $MM_SETTINGS_CACHE[StringLower($sName)]
+		Case "width", "height", "maximized"
+			Return $MM_SETTINGS_CACHE["window"][StringLower($sName)]
+		Case "path"
+			If $MM_SETTINGS_PORTABLE Then
+				Return $MM_GAME_DIR
+			Else
+				Return $MM_SETTINGS_CACHE["game"]["selected"]
+			EndIf
+		Case "exe"
+			If $MM_SETTINGS_PORTABLE Then
+				Return $MM_SETTINGS_CACHE["game"]["exe"]
+			Else
+				Local $sSelected = $MM_SETTINGS_CACHE["game"]["selected"]
+				Return $sSelected <> "" ? $MM_SETTINGS_CACHE["game"]["items"][$sSelected]["exe"] : ""
+			EndIf
+		Case "game.blacklist"
+			Return $MM_SETTINGS_CACHE["game"]["blacklist"]
 	EndSwitch
 EndFunc   ;==>Settings_Get
 
-Func Settings_Set($sName, $vValue)
+Func Settings_Set(Const ByRef $sName, Const ByRef $vValue)
 	Switch $sName
-		Case "SyncPresetWithWS"
-			Return IniWrite($MM_SETTINGS_PATH, "settings", "SyncPresetWithWS", $vValue)
-		Case "DisplayVersion"
-			Return IniWrite($MM_SETTINGS_PATH, "settings", "DisplayVersion", $vValue)
-		Case "Language"
-			Return IniWrite($MM_SETTINGS_PATH, "settings", "Language", $vValue)
-		Case "Exe"
-			Return IniWrite($MM_SETTINGS_PATH, "settings", "Exe", $vValue)
-		Case "Width"
-			Return IniWrite($MM_SETTINGS_PATH, "settings", "Width", $vValue)
-		Case "Height"
-			Return IniWrite($MM_SETTINGS_PATH, "settings", "Height", $vValue)
-		Case "Maximized"
-			Return IniWrite($MM_SETTINGS_PATH, "settings", "Maximized", $vValue)
+		Case "language", "portable", "version"
+			$MM_SETTINGS_CACHE[StringLower($sName)] = $vValue
+		Case "width", "height", "maximized"
+			$MM_SETTINGS_CACHE["window"][StringLower($sName)] = $vValue
+		Case "path"
+			$MM_SETTINGS_CACHE["game"]["selected"] = $vValue
+			__Settings_Validate()
+		Case "exe"
+			If Not Settings_Get("portable") Then
+				Local $sSelected = $MM_SETTINGS_CACHE["game"]["selected"]
+				$MM_SETTINGS_CACHE["game"]["items"][$sSelected]["exe"] = $vValue
+			Else
+				$MM_SETTINGS_CACHE["game"]["exe"] = $vValue
+			EndIf
 	EndSwitch
 EndFunc   ;==>Settings_Set
+
+Func __Settings_Init()
+	$MM_SETTINGS_INIT = True
+	__Settings_Load()
+	If Not $MM_SETTINGS_PORTABLE Then
+		$MM_SETTINGS_PATH = @AppDataCommonDir & "\RAMM\settings.json"
+		FileClose(FileOpen($MM_SETTINGS_PATH, $FO_APPEND + $FO_CREATEPATH))
+		__Settings_Load(True)
+	EndIf
+EndFunc
+
+Func __Settings_Load(Const $bForceAppData = False)
+	$MM_SETTINGS_CACHE = Jsmn_Decode(FileRead($MM_SETTINGS_PATH))
+	__Settings_Validate()
+	If $bForceAppData Then $MM_SETTINGS_CACHE["portable"] = False
+	$MM_SETTINGS_PORTABLE = $MM_SETTINGS_CACHE["portable"]
+	$MM_SETTINGS_LANGUAGE = $MM_SETTINGS_CACHE["language"]
+
+	If Not $MM_SETTINGS_PORTABLE Then
+		$MM_GAME_DIR = Settings_Get("path")
+		$MM_GAME_NO_DIR = $MM_GAME_DIR = ""
+		If Not $MM_GAME_NO_DIR Then
+			$MM_LIST_DIR_PATH = $MM_GAME_DIR & "\Mods"
+			$MM_LIST_FILE_PATH = $MM_LIST_DIR_PATH & "\list.txt"
+		EndIf
+	EndIf
+
+	$MM_GAME_EXE = Settings_Get("exe")
+EndFunc
+
