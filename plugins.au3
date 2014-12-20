@@ -1,9 +1,10 @@
 ;Author:			Aliaksei SyDr Karalenka
 
+#AutoIt3Wrapper_Version=Beta
 #include-once
 #include "include_fwd.au3"
 
-#include "folder_mods.au3"
+#include "mods.au3"
 #include "lng.au3"
 
 Func Plugins_ModHavePlugins(Const ByRef $sModID)
