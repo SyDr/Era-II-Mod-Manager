@@ -93,7 +93,7 @@ Func MainLoop()
 	Local $bGUINeedUpdate = False
 
 	While True
-		Sleep(50)
+		Sleep(10)
 		If Not $bGUINeedUpdate And Not WinActive($MM_UI_MAIN) Then
 			$bGUINeedUpdate = True
 		EndIf
@@ -225,7 +225,6 @@ Func SD_GUI_Create()
 EndFunc   ;==>SD_GUI_Create
 
 Func SD_GUI_UpdateScreen(Const $iIndex)
-	GUISetState(@SW_LOCK)
 	If $hScreenBitmap Or $hScreenImage Then
 		_WinAPI_DeleteObject($hScreenBitmap)
         _GDIPlus_ImageDispose($hScreenImage)
@@ -252,7 +251,6 @@ Func SD_GUI_UpdateScreen(Const $iIndex)
 	EndIf
 
 	SD_GUI_MainWindowResize()
-	GUISetState(@SW_UNLOCK)
 EndFunc
 
 Func SD_GUI_UpdateScreenByPath(Const $sPath)

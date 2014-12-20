@@ -47,7 +47,6 @@ Func Plugins_ListLoad(Const ByRef $sModID)
 	$aPluginList[0][$PLUGIN_DESCRIPTION] = "$PLUGIN_DESCRIPTION"
 	$aPluginList[0][$PLUGIN_STATE] = "$PLUGIN_STATE"
 	$aPluginList[0][$PLUGIN_DEFAULT_STATE] = "$PLUGIN_DEFAULT_STATE"
-	$aPluginList[0][$PLUGIN_HIDDEN] = "$PLUGIN_HIDDEN"
 
 	$MM_PLUGINS_CONTENT = $aPluginList
 EndFunc
@@ -69,7 +68,6 @@ Func __Plugins_ListLoadFromFolder(ByRef $aPluginList, Const ByRef $aFileList, Co
 				$aPluginList[$iPrevPos][$PLUGIN_DESCRIPTION] = Mod_Get("plugins\" & $sFileName & "\description")
 				$aPluginList[$iPrevPos][$PLUGIN_STATE] = $bIsEnabled
 				$aPluginList[$iPrevPos][$PLUGIN_DEFAULT_STATE] = Mod_Get("plugins\" & $sFileName & "\default")
-				$aPluginList[$iPrevPos][$PLUGIN_HIDDEN] = Mod_Get("plugins\" & $sFileName & "\hidden")
 			EndIf
 		Next
 	EndIf

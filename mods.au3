@@ -1,5 +1,6 @@
 ; Author:         Aliaksei SyDr Karalenka
 
+#AutoIt3Wrapper_Version=Beta
 #include-once
 #include "include_fwd.au3"
 #include "lng.au3"
@@ -18,6 +19,8 @@ Func Mod_ListLoad()
     $MM_LIST_CONTENT[0][$MOD_INFO_PARSED] = "$MOD_INFO_PARSED"
     $MM_LIST_CONTENT[0][$MOD_ITEM_ID] = "$MOD_ITEM_ID"
     $MM_LIST_CONTENT[0][$MOD_PARENT_ID] = "$MOD_PARENT_ID"
+    $MM_LIST_CONTENT[0][$MOD_PARENT_ID] = "$MOD_DESCRIPTION_CACHE"
+    $MM_LIST_CONTENT[0][$MOD_PARENT_ID] = "$MOD_PLUGIN_CACHE"
 
 	$MM_LIST_FILE_CONTENT = FileRead($MM_LIST_FILE_PATH)
     _FileReadToArray($MM_LIST_FILE_PATH, $aModList_File)
@@ -33,13 +36,7 @@ Func Mod_ListLoad()
 		_ArraySearch($MM_LIST_CONTENT, $aModList_File[$i], 1, Default, Default, Default, Default, 0)
 		If @error Then
 			$MM_LIST_CONTENT[0][0] += 1
-
-			$MM_LIST_CONTENT[$MM_LIST_CONTENT[0][0]][$MOD_ID] = $aModList_File[$i]
-			$MM_LIST_CONTENT[$MM_LIST_CONTENT[0][0]][$MOD_IS_ENABLED] = True
-			$MM_LIST_CONTENT[$MM_LIST_CONTENT[0][0]][$MOD_IS_EXIST] = FileExists($MM_LIST_DIR_PATH & "\" & $aModList_File[$i] & "\") ? True : False
-			$MM_LIST_CONTENT[$MM_LIST_CONTENT[0][0]][$MOD_INFO_FILE] = FileRead($MM_LIST_DIR_PATH & "\" & $aModList_File[$i] & "\mod_info.json")
-			$MM_LIST_CONTENT[$MM_LIST_CONTENT[0][0]][$MOD_INFO_PARSED] = Jsmn_Decode($MM_LIST_CONTENT[$MM_LIST_CONTENT[0][0]][$MOD_INFO_FILE])
-			_ModInfoNormalize($MM_LIST_CONTENT[$MM_LIST_CONTENT[0][0]][$MOD_INFO_PARSED], $MM_LIST_DIR_PATH & "\" & $aModList_File[$i])
+			__Mod_LoadInfo($MM_LIST_CONTENT[0][0], $aModList_File[$i], True)
 		EndIf
 	Next
 
@@ -47,43 +44,45 @@ Func Mod_ListLoad()
 		_ArraySearch($MM_LIST_CONTENT, $aModList_Dir[$i], 1, Default, Default, Default, Default, 0)
 		If @error Then
 			$MM_LIST_CONTENT[0][0] += 1
-
-			$MM_LIST_CONTENT[$MM_LIST_CONTENT[0][0]][$MOD_ID] = $aModList_Dir[$i]
-			$MM_LIST_CONTENT[$MM_LIST_CONTENT[0][0]][$MOD_IS_ENABLED] = False
-			$MM_LIST_CONTENT[$MM_LIST_CONTENT[0][0]][$MOD_IS_EXIST] = True
-			$MM_LIST_CONTENT[$MM_LIST_CONTENT[0][0]][$MOD_INFO_FILE] = FileRead($MM_LIST_DIR_PATH & "\" & $aModList_Dir[$i] & "\mod_info.json")
-			$MM_LIST_CONTENT[$MM_LIST_CONTENT[0][0]][$MOD_INFO_PARSED] = Jsmn_Decode($MM_LIST_CONTENT[$MM_LIST_CONTENT[0][0]][$MOD_INFO_FILE])
-			_ModInfoNormalize($MM_LIST_CONTENT[$MM_LIST_CONTENT[0][0]][$MOD_INFO_PARSED], $MM_LIST_DIR_PATH & "\" & $aModList_Dir[$i])
+			__Mod_LoadInfo($MM_LIST_CONTENT[0][0], $aModList_Dir[$i], False)
 		EndIf
 	Next
 
 	ReDim $MM_LIST_CONTENT[1 + $MM_LIST_CONTENT[0][0]][$MOD_TOTAL]
 EndFunc   ;==>Mod_ListLoad
 
+Func __Mod_LoadInfo(Const $iIndex, Const ByRef $sId, Const $bIsEnabled)
+	$MM_LIST_CONTENT[$iIndex][$MOD_ID] = $sId
+	$MM_LIST_CONTENT[$iIndex][$MOD_IS_ENABLED] = $bIsEnabled
+	$MM_LIST_CONTENT[$iIndex][$MOD_IS_EXIST] = FileExists($MM_LIST_DIR_PATH & "\" & $sId & "\") ? True : False
+	$MM_LIST_CONTENT[$iIndex][$MOD_INFO_FILE] = FileRead($MM_LIST_DIR_PATH & "\" & $sId & "\mod.json")
+	$MM_LIST_CONTENT[$iIndex][$MOD_INFO_PARSED] = Jsmn_Decode($MM_LIST_CONTENT[$MM_LIST_CONTENT[0][0]][$MOD_INFO_FILE])
+	__Mod_Validate($MM_LIST_CONTENT[$iIndex][$MOD_INFO_PARSED], $MM_LIST_DIR_PATH & "\" & $sId)
+EndFunc
 
-
-Func _ModInfoNormalize(ByRef $Map, Const $sDir)
-	If Not IsMap($Map) Then _ModLoadInfoFromINI($Map, $sDir)
+Func __Mod_Validate(ByRef $Map, Const $sDir)
+	If Not IsMap($Map) Then __Mod_LoadInfoFromINI($Map, $sDir)
 	If Not IsMap($Map) Then $Map = MapEmpty()
-	If Not MapExists($Map, "platform") Then $Map["platform"] = "era"
-	If Not MapExists($Map, "info_version") Then $Map["info_version"] = "1.0"
-	If Not MapExists($Map, "version") Then $Map["version"] = MapEmpty()
-	If Not MapExists($Map["version"], "mod") Then $Map["version"]["mod"] = "0.0"
-	If Not MapExists($Map["version"], "platform") Then $Map["version"]["platform"] = "0.0"
-	If Not MapExists($Map["version"], "manager") Then $Map["version"]["manager"] = "0.0"
-	If Not MapExists($Map, "caption") Then $Map["caption"] = MapEmpty()
-	If Not MapExists($Map, "description") Then $Map["description"] = MapEmpty()
-	If Not MapExists($Map["description"], "short") Then $Map["description"]["short"] = MapEmpty()
-	If Not MapExists($Map["description"], "full") Then $Map["description"]["full"] = MapEmpty()
+
+	Local $aItems
+	If Not MapExists($Map, "platform") Or Not IsString($Map["platform"]) Then $Map["platform"] = "era"
+	If Not MapExists($Map, "info_version") Or Not IsString($Map["info_version"]) Then $Map["info_version"] = "1.0"
+	If Not MapExists($Map, "mod_version") Or Not IsString($Map["mod_version"]) Then $Map["mod_version"] = "0.0"
+
+	If Not MapExists($Map, "caption") Or Not IsMap($Map["caption"]) Then $Map["caption"] = MapEmpty()
+	If Not MapExists($Map, "description") Or Not IsMap($Map["description"]) Then $Map["description"] = MapEmpty()
+	If Not MapExists($Map["description"], "short") Or Not IsMap($Map["description"]["short"]) Then $Map["description"]["short"] = MapEmpty()
+	If Not MapExists($Map["description"], "full") Or Not IsMap($Map["description"]["full"]) Then $Map["description"]["full"] = MapEmpty()
 	For $i = 1 To $MM_LNG_LIST[0][0]
-		If Not MapExists($Map["caption"], $MM_LNG_LIST[$i][$MM_LNG_CODE]) Then $Map["caption"][$MM_LNG_LIST[$i][$MM_LNG_CODE]] = ""
-		If Not MapExists($Map["description"]["short"], $MM_LNG_LIST[$i][$MM_LNG_CODE]) Then $Map["description"]["short"][$MM_LNG_LIST[$i][$MM_LNG_CODE]] = ""
-		If Not MapExists($Map["description"]["full"], $MM_LNG_LIST[$i][$MM_LNG_CODE])  Then $Map["description"]["full"][$MM_LNG_LIST[$i][$MM_LNG_CODE]] = ""
+		If Not MapExists($Map["caption"], $MM_LNG_LIST[$i][$MM_LNG_CODE]) Or Not IsString($Map["caption"][$MM_LNG_LIST[$i][$MM_LNG_CODE]]) Then $Map["caption"][$MM_LNG_LIST[$i][$MM_LNG_CODE]] = ""
+		If Not MapExists($Map["description"]["short"], $MM_LNG_LIST[$i][$MM_LNG_CODE]) Or Not IsString($Map["description"]["short"][$MM_LNG_LIST[$i][$MM_LNG_CODE]]) Then $Map["description"]["short"][$MM_LNG_LIST[$i][$MM_LNG_CODE]] = ""
+		If Not MapExists($Map["description"]["full"], $MM_LNG_LIST[$i][$MM_LNG_CODE]) Or Not IsString($Map["description"]["full"][$MM_LNG_LIST[$i][$MM_LNG_CODE]]) Then $Map["description"]["full"][$MM_LNG_LIST[$i][$MM_LNG_CODE]] = ""
 	Next
-	If Not MapExists($Map, "author") Then $Map["author"] = ""
-	If Not MapExists($Map, "homepage") Then $Map["homepage"] = ""
-	If Not MapExists($Map, "icon") Then $Map["icon"] = MapEmpty()
-	If Not MapExists($Map["icon"], "file") Then $Map["icon"]["file"] = ""
+
+	If Not MapExists($Map, "author") Or Not IsString($Map["author"]) Then $Map["author"] = ""
+	If Not MapExists($Map, "homepage") Or Not IsString($Map["homepage"])  Then $Map["homepage"] = ""
+	If Not MapExists($Map, "icon") Or Not IsMap($Map["icon"]) Then $Map["icon"] = MapEmpty()
+	If Not MapExists($Map["icon"], "file") Or Not IsString($Map["icon"]["file"]) Then $Map["icon"]["file"] = ""
 	If Not MapExists($Map["icon"], "index") Then $Map["icon"]["index"] = 0
 	$Map["icon"]["index"] = Int($Map["icon"]["index"])
 	If Not MapExists($Map, "priority") Then $Map["priority"] = 0
@@ -91,15 +90,30 @@ Func _ModInfoNormalize(ByRef $Map, Const $sDir)
 	If $Map["priority"] < -100 Then $Map["priority"] = -100
 	If $Map["priority"] > 100 Then $Map["priority"] = 100
 
-	If Not MapExists($Map, "compatibility") Then $Map["compatibility"] = MapEmpty()
-	If Not MapExists($Map["compatibility"], "class") Then $Map["compatibility"]["class"] = "default"
+	If Not MapExists($Map, "compatibility") Or Not IsMap($Map["compatibility"]) Then $Map["compatibility"] = MapEmpty()
+	If Not MapExists($Map["compatibility"], "class") Or Not IsString($Map["compatibility"]["class"]) Then $Map["compatibility"]["class"] = "default"
 	$Map["compatibility"]["class"] = StringLower($Map["compatibility"]["class"])
 	If $Map["compatibility"]["class"] <> "default" And $Map["compatibility"]["class"] <> "all" And $Map["compatibility"]["class"] <> "none" Then $Map["compatibility"]["class"] = "default"
+
 	If Not MapExists($Map["compatibility"], "entries") Then $Map["compatibility"]["entries"] = MapEmpty()
+	$aItems = MapKeys($Map["compatibility"]["entries"])
+	For $i = 0 To UBound($aItems) - 1
+		If Not IsBool($Map["compatibility"]["entries"][$aItems[$i]]) Then $Map["compatibility"]["entries"][$aItems[$i]] = $Map["compatibility"]["entries"][$aItems[$i]] ? True : False
+	Next
+
 	If Not MapExists($Map, "plugins") Then $Map["plugins"] = MapEmpty()
+	$aItems = MapKeys($Map["plugins"])
+	For $i = 0 To UBound($aItems) - 1
+		If Not IsMap($Map["plugins"][$aItems[$i]]) Then $Map["plugins"][$aItems[$i]] = MapEmpty()
+		If Not MapExists($Map["plugins"][$aItems[$i]], "default") Or Not IsBool($Map["plugins"][$aItems[$i]]["default"]) Then $Map["plugins"][$aItems[$i]]["default"] = True
+		For $i = 1 To $MM_LNG_LIST[0][0]
+			If Not MapExists($Map["plugins"][$aItems[$i]]["caption"], $MM_LNG_LIST[$i][$MM_LNG_CODE]) Or Not IsString($Map["plugins"][$aItems[$i]]["caption"][$MM_LNG_LIST[$i][$MM_LNG_CODE]]) Then $Map["plugins"][$aItems[$i]]["caption"][$MM_LNG_LIST[$i][$MM_LNG_CODE]] = ""
+			If Not MapExists($Map["plugins"][$aItems[$i]]["description"], $MM_LNG_LIST[$i][$MM_LNG_CODE]) Or Not IsString($Map["plugins"][$aItems[$i]]["description"][$MM_LNG_LIST[$i][$MM_LNG_CODE]]) Then $Map["plugins"][$aItems[$i]]["description"][$MM_LNG_LIST[$i][$MM_LNG_CODE]] = ""
+		Next
+	Next
 EndFunc
 
-Func _ModLoadInfoFromINI(ByRef $Map, Const $sDir)
+Func __Mod_LoadInfoFromINI(ByRef $Map, Const $sDir)
 	If Not IsMap($Map) Then $Map = MapEmpty()
 	$Map["caption"] = MapEmpty()
 	$Map["description"] = MapEmpty()
