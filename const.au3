@@ -1,8 +1,8 @@
 #include-once
 
-Global Const $MM_VERSION_NUMBER = "0.90.5.0"
+Global Const $MM_VERSION_NUMBER = "0.91.0.0"
 Global Const $MM_VERSION_SUBTYPE = "beta"
-Global Const $MM_VERSION_NAME = "No regrets"
+Global Const $MM_VERSION_NAME = "Der Wassermann"
 Global Const $MM_VERSION = $MM_VERSION_SUBTYPE == "release" ? $MM_VERSION_NUMBER : ($MM_VERSION_NUMBER & "." & $MM_VERSION_SUBTYPE)
 
 Global Const $MM_TITLE = StringFormat("Era II Mod Manager [%s - %s]", $MM_VERSION, $MM_VERSION_NAME)
