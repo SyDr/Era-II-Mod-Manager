@@ -19,7 +19,7 @@
 
 #include "include_fwd.au3"
 
-#include "folder_mods.au3"
+#include "mods.au3"
 #include "lng.au3"
 #include "packed_mods.au3"
 #include "plugins.au3"
