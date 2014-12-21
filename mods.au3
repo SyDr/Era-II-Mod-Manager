@@ -268,20 +268,18 @@ EndFunc   ;==>Mod_CompatibilityMapLoad
 
 Func Mod_ListSave()
 	If Not FileDelete($MM_LIST_FILE_PATH) And FileExists($MM_LIST_FILE_PATH) Then
-		MsgBox($MB_SYSTEMMODAL, "", "Press CTRL+C to copy this message" & @CRLF & @CRLF & _
-				StringFormat(Lng_Get("list.txt"), StringFormat("FileDelete(%s)", $MM_LIST_FILE_PATH)))
-		Return False
+		$MM_LIST_CANT_WORK = True
 	EndIf
+
 	Local $sWrite = ""
 	For $iCount = $MM_LIST_CONTENT[0][0] To 1 Step -1
 		If $MM_LIST_CONTENT[$iCount][$MOD_IS_ENABLED] Then
 			$sWrite &= $MM_LIST_CONTENT[$iCount][0] & @CRLF
 		EndIf
 	Next
+
 	If Not FileWrite($MM_LIST_FILE_PATH, $sWrite) Then
-		MsgBox($MB_SYSTEMMODAL, "", "Press CTRL+C to copy this message" & @CRLF & @CRLF & _
-				StringFormat(Lng_Get("list.txt"), StringFormat("FileWrite(%s, %s", $MM_LIST_FILE_PATH, $sWrite)))
-		Return False
+		$MM_LIST_CANT_WORK = True
 	EndIf
 EndFunc   ;==>Mod_ListSave
 

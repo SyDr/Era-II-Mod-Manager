@@ -23,6 +23,7 @@
 			"enabled_with_priority" : "激活 (%+i)",
 			"disabled" : "禁用"
 		},
+		"list_inaccessible" : "Can't delete/write file \"%s\" content\n\nPossible reasons:\n 1) File is \"read-only\"\n 2) Current user doesn't not have enough rights to create/delete this file \n\nOpen directory in explorer?",
 		"more" : "附加操作",
 		"plugins" : "插件",
 		"homepage" : "访问MOD网页",
