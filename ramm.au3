@@ -112,6 +112,13 @@ Func MainLoop()
 			$bSelectionChanged = False
 			SD_GUI_List_SelectionChanged()
 		EndIf
+
+		If $MM_LIST_CANT_WORK Then
+			$MM_LIST_CANT_WORK = False
+			If MsgBox($MB_SYSTEMMODAL + $MB_YESNO, "", Lng_GetF("mod_list.list_inaccessible", $MM_LIST_FILE_PATH)) = $IDYES Then
+				ShellExecute("explorer.exe", "/select," & $MM_LIST_FILE_PATH, $MM_LIST_DIR_PATH)
+			EndIf
+		EndIf
 	WEnd
 EndFunc   ;==>MainLoop
 
