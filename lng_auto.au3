@@ -87,7 +87,7 @@ If Not MapExists($MM_LNG_CACHE["update"], "current_version") Or Not IsString($MM
 If Not MapExists($MM_LNG_CACHE["update"], "available_versions") Or Not IsString($MM_LNG_CACHE["update"]["available_versions"]) Then $MM_LNG_CACHE["update"]["available_versions"] = "Available to download:"
 If Not MapExists($MM_LNG_CACHE["update"], "wait") Or Not IsString($MM_LNG_CACHE["update"]["wait"]) Then $MM_LNG_CACHE["update"]["wait"] = "wait..."
 If Not MapExists($MM_LNG_CACHE["update"], "select_from_list") Or Not IsString($MM_LNG_CACHE["update"]["select_from_list"]) Then $MM_LNG_CACHE["update"]["select_from_list"] = "select from list..."
-If Not MapExists($MM_LNG_CACHE["update"], "check_path") Or Not IsString($MM_LNG_CACHE["update"]["check_path"]) Then $MM_LNG_CACHE["update"]["check_path"] = "Check path:"
+If Not MapExists($MM_LNG_CACHE["update"], "cancel") Or Not IsString($MM_LNG_CACHE["update"]["cancel"]) Then $MM_LNG_CACHE["update"]["cancel"] = "Cancel"
 If Not MapExists($MM_LNG_CACHE["update"], "update_group") Or Not IsString($MM_LNG_CACHE["update"]["update_group"]) Then $MM_LNG_CACHE["update"]["update_group"] = "Selected update"
 If Not MapExists($MM_LNG_CACHE["update"], "download_and_install") Or Not IsString($MM_LNG_CACHE["update"]["download_and_install"]) Then $MM_LNG_CACHE["update"]["download_and_install"] = "Download update and install automatically"
 If Not MapExists($MM_LNG_CACHE["update"], "only_download") Or Not IsString($MM_LNG_CACHE["update"]["only_download"]) Then $MM_LNG_CACHE["update"]["only_download"] = "Only download"
