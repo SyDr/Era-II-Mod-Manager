@@ -114,7 +114,7 @@
 		"available_versions" : "Available to download:",
 		"wait" : "wait...",
 		"select_from_list" : "select from list...",
-		"check_path" : "Check path:",
+		"cancel" : "Cancel",
 		"update_group" : "Selected update",
 		"download_and_install" : "Download update and install automatically",
 		"only_download" : "Only download",
