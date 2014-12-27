@@ -5,7 +5,7 @@
 
 #include "include_fwd.au3"
 
-Func Utils_LaunchInBrowser($sLink)
+Func Utils_LaunchInBrowser(Const $sLink)
 	Local Const $http = "http://"
 	Local Const $https = "https://"
 
@@ -14,6 +14,10 @@ Func Utils_LaunchInBrowser($sLink)
 	Else
 		ShellExecute($http & $sLink)
 	EndIf
+EndFunc
+
+Func Utils_OpenFolder(Const $sFolder, Const $sFile)
+	ShellExecute("explorer.exe", "/select," & $sFile, $sFolder)
 EndFunc
 
 Func MapEmpty()
