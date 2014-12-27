@@ -1186,7 +1186,7 @@ Func SD_FormatDescription()
 		$sText = Lng_GetF("info_group.info.mod_caption_s", Mod_Get("caption"))
 	EndIf
 
-	If Mod_Get("version\mod") <> "0.0" Then	$sText &= @CRLF & Lng_GetF("info_group.info.version", Mod_Get("version\mod"))
+	If Mod_Get("mod_version") <> "0.0" Then	$sText &= @CRLF & Lng_GetF("info_group.info.version", Mod_Get("mod_version"))
 	If Mod_Get("author") <> "" Then	$sText &= @CRLF & Lng_GetF("info_group.info.author", Mod_Get("author"))
 	If Mod_Get("homepage") <> "" Then	$sText &= @CRLF & Lng_GetF("info_group.info.link", Mod_Get("homepage"))
 
