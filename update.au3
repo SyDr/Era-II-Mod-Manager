@@ -20,6 +20,7 @@ Func Update_CheckNewPorgram(Const $bIsPortable, Const $hParent)
 	Local $hGUI = MapEmpty()
 	$hGUI.Info = MapEmpty()
 	$hGUI.Info.RemotePath = "http://wakeofgods.org/ramm"
+	$hGUI.Info.Download = True
 	$hGUI.Setup = MapEmpty()
 	$hGUI.Setup.Version = ""
 	$hGUI.Close = False
@@ -57,10 +58,6 @@ Func Update_CheckNewPorgram(Const $bIsPortable, Const $hParent)
 
 	GUISetState(@SW_SHOW)
 
-	__Update_InfoDownload($hGUI)
-	__Update_GUIUpdateInfoView($hGUI)
-	__Update_GUIUpdateAccessibility($hGUI)
-
 	While Not $hGUI.Close
 		If $hGUI.Info.InProgress Then
 			If InetGetInfo($hGUI.Info.Handle, $INET_DOWNLOADCOMPLETE) Then
@@ -83,7 +80,12 @@ Func Update_CheckNewPorgram(Const $bIsPortable, Const $hParent)
 
 		If $hGUI.Info.Download Then
 			$hGUI.Info.Download = False
-			__Update_InfoDownload($hGUI)
+			$hGUI.Info.Location = _TempFile()
+			$hGUI.Info.Handle = InetGet($hGUI.Info.RemotePath & "/ramm.json", $hGUI.Info.Location, $INET_FORCERELOAD, $INET_DOWNLOADBACKGROUND)
+			$hGUI.Info.InProgress = True
+			$hGUI.Info.Valid = False
+			__Update_GUIUpdateInfoView($hGUI)
+			__Update_GUIUpdateAccessibility($hGUI)
 		EndIf
 
 		If $hGUI.Info.FromClipboard Then
@@ -192,13 +194,6 @@ Func Update_CheckNewPorgram(Const $bIsPortable, Const $hParent)
 
 	GUISetState(@SW_ENABLE, $hParent)
 	GUISetState(@SW_RESTORE, $hParent)
-EndFunc
-
-Func __Update_InfoDownload(ByRef $hGUI)
-	$hGUI.Info.Location = _TempFile()
-	$hGUI.Info.Handle = InetGet($hGUI.Info.RemotePath & "/ramm.json", $hGUI.Info.Location, $INET_FORCERELOAD, $INET_DOWNLOADBACKGROUND)
-	$hGUI.Info.InProgress = True
-	$hGUI.Info.Valid = False
 EndFunc
 
 Func __Update_SetupSelectionChanged(ByRef $hGUI, Const $sNewVersion)
