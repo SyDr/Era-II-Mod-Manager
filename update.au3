@@ -19,7 +19,7 @@ Func Update_CheckNewPorgram(Const $bIsPortable, Const $hParent)
 
 	Local $hGUI = MapEmpty()
 	$hGUI.Info = MapEmpty()
-	$hGUI.Info.RemotePath = "https://dl.dropboxusercontent.com/u/24541426"
+	$hGUI.Info.RemotePath = "http://wakeofgods.org/ramm"
 	$hGUI.Setup = MapEmpty()
 	$hGUI.Setup.Version = ""
 	$hGUI.Close = False
