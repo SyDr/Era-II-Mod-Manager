@@ -52,7 +52,7 @@ Func UI_SelectGameExe()
 
 	Local $hGUI = GUICreate("", 200, 324, Default, Default, Default, Default, $MM_UI_MAIN)
 	Local $aSize = WinGetClientSize($hGUI)
-	GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
+	If Not @Compiled Then GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
 	GUIRegisterMsgStateful($WM_NOTIFY, "__UI_WM_NOTIFY")
 	$__UI_LIST = GUICtrlCreateTreeView($iItemSpacing, $iItemSpacing, _ ; left, top
 			$aSize[0] - 2 * $iItemSpacing, $aSize[1] - 3 * $iItemSpacing - 25, _
