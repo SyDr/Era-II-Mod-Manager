@@ -43,8 +43,6 @@ If Not MapExists($MM_LNG_CACHE, "info_group") Or Not IsMap($MM_LNG_CACHE["info_g
 If Not MapExists($MM_LNG_CACHE["info_group"], "desc") Or Not IsString($MM_LNG_CACHE["info_group"]["desc"]) Then $MM_LNG_CACHE["info_group"]["desc"] = "Descripton"
 If Not MapExists($MM_LNG_CACHE["info_group"], "screens") Or Not IsMap($MM_LNG_CACHE["info_group"]["screens"]) Then $MM_LNG_CACHE["info_group"]["screens"] = MapEmpty()
 If Not MapExists($MM_LNG_CACHE["info_group"]["screens"], "caption") Or Not IsString($MM_LNG_CACHE["info_group"]["screens"]["caption"]) Then $MM_LNG_CACHE["info_group"]["screens"]["caption"] = "Screenshots"
-If Not MapExists($MM_LNG_CACHE["info_group"]["screens"], "back") Or Not IsString($MM_LNG_CACHE["info_group"]["screens"]["back"]) Then $MM_LNG_CACHE["info_group"]["screens"]["back"] = "Back (%s)"
-If Not MapExists($MM_LNG_CACHE["info_group"]["screens"], "forward") Or Not IsString($MM_LNG_CACHE["info_group"]["screens"]["forward"]) Then $MM_LNG_CACHE["info_group"]["screens"]["forward"] = "Forward (%s)"
 If Not MapExists($MM_LNG_CACHE["info_group"], "no_info") Or Not IsString($MM_LNG_CACHE["info_group"]["no_info"]) Then $MM_LNG_CACHE["info_group"]["no_info"] = "No description available"
 If Not MapExists($MM_LNG_CACHE["info_group"], "info") Or Not IsMap($MM_LNG_CACHE["info_group"]["info"]) Then $MM_LNG_CACHE["info_group"]["info"] = MapEmpty()
 If Not MapExists($MM_LNG_CACHE["info_group"]["info"], "caption") Or Not IsString($MM_LNG_CACHE["info_group"]["info"]["caption"]) Then $MM_LNG_CACHE["info_group"]["info"]["caption"] = "Information"

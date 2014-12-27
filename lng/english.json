@@ -52,9 +52,7 @@
 		"desc" : "Descripton",
 		"screens" : 
 		{
-			"caption" : "Screenshots",
-			"back" : "Back (%s)",
-			"forward" : "Forward (%s)"
+			"caption" : "Screenshots"
 		},
 		"no_info" : "No description available",
 		"info" :
