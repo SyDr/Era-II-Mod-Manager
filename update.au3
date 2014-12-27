@@ -27,7 +27,7 @@ Func Update_CheckNewPorgram(Const $bIsPortable, Const $hParent)
 	Local $bIsSuccess, $nMsg, $aSize
 
 	$hGUI.Form = GUICreate(Lng_Get("update.caption"), $iMinWidth + Round(Random(0, (@DesktopWidth - $iMinWidth)/10, 1)), 173, Default, Default, Default, Default, $hParent)
-	GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
+	If Not @Compiled Then GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
 	$aSize = WinGetClientSize($hGUI.Form)
 
 	$hGUI.GroupParam = GUICtrlCreateGroup(Lng_Get("update.caption"), $iItemSpacing, $iItemSpacing, $aSize[0] - 2 * $iItemSpacing, 62)
