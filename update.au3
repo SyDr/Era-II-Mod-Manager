@@ -255,6 +255,7 @@ EndFunc
 Func __Update_InfoFileProcess(ByRef $hGUI, Const $sFile)
 	$hGUI.Info.Parsed = Jsmn_Decode($sFile)
 	$hGUI.Info.Valid = __Update_InfoFileValidate($hGUI.Info.Parsed)
+	$hGUI.Setup.Version = ""
 
 	If $hGUI.Info.Valid Then
 		Local $aKeys = MapKeys($hGUI.Info.Parsed["items"])
