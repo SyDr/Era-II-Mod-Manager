@@ -7,6 +7,8 @@
 #include "settings.au3"
 #include "utils.au3"
 
+Global $MM_SELECTED_MOD = -1
+
 Func Mod_ListLoad()
 	Local $aModList_Dir, $aModList_File
 
@@ -140,13 +142,27 @@ Func __Mod_LoadInfoFromINI(ByRef $Map, Const $sDir)
 	EndIf
 EndFunc
 
+Func Mod_SetSelectedMod(Const $iMod)
+	$MM_SELECTED_MOD = $iMod
+EndFunc
+
+Func Mod_GetSelectedMod()
+	Return $MM_SELECTED_MOD
+EndFunc
+
 Func Mod_Get(Const $sPath, $iModIndex = -1)
 	Local $vReturn = ""
 	Local $aParts = StringSplit($sPath, "\")
-	If $iModIndex = -1 Then $iModIndex = $MM_SELECTED_MOD
+	If $iModIndex = -1 Then $iModIndex = Mod_GetSelectedMod()
 
 	If $sPath = "id" Then
 		$vReturn = $MM_LIST_CONTENT[$iModIndex][$MOD_ID]
+	ElseIf $sPath = "dir" Then
+		$vReturn = $MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iModIndex][$MOD_ID]
+	ElseIf $sPath = "dir\" Then
+		$vReturn = $MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iModIndex][$MOD_ID] & "\"
+	ElseIf $sPath = "info_file" Then
+		$vReturn = $MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iModIndex][$MOD_ID] & "\mod.json"
 	ElseIf $sPath = "caption" Then
 		$vReturn = ($MM_LIST_CONTENT[$iModIndex][$MOD_INFO_PARSED])["caption"][$MM_LANGUAGE_CODE]
 		If $vReturn = "" Then $vReturn = ($MM_LIST_CONTENT[$iModIndex][$MOD_INFO_PARSED])["caption"]["en_US"]
@@ -186,6 +202,15 @@ Func Mod_Get(Const $sPath, $iModIndex = -1)
 	EndIf
 
 	Return $vReturn
+EndFunc
+
+Func Mod_Save(Const $iModIndex, Const $mModData)
+	Local $sSaveTo = Mod_Get("info_file", $iModIndex)
+	Local $sText = Jsmn_Encode($mModData, $JSMN_PRETTY_PRINT + $JSMN_UNESCAPED_UNICODE + $JSMN_UNESCAPED_SLASHES)
+	If Not @error Then
+		FileDelete($sSaveTo)
+		FileWrite($sSaveTo, $sText)
+	EndIf
 EndFunc
 
 Func Mod_IsCompatible(Const $iModIndex1, Const $iModIndex2)

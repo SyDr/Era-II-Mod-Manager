@@ -46,9 +46,9 @@ Func VersionCompare(Const $s1, Const $s2)
 	; 1.0.0 and 1.0 is same version
 
 	For $i = 0 To $iSize - 1
-		If Number($aVersion1[$i]) > Number($aVersion2[$i]) Then
+		If Int($aVersion1[$i]) > Int($aVersion2[$i]) Then
 			Return $i+1
-		ElseIf Number($aVersion1[$i]) < Number($aVersion2[$i]) Then
+		ElseIf Int($aVersion1[$i]) < Int($aVersion2[$i]) Then
 			Return -($i+1)
 		EndIf
 	Next
@@ -56,12 +56,39 @@ Func VersionCompare(Const $s1, Const $s2)
 	Return 0
 EndFunc
 
+Func VersionIncrement(Const $sVersion)
+	Local $aVersion = StringSplit($sVersion, ".", 2)
+	$aVersion[UBound($aVersion) - 1] += 1
+	Return _ArrayToString($aVersion, ".")
+EndFunc
+
+
 Func GUICtrlGetPos(Const $idControl)
+	; this is a special version, as it return not array but a map instead
+	Local $aAnswer, $mMap[]
+
 	If IsHWnd($idControl) Then
-		Return ControlGetPos($idControl, '', 0)
+		$aAnswer = ControlGetPos($idControl, '', 0)
 	Else
-		Return ControlGetPos(GUICtrlGetHandle($idControl), '', 0)
+		$aAnswer = ControlGetPos(GUICtrlGetHandle($idControl), '', 0)
 	EndIf
+
+	If IsArray($aAnswer) Then
+		$mMap.Left = $aAnswer[0]
+		$mMap.Top = $aAnswer[1]
+		$mMap.Width = $aAnswer[2]
+		$mMap.Height = $aAnswer[3]
+	Else
+		$mMap.Left = 0
+		$mMap.Top = 0
+		$mMap.Width = 0
+		$mMap.Height = 0
+	EndIf
+
+	$mMap.NextX = $mMap.Left + $mMap.Width
+	$mMap.NextY = $mMap.Top + $mMap.Height
+
+	Return $mMap
 EndFunc
 
 Func GUICtrlSetStateStateful(Const $idControl, Const $iState = -1)

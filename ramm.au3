@@ -19,6 +19,7 @@
 
 #include "include_fwd.au3"
 
+#include "mod_edit.au3"
 #include "mods.au3"
 #include "lng.au3"
 #include "packed_mods.au3"
@@ -66,7 +67,6 @@ EndIf
 
 $MM_SETTINGS_LANGUAGE = Settings_Get("language")
 Lng_LoadList()
-Lng_Load()
 
 If $CMDLine[0] > 0 Then
 	If Not SD_CLI_Mod_Add() Then Exit
@@ -162,8 +162,10 @@ Func SD_GUI_Create()
 	$hGUI.MenuMod.Menu = GUICtrlCreateMenu("-")
 	$hGUI.MenuMod.Plugins = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
 	$hGUI.MenuMod.OpenHomepage = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
+	GUICtrlCreateMenuItem("", $hGUI.MenuMod.Menu)
 	$hGUI.MenuMod.Delete = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
 	$hGUI.MenuMod.OpenFolder = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
+	$hGUI.MenuMod.EditMod = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
 	If $MM_GAME_NO_DIR Then GUICtrlSetState($hGUI.MenuMod.Menu, $GUI_DISABLE)
 
 	$hGUI.MenuGame.Menu = GUICtrlCreateMenu("-")
@@ -207,6 +209,7 @@ Func SD_GUI_Create()
 	$hGUI.Info.Desc = _GUICtrlSysLink_Create($MM_UI_MAIN, "-", 0, 0, 0, 0)
 
 	$hGUI.Screen.Control = GUICtrlCreatePic("", 0, 0)
+	GUICtrlSetCursor($hGUI.Screen.Control, 0)
 	$hGUI.Screen.Open = GUICtrlCreateButton("", 0, 0, 25, 25, $BS_ICON)
 	$hGUI.Screen.Back = GUICtrlCreateButton("", 0, 0, 25, 25, $BS_ICON)
 	$hGUI.Screen.Forward = GUICtrlCreateButton("", 0, 0, 25, 25, $BS_ICON)
@@ -393,6 +396,7 @@ Func SD_GUI_Events_Register()
 	GUICtrlSetOnEvent($hGUI.MenuGame.Change, "SD_GUI_GameExeChange")
 	GUICtrlSetOnEvent($hGUI.MenuMore.Add, "SD_GUI_Mod_Add")
 	GUICtrlSetOnEvent($hGUI.MenuMod.OpenFolder, "SD_GUI_Mod_OpenFolder")
+	GUICtrlSetOnEvent($hGUI.MenuMod.EditMod, "SD_GUI_Mod_EditMod")
 	GUICtrlSetOnEvent($hGUI.MenuMore.ChangeModDir, "SD_GUI_ChangeGameDir")
 
 	GUICtrlSetOnEvent($hGUI.PluginsList.Back, "SD_GUI_Plugins_Close")
@@ -421,6 +425,7 @@ Func SD_GUI_SetLng()
 	GUICtrlSetData($hGUI.MenuMod.Plugins, Lng_Get("mod_list.plugins"))
 	GUICtrlSetData($hGUI.MenuMod.OpenHomepage, Lng_Get("mod_list.homepage"))
 	GUICtrlSetData($hGUI.MenuMod.OpenFolder, Lng_Get("mod_list.open_dir"))
+	GUICtrlSetData($hGUI.MenuMod.EditMod, Lng_Get("mod_list.edit_mod"))
 
 	GUICtrlSetData($hGUI.MenuGame.Menu, Lng_Get("game.caption"))
 	GUICtrlSetData($hGUI.MenuGame.Launch, Lng_GetF("game.launch", $MM_GAME_EXE))
@@ -452,11 +457,17 @@ Func SD_GUI_CheckForUpdates()
 EndFunc   ;==>SD_GUI_CheckForUpdates
 
 Func SD_GUI_Mod_OpenFolder()
-	Local $iModIndex1 = TreeViewGetSelectedIndex()
-	If $iModIndex1 = -1 Then Return -1 ; never
-	Local $sPath = '"' & $MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iModIndex1][$MOD_ID] & '"'
+	Local $iModIndex = TreeViewGetSelectedIndex()
+	If $iModIndex = -1 Then Return -1 ; never
+	Local $sPath = '"' & $MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iModIndex][$MOD_ID] & '"'
 	ShellExecute($sPath)
 EndFunc   ;==>SD_GUI_Mod_OpenFolder
+
+Func SD_GUI_Mod_EditMod()
+	Local $iModIndex = TreeViewGetSelectedIndex()
+	If $iModIndex = -1 Then Return -1 ; never
+	If ModEdit_Editor($iModIndex, $MM_UI_MAIN) Then SD_GUI_Update()
+EndFunc
 
 Func SD_GUI_Manage_Plugins()
 	Local $iTreeViewIndex = TreeViewGetSelectedIndex()
@@ -790,6 +801,7 @@ Func SD_GUI_Mod_Controls_Disable()
 	GUICtrlSetState($hGUI.MenuMod.Plugins, $GUI_DISABLE)
 	GUICtrlSetState($hGUI.MenuMod.OpenHomepage, $GUI_DISABLE)
 	GUICtrlSetState($hGUI.MenuMod.OpenFolder, $GUI_DISABLE)
+	GUICtrlSetState($hGUI.MenuMod.EditMod, $GUI_DISABLE)
 	GUICtrlSetState($hGUI.MenuMod.Menu, $GUI_DISABLE)
 	GUICtrlSetData($hGUI.Info.Edit, Lng_Get("info_group.no_info"))
 	_GUICtrlSysLink_SetText($hGUI.Info.Desc, "")
@@ -865,10 +877,12 @@ Func SD_GUI_Mod_SelectionChanged()
 		If Not $MM_LIST_CONTENT[$iModIndex][$MOD_IS_EXIST] Then
 			GUICtrlSetState($hGUI.MenuMod.Delete, $GUI_DISABLE)
 			GUICtrlSetState($hGUI.MenuMod.OpenFolder, $GUI_DISABLE)
+			GUICtrlSetState($hGUI.MenuMod.EditMod, $GUI_DISABLE)
 			GUICtrlSetState($hGUI.MenuMod.Menu, $GUI_DISABLE)
 		Else
 			GUICtrlSetState($hGUI.MenuMod.Delete, $GUI_ENABLE)
 			GUICtrlSetState($hGUI.MenuMod.OpenFolder, $GUI_ENABLE)
+			GUICtrlSetState($hGUI.MenuMod.EditMod, $GUI_ENABLE)
 			GUICtrlSetState($hGUI.MenuMod.Menu, $GUI_ENABLE)
 		EndIf
 

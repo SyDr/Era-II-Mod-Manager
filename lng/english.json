@@ -8,7 +8,7 @@
 	},
 	"mod_list" :
 	{
-		"mod" : "Mod",	
+		"mod" : "Mod",
 		"caption" : "Mod list (%s)",
 		"no_game_dir" : "no game dir - select from \"More actions\"",
 		"up" : "Move up",
@@ -32,6 +32,7 @@
 		"add_new" : "Add new mod(s)",
 		"compatibility" : "Compatibility",
 		"open_dir" : "Open mod directory"
+		"edit_mod" : "Edit mod data"
 	},
 	"game" : {
 		"caption" : "Game",
@@ -50,7 +51,7 @@
 	"info_group" :
 	{
 		"desc" : "Descripton",
-		"screens" : 
+		"screens" :
 		{
 			"caption" : "Screenshots"
 		},
@@ -123,5 +124,40 @@
 		"cant_check" : "Can't check program update. Open link in browser?",
 		"cant_download" : "Can't download program update. Open link in browser?",
 		"info_invalid" : "invalid format...",
+	},
+	"mod_edit" :
+	{
+		"caption" : "Mod edit",
+		"save" : "Save",
+		"cancel" : "Cancel",
+		"group_caption" :
+		{
+			"caption" : "Caption and description",
+			"language" : "Language:",
+			"caption_label" : "Caption:",
+			"description_file" : "Description file:"
+		},
+		"group_other" :
+		{
+			"caption" : "Other",
+			"mod_version" : "Mod version:",
+			"author" : "Author:",
+			"homepage" : "Homepage:",
+			"icon" : "Icon:",
+			"priority" : "Priority:",
+		}
+		"group_compatibility" :
+		{
+			"caption" : "Compatibility",
+			"class" : "Compatibility class:",
+			"all" : "compatible with all mods",
+			"default" : "incompatible with \"none\" mods",
+			"none" : "incompatible with \"none\" and \"default\" mods",
+			"exclusions" : "Exclusions:",
+			"mod" : "Mod caption/id",
+			"compatible" : "Compatible",
+			"yes" : "Yes",
+			"no" : "No"
+		}
 	}
 }
