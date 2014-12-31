@@ -40,7 +40,6 @@ Func UI_SelectGameExe()
 	Local $aList = _FileListToArray($MM_GAME_DIR, "*.exe", $FLTA_FILES)
 	If Not IsArray($aList) Then Local $aList[1] = [0]
 	Local Const $iOptionGUIOnEventMode = AutoItSetOption("GUIOnEventMode", 0)
-	Local Const $iOptionGUICoordMode = AutoItSetOption("GUICoordMode", 0)
 	Local Const $aBlacklist = Settings_Get("game.blacklist")
 	GUISetState(@SW_DISABLE, $MM_UI_MAIN)
 
@@ -57,9 +56,8 @@ Func UI_SelectGameExe()
 	$__UI_LIST = GUICtrlCreateTreeView($iItemSpacing, $iItemSpacing, _ ; left, top
 			$aSize[0] - 2 * $iItemSpacing, $aSize[1] - 3 * $iItemSpacing - 25, _
 			BitOR($TVS_FULLROWSELECT, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
-	Local $hShowAll = GUICtrlCreateCheckbox(Lng_Get("settings.game_exe.show_all"), 0, GUICtrlGetPos($__UI_LIST)[3] + $iItemSpacing, Default, 25)
-	GUISetCoord(GUICtrlGetPos($__UI_LIST)[0], GUICtrlGetPos($__UI_LIST)[1])
-	Local $hOk = GUICtrlCreateButton("OK", $aSize[0] - 2 * $iItemSpacing - 75, GUICtrlGetPos($__UI_LIST)[3] + $iItemSpacing, 75, 25)
+	Local $hShowAll = GUICtrlCreateCheckbox(Lng_Get("settings.game_exe.show_all"), $iItemSpacing, GUICtrlGetPos($__UI_LIST).Height + $iItemSpacing, Default, 25)
+	Local $hOk = GUICtrlCreateButton("OK", $aSize[0] - $iItemSpacing - 75, GUICtrlGetPos($hShowAll).Top + $iItemSpacing, 75, 25)
 	Local $hListItems = $aList
 	For $i = 1 To $aList[0]
 		$bAllowName = True
@@ -114,7 +112,6 @@ Func UI_SelectGameExe()
 	GUIDelete($hGUI)
 
 	AutoItSetOption("GUIOnEventMode", $iOptionGUIOnEventMode)
-	AutoItSetOption("GUICoordMode", $iOptionGUICoordMode)
 	GUISetState(@SW_ENABLE, $MM_UI_MAIN)
 	GUISetState(@SW_RESTORE, $MM_UI_MAIN)
 	Return $sReturn
