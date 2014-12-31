@@ -66,7 +66,7 @@ Func ModEdit_Editor(Const $iModIndex, Const $hParent)
 	EndIf
 
 	GUICtrlSetCursor($hGUI.IconIcon, 0)
-	$hGUI.ButtonIcon = GUICtrlCreateButton("X", GUICtrlGetPos($hGUI.IconIcon).NextX + $iItemSpacing, GUICtrlGetPos($hGUI.InputHomepage).Top - 1, $iButtonHeight, $iButtonHeight)
+	$hGUI.ButtonIcon = GUICtrlCreateButton("X", GUICtrlGetPos($hGUI.IconIcon).NextX + $iItemSpacing, GUICtrlGetPos($hGUI.InputPriority).Top - 1, $iButtonHeight, $iButtonHeight)
 
 	$hGUI.LabelHomepage = GUICtrlCreateLabel(Lng_Get("mod_edit.group_other.homepage"), 2 * $iItemSpacing, GUICtrlGetPos($hGUI.ButtonIcon).NextY + $iItemSpacing, Default, $iLabelHeight, $SS_CENTERIMAGE)
 	$hGUI.InputHomepage = GUICtrlCreateInput($hGUI.Info["homepage"], GUICtrlGetPos($hGUI.LabelHomepage).NextX, GUICtrlGetPos($hGUI.LabelHomepage).Top, $aSize[0] - GUICtrlGetPos($hGUI.LabelHomepage).NextX - 3 * $iItemSpacing, $iInputHeight)
