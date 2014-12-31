@@ -136,7 +136,7 @@ Func ModEdit_Editor(Const $iModIndex, Const $hParent)
 	$hGUI["Info"]["author"] = GUICtrlRead($hGUI.InputAuthor)
 	$hGUI["Info"]["homepage"] = GUICtrlRead($hGUI.InputHomepage)
 	$hGUI["Info"]["priority"] = Int(GUICtrlRead($hGUI.InputPriority))
-	$hGUI["Info"]["compatibility"]["class"] = __ModEdit_FormattedCompatibilityClassToPlain(GUICtrlRead($hGUI.InputPriority))
+	$hGUI["Info"]["compatibility"]["class"] = __ModEdit_FormattedCompatibilityClassToPlain(GUICtrlRead($hGUI.ComboCompatibilityClass))
 
 	AutoItSetOption("GUIOnEventMode", $iOptionGUIOnEventMode)
 
