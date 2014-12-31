@@ -52,7 +52,16 @@ Func Lng_LoadList()
 			EndIf
 		EndIf
 	Next
+
 	$MM_LNG_LIST = $asReturn
+EndFunc
+
+Func Lng_GetCodeByName(Const $sName)
+	For $i = 1 To $MM_LNG_LIST[0][0]
+		If $MM_LNG_LIST[$i][$MM_LNG_NAME] = $sName Then Return $MM_LNG_LIST[$i][$MM_LNG_CODE]
+	Next
+
+	Return "en_US"
 EndFunc
 
 Func Lng_Get(Const ByRef $sKeyName)

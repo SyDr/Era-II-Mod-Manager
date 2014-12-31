@@ -66,7 +66,7 @@ EndFunc
 
 Func Settings_Get(Const ByRef $sName)
 	If Not $MM_SETTINGS_INIT Then __Settings_Init()
-;~ 	MsgBox(4096, $sName, Jsmn_Encode($MM_SETTINGS_CACHE, $JSMN_PRETTY_PRINT + $JSMN_UNESCAPED_UNICODE))
+
 	Switch $sName
 		Case "language", "portable", "version"
 			Return $MM_SETTINGS_CACHE[StringLower($sName)]
