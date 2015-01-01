@@ -10,7 +10,7 @@
 Global $MM_SELECTED_MOD = -1
 
 Func Mod_ListLoad()
-	Local $aModList_Dir, $aModList_File
+	Local $aModList_Dir, $aModList_File, $iFirstDisabled = 0
 
 	ReDim $MM_LIST_CONTENT[1][$MOD_TOTAL]
 	$MM_LIST_CONTENT[0][0] = 0
@@ -47,10 +47,12 @@ Func Mod_ListLoad()
 		If @error Then
 			$MM_LIST_CONTENT[0][0] += 1
 			__Mod_LoadInfo($MM_LIST_CONTENT[0][0], $aModList_Dir[$i], False)
+			If $iFirstDisabled = 0 Then $iFirstDisabled = $MM_LIST_CONTENT[0][0]
 		EndIf
 	Next
 
 	ReDim $MM_LIST_CONTENT[1 + $MM_LIST_CONTENT[0][0]][$MOD_TOTAL]
+	_ArraySort($MM_LIST_CONTENT, Default, $iFirstDisabled, Default, $MOD_CAPTION)
 EndFunc   ;==>Mod_ListLoad
 
 Func __Mod_LoadInfo(Const $iIndex, Const ByRef $sId, Const $bIsEnabled)
@@ -59,6 +61,7 @@ Func __Mod_LoadInfo(Const $iIndex, Const ByRef $sId, Const $bIsEnabled)
 	$MM_LIST_CONTENT[$iIndex][$MOD_IS_EXIST] = FileExists($MM_LIST_DIR_PATH & "\" & $sId & "\") ? True : False
 	$MM_LIST_MAP[$sId] = Jsmn_Decode(FileRead($MM_LIST_DIR_PATH & "\" & $sId & "\mod.json"))
 	__Mod_Validate($MM_LIST_MAP[$sId], $MM_LIST_DIR_PATH & "\" & $sId)
+	$MM_LIST_CONTENT[$iIndex][$MOD_CAPTION] = Mod_Get("caption", $iIndex)
 EndFunc
 
 Func __Mod_Validate(ByRef $Map, Const $sDir)
