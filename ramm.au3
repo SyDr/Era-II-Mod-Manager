@@ -10,7 +10,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseUpx=y
 #AutoIt3Wrapper_Res_Description=A mod manager for Era II
-#AutoIt3Wrapper_Res_Fileversion=0.91.0.0
+#AutoIt3Wrapper_Res_Fileversion=0.91.1.0
 #AutoIt3Wrapper_Res_LegalCopyright=Aliaksei SyDr Karalenka
 #AutoIt3Wrapper_Res_requestedExecutionLevel=asInvoker
 #AutoIt3Wrapper_AU3Check_Parameters=-d -w 1 -w 2 -w 3 -w 4 -w 5 -w 6 -w 7
@@ -46,7 +46,7 @@ $hGUI.Info = MapEmpty()
 $hGUI.WindowResizeInProgress = False
 $hGUI.WindowResizeLags = False
 $hGUI.Screen = MapEmpty()
-Global $hDummyF5, $hDummyLinks
+Global $hDummyF5, $hDummyLinks, $hDummyCategories
 Global Const $iItemSpacing = 4
 
 Global $aModListGroups[1][3]; group item id, is enabled, priority
@@ -55,6 +55,7 @@ Global $aScreens[1], $iScreenIndex, $iScreenWidth, $iScreenHeight, $hScreenImage
 Global $sFollowMod = ""
 Global $bEnableDisable, $bSelectionChanged
 Global $bInTrack = False
+Global $bMainUICycle = True, $bExit = True
 #EndRegion Variables
 
 If @Compiled And @ScriptName = "installmod.exe" Then
@@ -75,7 +76,10 @@ EndIf
 StartUp_CheckRunningInstance()
 
 If Not IsDeclared("__MM_NO_UI") Then
-	UI_Main()
+	While True
+		$bMainUICycle = True
+		UI_Main()
+	WEnd
 EndIf
 
 Func UI_Main()
@@ -92,7 +96,7 @@ EndFunc
 Func MainLoop()
 	Local $bGUINeedUpdate = False
 
-	While True
+	While $bMainUICycle
 		Sleep(10)
 		If Not $bGUINeedUpdate And Not WinActive($MM_UI_MAIN) Then
 			$bGUINeedUpdate = True
@@ -217,14 +221,15 @@ Func SD_GUI_Create()
 	GUICtrlSetImage($hGUI.Screen.Back, @ScriptDir & "\icons\arrow-left.ico")
 	GUICtrlSetImage($hGUI.Screen.Forward, @ScriptDir & "\icons\arrow-right.ico")
 	GUICtrlSetState($hGUI.Screen.Control, $GUI_HIDE)
-	GUICtrlSetState($hGUI.Screen.Open, $GUI_HIDE)
-	GUICtrlSetState($hGUI.Screen.Back, $GUI_HIDE)
-	GUICtrlSetState($hGUI.Screen.Forward, $GUI_HIDE)
+	GUICtrlSetState($hGUI.Screen.Open, $GUI_HIDE + $GUI_DISABLE)
+	GUICtrlSetState($hGUI.Screen.Back, $GUI_HIDE + $GUI_DISABLE)
+	GUICtrlSetState($hGUI.Screen.Forward, $GUI_HIDE + $GUI_DISABLE)
 
 	$hDummyF5 = GUICtrlCreateDummy()
 	$hDummyLinks = GUICtrlCreateDummy()
+	$hDummyCategories = GUICtrlCreateDummy()
 
-	Local $AccelKeys[1][2] = [["{F5}", $hDummyF5]]
+	Local $AccelKeys[2][2] = [["{F5}", $hDummyF5], ["{F8}", $hDummyCategories]]
 	GUISetAccelerators($AccelKeys)
 
 	SD_GUI_Mod_Controls_Disable()
@@ -411,7 +416,37 @@ Func SD_GUI_Events_Register()
 
 	GUICtrlSetOnEvent($hDummyF5, "SD_GUI_Update")
 	GUICtrlSetOnEvent($hDummyLinks, "SD_GUI_Mod_Website")
+	GUICtrlSetOnEvent($hDummyCategories, "SD_GUI_ModCategoriesUpdate")
 EndFunc   ;==>SD_GUI_Events_Register
+
+Func SD_GUI_ModCategoriesUpdate()
+	$bExit = False
+	SD_GUI_Close()
+
+	Local $sDir, $sCategory, $mMap
+	For $i = 1 To $MM_LIST_CONTENT[0][0]
+		$sDir = $MM_LIST_CONTENT[$i][$MOD_ID]
+		$sCategory = ""
+		; this is specailly written in a bad manner. This SHOULD BE a temporary code
+		If StringLeft($sDir, StringLen("gameplay_")) = "gameplay_" Then $sCategory = "gameplay"
+		If StringLeft($sDir, StringLen("graphics_")) = "graphics_" Then $sCategory = "graphics"
+		If StringLeft($sDir, StringLen("scenarios_")) = "scenarios_" Then $sCategory = "scenarios"
+		If StringLeft($sDir, StringLen("cheats_")) = "cheats_" Then $sCategory = "cheats"
+		If StringLeft($sDir, StringLen("interface_")) = "interface_" Then $sCategory = "interface"
+		If StringLeft($sDir, StringLen("towns_")) = "towns_" Then $sCategory = "towns"
+
+		If $sCategory <> "" Then
+			$mMap = $MM_LIST_CONTENT[$i][$MOD_INFO_PARSED]
+			$mMap["category"] = $sCategory
+			Mod_Save($i, $mMap)
+			DirMove($MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$i][$MOD_ID], $MM_LIST_DIR_PATH & "\" & StringTrimLeft($MM_LIST_CONTENT[$i][$MOD_ID], StringLen($sCategory) + 1))
+			$MM_LIST_CONTENT[$i][$MOD_ID] = StringTrimLeft($MM_LIST_CONTENT[$i][$MOD_ID], StringLen($sCategory) + 1)
+		EndIf
+	Next
+
+	Mod_ListSave()
+	$bExit = True
+EndFunc
 
 Func SD_GUI_SetLng()
 	GUICtrlSetData($hGUI.MenuLanguage, Lng_Get("lang.language"))
@@ -629,8 +664,12 @@ EndFunc   ;==>SD_GUI_LoadSize
 Func SD_GUI_Close()
 	SD_GUI_SaveSize()
 	Settings_Save()
+	$aScreens = ArrayEmpty()
+	SD_GUI_UpdateScreen(0)
 	_GDIPlus_Shutdown()
-	Exit
+	$bMainUICycle = False
+	GUIDelete($MM_UI_MAIN)
+	If $bExit Then Exit
 EndFunc   ;==>SD_GUI_Close
 
 Func SD_GUI_Mod_Website()
@@ -736,6 +775,8 @@ Func SD_GUI_ChangeGameDir()
 		GUICtrlSetState($hGUI.MenuGame.Menu, $GUI_ENABLE)
 		GUICtrlSetState($hGUI.MenuMore.Add, $GUI_ENABLE)
 		GUICtrlSetState($hGUI.MenuGame.Launch, $MM_GAME_EXE = "" ? $GUI_DISABLE : $GUI_ENABLE)
+		$aScreens = ArrayEmpty()
+		SD_GUI_UpdateScreen(0)
 		SD_GUI_Update()
 	EndIf
 EndFunc   ;==>SD_GUI_ChangeGameDir
@@ -923,7 +964,7 @@ Func TreeViewFill()
 	For $iCount = 1 To $MM_LIST_CONTENT[0][0]
 		Local $bEnabled = $MM_LIST_CONTENT[$iCount][$MOD_IS_ENABLED]
 		Local $iPriority = Mod_Get("priority", $iCount)
-		Local $sCaption = Mod_Get("caption", $iCount) ? Mod_Get("caption", $iCount) : $MM_LIST_CONTENT[$iCount][$MOD_ID]
+		Local $sCaption = Mod_Get("caption", $iCount)
 		$sCaption = $MM_LIST_CONTENT[$iCount][$MOD_IS_EXIST] ? $sCaption : Lng_GetF("mod_list.missing", $sCaption)
 
 		$iCurrentGroup = $aModListGroups[0][0]

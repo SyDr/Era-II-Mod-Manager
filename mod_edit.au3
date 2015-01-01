@@ -27,7 +27,7 @@ Func ModEdit_Editor(Const $iModIndex, Const $hParent)
 	$hGUI.LngCode = Lng_Get("lang.code")
 	Local $aSize, $vRes, $nMsg
 
-	$hGUI.Form = GUICreate(Lng_Get("mod_edit.caption"), 420, 278, Default, Default, Default, Default, $hParent)
+	$hGUI.Form = GUICreate(Lng_Get("mod_edit.caption"), 420, 278 + 25 + 4, Default, Default, Default, Default, $hParent)
 	If Not @Compiled Then GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
 	$aSize = WinGetClientSize($hGUI.Form)
 
@@ -45,7 +45,7 @@ Func ModEdit_Editor(Const $iModIndex, Const $hParent)
  	$hGUI.ButtonCaptionFile = GUICtrlCreateButton("...",GUICtrlGetPos($hGUI.InputCaptionFile).NextX + $iItemSpacing, GUICtrlGetPos($hGUI.InputCaptionFile).Top - 1, $iButtonHeight, $iButtonHeight)
  	$hGUI.ButtonCaptionFileRemove = GUICtrlCreateButton("X", GUICtrlGetPos($hGUI.ButtonCaptionFile).NextX + $iItemSpacing, GUICtrlGetPos($hGUI.InputCaptionFile).Top - 1, $iButtonHeight, $iButtonHeight)
 
-	$hGUI.GroupOther = GUICtrlCreateGroup(Lng_Get("mod_edit.group_other.caption"), $iItemSpacing, GUICtrlGetPos($hGUI.GroupCaption).NextY, $aSize[0] - 2 * $iItemSpacing, 7 * $iItemSpacing + 2 * $iButtonHeight + $iInputHeight)
+	$hGUI.GroupOther = GUICtrlCreateGroup(Lng_Get("mod_edit.group_other.caption"), $iItemSpacing, GUICtrlGetPos($hGUI.GroupCaption).NextY, $aSize[0] - 2 * $iItemSpacing, 8 * $iItemSpacing + 3 * $iButtonHeight + $iInputHeight)
 	$hGUI.LabelModVersion = GUICtrlCreateLabel(Lng_Get("mod_edit.group_other.mod_version"), 2 * $iItemSpacing, GUICtrlGetPos($hGUI.GroupOther).Top + 4 * $iItemSpacing, Default, $iLabelHeight, $SS_CENTERIMAGE)
 	$hGUI.InputModVersion = GUICtrlCreateInput($hGUI.Info["mod_version"], GUICtrlGetPos($hGUI.LabelModVersion).NextX, GUICtrlGetPos($hGUI.LabelModVersion).Top, ($aSize[0] / 2) - GUICtrlGetPos($hGUI.LabelModVersion).NextX - $iButtonHeight - 2 * $iItemSpacing, $iInputHeight)
 	$hGUI.ButtonModVersion = GUICtrlCreateButton("+", GUICtrlGetPos($hGUI.InputModVersion).NextX + $iItemSpacing, GUICtrlGetPos($hGUI.InputModVersion).Top - 1, $iButtonHeight, $iButtonHeight)
@@ -70,6 +70,11 @@ Func ModEdit_Editor(Const $iModIndex, Const $hParent)
 
 	$hGUI.LabelHomepage = GUICtrlCreateLabel(Lng_Get("mod_edit.group_other.homepage"), 2 * $iItemSpacing, GUICtrlGetPos($hGUI.ButtonIcon).NextY + $iItemSpacing, Default, $iLabelHeight, $SS_CENTERIMAGE)
 	$hGUI.InputHomepage = GUICtrlCreateInput($hGUI.Info["homepage"], GUICtrlGetPos($hGUI.LabelHomepage).NextX, GUICtrlGetPos($hGUI.LabelHomepage).Top, $aSize[0] - GUICtrlGetPos($hGUI.LabelHomepage).NextX - 3 * $iItemSpacing, $iInputHeight)
+
+	$hGUI.LabelCategory = GUICtrlCreateLabel(Lng_Get("mod_edit.group_other.category"), 2 * $iItemSpacing, GUICtrlGetPos($hGUI.InputHomepage).NextY + $iItemSpacing, Default, $iLabelHeight, $SS_CENTERIMAGE)
+	$hGUI.ComboCategory = GUICtrlCreateCombo("", GUICtrlGetPos($hGUI.LabelCategory).NextX, GUICtrlGetPos($hGUI.LabelCategory).Top, $aSize[0] - GUICtrlGetPos($hGUI.LabelCategory).NextX - 3 * $iItemSpacing, 25, BitOR($CBS_DROPDOWN, $CBS_AUTOHSCROLL))
+	GUICtrlSetData($hGUI.ComboCategory, __ModEdit_PrepareCategoryList($hGUI.Info["category"]))
+	If Lng_Get("category." & $hGUI.Info["category"]) <> "" Then GUICtrlSetData($hGUI.ComboCategory, Lng_Get("category." & $hGUI.Info["category"]))
 
 	$hGUI.GroupCompatibility = GUICtrlCreateGroup(Lng_Get("mod_edit.group_compatibility.caption"), $iItemSpacing, GUICtrlGetPos($hGUI.GroupOther).NextY, $aSize[0] - 2 * $iItemSpacing, 5 * $iItemSpacing + 25)
 	$hGUI.LabelCompatibilityClass = GUICtrlCreateLabel(Lng_Get("mod_edit.group_compatibility.class"), 2 * $iItemSpacing, GUICtrlGetPos($hGUI.GroupCompatibility).Top + 4 * $iItemSpacing, Default, $iLabelHeight, $SS_CENTERIMAGE)
@@ -137,6 +142,7 @@ Func ModEdit_Editor(Const $iModIndex, Const $hParent)
 	$hGUI["Info"]["homepage"] = GUICtrlRead($hGUI.InputHomepage)
 	$hGUI["Info"]["priority"] = Int(GUICtrlRead($hGUI.InputPriority))
 	$hGUI["Info"]["compatibility"]["class"] = __ModEdit_FormattedCompatibilityClassToPlain(GUICtrlRead($hGUI.ComboCompatibilityClass))
+	$hGUI["Info"]["category"] = __ModEdit_FormattedCategoryToPlain(GUICtrlRead($hGUI.ComboCategory))
 
 	AutoItSetOption("GUIOnEventMode", $iOptionGUIOnEventMode)
 
@@ -148,6 +154,30 @@ Func ModEdit_Editor(Const $iModIndex, Const $hParent)
 	GUISetState(@SW_RESTORE, $hParent)
 
 	Return $bOk
+EndFunc
+
+Func __ModEdit_PrepareCategoryList(Const $sForseThis)
+	Local $aKeys = Lng_GetCategoryList()
+	Local $sReturn, $bForsedIn = False
+
+	For $i = 0 To UBound($aKeys) - 1
+		$sReturn &= "|" & Lng_Get("category." & $aKeys[$i])
+		If $aKeys[$i] = StringLower($sForseThis) Then $bForsedIn = True
+	Next
+
+	If Not $bForsedIn And $sForseThis <> "" Then $sReturn &= "|" & $sForseThis
+
+	Return $sReturn
+EndFunc
+
+Func __ModEdit_FormattedCategoryToPlain(Const $sCategory)
+	Local $aKeys = Lng_GetCategoryList()
+
+	For $i = 0 To UBound($aKeys) - 1
+		If Lng_Get("category." & $aKeys[$i]) = $sCategory Then Return $aKeys[$i]
+	Next
+
+	Return $sCategory
 EndFunc
 
 Func __ModEdit_FormatCompatibilityClass(Const $sClass)

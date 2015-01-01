@@ -145,6 +145,7 @@
 			"homepage" : "Страница в сети:",
 			"icon" : "Значок:",
 			"priority" : "Приоритет:",
+			"category" : "Категория:"
 		}
 		"group_compatibility" :
 		{
@@ -159,5 +160,14 @@
 			"yes" : "Да",
 			"no" : "Нет"
 		}
+	},
+	"category" :
+	{
+		"gameplay" : "Геймплей",
+		"graphics" : "Графика",
+		"scenarios" : "Сценарии",
+		"cheats" : "Читы",
+		"interface" : "Интерфейс",
+		"towns" : "Города"
 	}
 }
