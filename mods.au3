@@ -14,11 +14,11 @@ Func Mod_ListLoad()
 
 	ReDim $MM_LIST_CONTENT[1][$MOD_TOTAL]
 	$MM_LIST_CONTENT[0][0] = 0
+	$MM_LIST_MAP = MapEmpty()
 
     $MM_LIST_CONTENT[0][$MOD_IS_ENABLED] = "$MOD_IS_ENABLED"
     $MM_LIST_CONTENT[0][$MOD_IS_EXIST] = "$MOD_IS_EXIST"
-    $MM_LIST_CONTENT[0][$MOD_INFO_FILE] = "$MOD_INFO_FILE"
-    $MM_LIST_CONTENT[0][$MOD_INFO_PARSED] = "$MOD_INFO_PARSED"
+    $MM_LIST_CONTENT[0][$MOD_CAPTION] = "$MOD_INFO_FILE"
     $MM_LIST_CONTENT[0][$MOD_ITEM_ID] = "$MOD_ITEM_ID"
     $MM_LIST_CONTENT[0][$MOD_PARENT_ID] = "$MOD_PARENT_ID"
     $MM_LIST_CONTENT[0][$MOD_PARENT_ID] = "$MOD_DESCRIPTION_CACHE"
@@ -57,9 +57,8 @@ Func __Mod_LoadInfo(Const $iIndex, Const ByRef $sId, Const $bIsEnabled)
 	$MM_LIST_CONTENT[$iIndex][$MOD_ID] = $sId
 	$MM_LIST_CONTENT[$iIndex][$MOD_IS_ENABLED] = $bIsEnabled
 	$MM_LIST_CONTENT[$iIndex][$MOD_IS_EXIST] = FileExists($MM_LIST_DIR_PATH & "\" & $sId & "\") ? True : False
-	$MM_LIST_CONTENT[$iIndex][$MOD_INFO_FILE] = FileRead($MM_LIST_DIR_PATH & "\" & $sId & "\mod.json")
-	$MM_LIST_CONTENT[$iIndex][$MOD_INFO_PARSED] = Jsmn_Decode($MM_LIST_CONTENT[$MM_LIST_CONTENT[0][0]][$MOD_INFO_FILE])
-	__Mod_Validate($MM_LIST_CONTENT[$iIndex][$MOD_INFO_PARSED], $MM_LIST_DIR_PATH & "\" & $sId)
+	$MM_LIST_MAP[$sId] = Jsmn_Decode(FileRead($MM_LIST_DIR_PATH & "\" & $sId & "\mod.json"))
+	__Mod_Validate($MM_LIST_MAP[$sId], $MM_LIST_DIR_PATH & "\" & $sId)
 EndFunc
 
 Func __Mod_Validate(ByRef $Map, Const $sDir)
@@ -154,11 +153,11 @@ EndFunc
 Func Mod_Get(Const $sPath, $iModIndex = -1)
 	Local $vReturn = ""
 	Local $aParts = StringSplit($sPath, "\")
-
 	If $iModIndex = -1 Then $iModIndex = Mod_GetSelectedMod()
+	Local $sModId = $MM_LIST_CONTENT[$iModIndex][$MOD_ID]
 
 	If $sPath = "id" Then
-		$vReturn = $MM_LIST_CONTENT[$iModIndex][$MOD_ID]
+		$vReturn = $sModId
 	ElseIf $sPath = "dir" Then
 		$vReturn = $MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iModIndex][$MOD_ID]
 	ElseIf $sPath = "dir\" Then
@@ -166,16 +165,16 @@ Func Mod_Get(Const $sPath, $iModIndex = -1)
 	ElseIf $sPath = "info_file" Then
 		$vReturn = $MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iModIndex][$MOD_ID] & "\mod.json"
 	ElseIf $sPath = "caption" Then
-		$vReturn = ($MM_LIST_CONTENT[$iModIndex][$MOD_INFO_PARSED])["caption"][$MM_LANGUAGE_CODE]
-		If $vReturn = "" Then $vReturn = ($MM_LIST_CONTENT[$iModIndex][$MOD_INFO_PARSED])["caption"]["en_US"]
+		$vReturn = ($MM_LIST_MAP[$sModId])["caption"][$MM_LANGUAGE_CODE]
+		If $vReturn = "" Then $vReturn = ($MM_LIST_MAP[$sModId])["caption"]["en_US"]
 		If $vReturn = "" Then $vReturn = $MM_LIST_CONTENT[$iModIndex][$MOD_ID]
-		Local $sCategory = ($MM_LIST_CONTENT[$iModIndex][$MOD_INFO_PARSED])["category"]
+		Local $sCategory = ($MM_LIST_MAP[$sModId])["category"]
 		If $sCategory <> "" Then $vReturn = StringFormat("[%s] %s", Lng_Get("category." & Mod_Get("category", $iModIndex)), $vReturn)
 	ElseIf $aParts[1] = "description" Then
-		$vReturn = ($MM_LIST_CONTENT[$iModIndex][$MOD_INFO_PARSED])["description"][$aParts[2]][$MM_LANGUAGE_CODE]
-		If $vReturn = "" Then $vReturn = ($MM_LIST_CONTENT[$iModIndex][$MOD_INFO_PARSED])["description"][$aParts[2]]["en_US"]
+		$vReturn = ($MM_LIST_MAP[$sModId])["description"][$aParts[2]][$MM_LANGUAGE_CODE]
+		If $vReturn = "" Then $vReturn = ($MM_LIST_MAP[$sModId])["description"][$aParts[2]]["en_US"]
 		If $vReturn = "" Then $vReturn = Lng_Get("info_group.no_info")
-	ElseIf $aParts[1] = "plugins" And Not MapExists(($MM_LIST_CONTENT[$iModIndex][$MOD_INFO_PARSED])["plugins"], $aParts[2]) Then
+	ElseIf $aParts[1] = "plugins" And Not MapExists(($MM_LIST_MAP[$sModId])["plugins"], $aParts[2]) Then
 		Switch $aParts[3]
 			Case "caption"
 				$vReturn = $aParts[2]
@@ -187,21 +186,21 @@ Func Mod_Get(Const $sPath, $iModIndex = -1)
 				$vReturn = False
 		EndSwitch
 	ElseIf $aParts[1] = "plugins" And $aParts[3] = "caption" Then
-		$vReturn = ($MM_LIST_CONTENT[$iModIndex][$MOD_INFO_PARSED])["plugins"][$aParts[2]]["caption"][$MM_LANGUAGE_CODE]
-		If $vReturn = "" Then $vReturn = ($MM_LIST_CONTENT[$iModIndex][$MOD_INFO_PARSED])["plugins"][$aParts[2]]["caption"]["en_US"]
+		$vReturn = ($MM_LIST_MAP[$sModId])["plugins"][$aParts[2]]["caption"][$MM_LANGUAGE_CODE]
+		If $vReturn = "" Then $vReturn = ($MM_LIST_MAP[$sModId])["plugins"][$aParts[2]]["caption"]["en_US"]
 		If $vReturn = "" Then $vReturn = $aParts[2]
 	ElseIf $aParts[1] = "plugins" And $aParts[3] = "description" Then
-		$vReturn = ($MM_LIST_CONTENT[$iModIndex][$MOD_INFO_PARSED])["plugins"][$aParts[2]]["description"][$MM_LANGUAGE_CODE]
-		If $vReturn = "" Then $vReturn = ($MM_LIST_CONTENT[$iModIndex][$MOD_INFO_PARSED])["plugins"][$aParts[2]]["description"]["en_US"]
+		$vReturn = ($MM_LIST_MAP[$sModId])["plugins"][$aParts[2]]["description"][$MM_LANGUAGE_CODE]
+		If $vReturn = "" Then $vReturn = ($MM_LIST_MAP[$sModId])["plugins"][$aParts[2]]["description"]["en_US"]
 		If $vReturn = "" Then $vReturn = Lng_Get("info_group.no_info")
 	Else
 		Switch $aParts[0]
 			Case 1
-				$vReturn = ($MM_LIST_CONTENT[$iModIndex][$MOD_INFO_PARSED])[$aParts[1]]
+				$vReturn = ($MM_LIST_MAP[$sModId])[$aParts[1]]
 			Case 2
-				$vReturn = ($MM_LIST_CONTENT[$iModIndex][$MOD_INFO_PARSED])[$aParts[1]][$aParts[2]]
+				$vReturn = ($MM_LIST_MAP[$sModId])[$aParts[1]][$aParts[2]]
 			Case 3
-				$vReturn = ($MM_LIST_CONTENT[$iModIndex][$MOD_INFO_PARSED])[$aParts[1]][$aParts[2]][$aParts[3]]
+				$vReturn = ($MM_LIST_MAP[$sModId])[$aParts[1]][$aParts[2]][$aParts[3]]
 		EndSwitch
 	EndIf
 

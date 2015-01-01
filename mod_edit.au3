@@ -23,7 +23,7 @@ Func ModEdit_Editor(Const $iModIndex, Const $hParent)
 	Local Const $iInputHeight = 23
 	Local Const $iButtonHeight = 25
 	Local $hGUI = MapEmpty()
-	$hGUI.Info = $MM_LIST_CONTENT[$iModIndex][$MOD_INFO_PARSED]
+	$hGUI.Info = $MM_LIST_MAP[Mod_Get("id")]
 	$hGUI.LngCode = Lng_Get("lang.code")
 	Local $aSize, $vRes, $nMsg
 
