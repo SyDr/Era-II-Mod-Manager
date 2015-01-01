@@ -24,7 +24,7 @@ Func Update_CheckNewPorgram(Const $bIsPortable, Const $hParent)
 	$hGUI.Setup = MapEmpty()
 	$hGUI.Setup.Version = ""
 	$hGUI.Close = False
-	Local $bIsSuccess, $nMsg, $aSize
+	Local $bIsSuccess, $nMsg, $aSize, $iAnswer
 
 	$hGUI.Form = GUICreate(Lng_Get("update.caption"), $iMinWidth + Round(Random(0, (@DesktopWidth - $iMinWidth)/10, 1)), 173, Default, Default, Default, Default, $hParent)
 	If Not @Compiled Then GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
@@ -70,7 +70,7 @@ Func Update_CheckNewPorgram(Const $bIsPortable, Const $hParent)
 					__Update_InfoFileProcess($hGUI, FileRead($hGUI.Info.Location))
 				Else
 					$hGUI.Info.Valid = False
-					Local $iAnswer = MsgBox($MB_YESNO + $MB_ICONQUESTION + $MB_TASKMODAL, "", Lng_Get("update.cant_check"), Default, $hGUI.Form)
+					$iAnswer = MsgBox($MB_YESNO + $MB_ICONQUESTION + $MB_TASKMODAL, "", Lng_Get("update.cant_check"), Default, $hGUI.Form)
 					If $iAnswer = $IDYES Then Utils_LaunchInBrowser($hGUI.Info.RemotePath & "/ramm.html")
 				EndIf
 				__Update_GUIUpdateInfoView($hGUI)
