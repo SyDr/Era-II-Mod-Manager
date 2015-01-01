@@ -113,6 +113,7 @@ Func __Mod_Validate(ByRef $Map, Const $sDir)
 			If Not MapExists($Map["plugins"][$aItems[$i]]["description"], $MM_LNG_LIST[$i][$MM_LNG_CODE]) Or Not IsString($Map["plugins"][$aItems[$i]]["description"][$MM_LNG_LIST[$i][$MM_LNG_CODE]]) Then $Map["plugins"][$aItems[$i]]["description"][$MM_LNG_LIST[$i][$MM_LNG_CODE]] = ""
 		Next
 	Next
+	If Not MapExists($Map, "category") Or Not IsString($Map["category"]) Then $Map["category"] = ""
 EndFunc
 
 Func __Mod_LoadInfoFromINI(ByRef $Map, Const $sDir)
@@ -153,6 +154,7 @@ EndFunc
 Func Mod_Get(Const $sPath, $iModIndex = -1)
 	Local $vReturn = ""
 	Local $aParts = StringSplit($sPath, "\")
+
 	If $iModIndex = -1 Then $iModIndex = Mod_GetSelectedMod()
 
 	If $sPath = "id" Then
@@ -167,6 +169,8 @@ Func Mod_Get(Const $sPath, $iModIndex = -1)
 		$vReturn = ($MM_LIST_CONTENT[$iModIndex][$MOD_INFO_PARSED])["caption"][$MM_LANGUAGE_CODE]
 		If $vReturn = "" Then $vReturn = ($MM_LIST_CONTENT[$iModIndex][$MOD_INFO_PARSED])["caption"]["en_US"]
 		If $vReturn = "" Then $vReturn = $MM_LIST_CONTENT[$iModIndex][$MOD_ID]
+		Local $sCategory = ($MM_LIST_CONTENT[$iModIndex][$MOD_INFO_PARSED])["category"]
+		If $sCategory <> "" Then $vReturn = StringFormat("[%s] %s", Lng_Get("category." & Mod_Get("category", $iModIndex)), $vReturn)
 	ElseIf $aParts[1] = "description" Then
 		$vReturn = ($MM_LIST_CONTENT[$iModIndex][$MOD_INFO_PARSED])["description"][$aParts[2]][$MM_LANGUAGE_CODE]
 		If $vReturn = "" Then $vReturn = ($MM_LIST_CONTENT[$iModIndex][$MOD_INFO_PARSED])["description"][$aParts[2]]["en_US"]

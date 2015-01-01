@@ -145,6 +145,7 @@
 			"homepage" : "Homepage:",
 			"icon" : "Icon:",
 			"priority" : "Priority:",
+			"category" : "Category:"
 		}
 		"group_compatibility" :
 		{
@@ -159,5 +160,14 @@
 			"yes" : "Yes",
 			"no" : "No"
 		}
+	},
+	"category" :
+	{
+		"gameplay" : "Gameplay",
+		"graphics" : "Graphics",
+		"scenarios" : "Scenarios",
+		"cheats" : "Cheats",
+		"interface" : "Interface",
+		"towns" : "Towns"
 	}
 }

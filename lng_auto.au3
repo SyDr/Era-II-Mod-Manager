@@ -113,6 +113,7 @@ If Not MapExists($MM_LNG_CACHE["mod_edit"]["group_other"], "author") Or Not IsSt
 If Not MapExists($MM_LNG_CACHE["mod_edit"]["group_other"], "homepage") Or Not IsString($MM_LNG_CACHE["mod_edit"]["group_other"]["homepage"]) Then $MM_LNG_CACHE["mod_edit"]["group_other"]["homepage"] = "Homepage:"
 If Not MapExists($MM_LNG_CACHE["mod_edit"]["group_other"], "icon") Or Not IsString($MM_LNG_CACHE["mod_edit"]["group_other"]["icon"]) Then $MM_LNG_CACHE["mod_edit"]["group_other"]["icon"] = "Icon:"
 If Not MapExists($MM_LNG_CACHE["mod_edit"]["group_other"], "priority") Or Not IsString($MM_LNG_CACHE["mod_edit"]["group_other"]["priority"]) Then $MM_LNG_CACHE["mod_edit"]["group_other"]["priority"] = "Priority:"
+If Not MapExists($MM_LNG_CACHE["mod_edit"]["group_other"], "category") Or Not IsString($MM_LNG_CACHE["mod_edit"]["group_other"]["category"]) Then $MM_LNG_CACHE["mod_edit"]["group_other"]["category"] = "Category:"
 If Not MapExists($MM_LNG_CACHE["mod_edit"], "group_compatibility") Or Not IsMap($MM_LNG_CACHE["mod_edit"]["group_compatibility"]) Then $MM_LNG_CACHE["mod_edit"]["group_compatibility"] = MapEmpty()
 If Not MapExists($MM_LNG_CACHE["mod_edit"]["group_compatibility"], "caption") Or Not IsString($MM_LNG_CACHE["mod_edit"]["group_compatibility"]["caption"]) Then $MM_LNG_CACHE["mod_edit"]["group_compatibility"]["caption"] = "Compatibility"
 If Not MapExists($MM_LNG_CACHE["mod_edit"]["group_compatibility"], "class") Or Not IsString($MM_LNG_CACHE["mod_edit"]["group_compatibility"]["class"]) Then $MM_LNG_CACHE["mod_edit"]["group_compatibility"]["class"] = "Compatibility class:"
@@ -124,3 +125,10 @@ If Not MapExists($MM_LNG_CACHE["mod_edit"]["group_compatibility"], "mod") Or Not
 If Not MapExists($MM_LNG_CACHE["mod_edit"]["group_compatibility"], "compatible") Or Not IsString($MM_LNG_CACHE["mod_edit"]["group_compatibility"]["compatible"]) Then $MM_LNG_CACHE["mod_edit"]["group_compatibility"]["compatible"] = "Compatible"
 If Not MapExists($MM_LNG_CACHE["mod_edit"]["group_compatibility"], "yes") Or Not IsString($MM_LNG_CACHE["mod_edit"]["group_compatibility"]["yes"]) Then $MM_LNG_CACHE["mod_edit"]["group_compatibility"]["yes"] = "Yes"
 If Not MapExists($MM_LNG_CACHE["mod_edit"]["group_compatibility"], "no") Or Not IsString($MM_LNG_CACHE["mod_edit"]["group_compatibility"]["no"]) Then $MM_LNG_CACHE["mod_edit"]["group_compatibility"]["no"] = "No"
+If Not MapExists($MM_LNG_CACHE, "category") Or Not IsMap($MM_LNG_CACHE["category"]) Then $MM_LNG_CACHE["category"] = MapEmpty()
+If Not MapExists($MM_LNG_CACHE["category"], "gameplay") Or Not IsString($MM_LNG_CACHE["category"]["gameplay"]) Then $MM_LNG_CACHE["category"]["gameplay"] = "Gameplay"
+If Not MapExists($MM_LNG_CACHE["category"], "graphics") Or Not IsString($MM_LNG_CACHE["category"]["graphics"]) Then $MM_LNG_CACHE["category"]["graphics"] = "Graphics"
+If Not MapExists($MM_LNG_CACHE["category"], "scenarios") Or Not IsString($MM_LNG_CACHE["category"]["scenarios"]) Then $MM_LNG_CACHE["category"]["scenarios"] = "Scenarios"
+If Not MapExists($MM_LNG_CACHE["category"], "cheats") Or Not IsString($MM_LNG_CACHE["category"]["cheats"]) Then $MM_LNG_CACHE["category"]["cheats"] = "Cheats"
+If Not MapExists($MM_LNG_CACHE["category"], "interface") Or Not IsString($MM_LNG_CACHE["category"]["interface"]) Then $MM_LNG_CACHE["category"]["interface"] = "Interface"
+If Not MapExists($MM_LNG_CACHE["category"], "towns") Or Not IsString($MM_LNG_CACHE["category"]["towns"]) Then $MM_LNG_CACHE["category"]["towns"] = "Towns"
