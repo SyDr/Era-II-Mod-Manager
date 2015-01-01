@@ -436,11 +436,11 @@ Func SD_GUI_ModCategoriesUpdate()
 		If StringLeft($sDir, StringLen("towns_")) = "towns_" Then $sCategory = "towns"
 
 		If $sCategory <> "" Then
-			$mMap = $MM_LIST_CONTENT[$i][$MOD_INFO_PARSED]
+			$mMap = $MM_LIST_MAP[Mod_Get("id", $i)]
 			$mMap["category"] = $sCategory
 			Mod_Save($i, $mMap)
 			DirMove($MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$i][$MOD_ID], $MM_LIST_DIR_PATH & "\" & StringTrimLeft($MM_LIST_CONTENT[$i][$MOD_ID], StringLen($sCategory) + 1))
-			$MM_LIST_CONTENT[$i][$MOD_ID] = StringTrimLeft($MM_LIST_CONTENT[$i][$MOD_ID], StringLen($sCategory) + 1)
+			If Not @error Then $MM_LIST_CONTENT[$i][$MOD_ID] = StringTrimLeft($MM_LIST_CONTENT[$i][$MOD_ID], StringLen($sCategory) + 1)
 		EndIf
 	Next
 
