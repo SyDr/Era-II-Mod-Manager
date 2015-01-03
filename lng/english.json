@@ -135,7 +135,8 @@
 			"caption" : "Caption and description",
 			"language" : "Language:",
 			"caption_label" : "Caption:",
-			"description_file" : "Description file:"
+			"description_file" : "Description file:",
+			"hint" : "If value is not set, an English part will be used. \n\nSo, there is no need to duplicate values from English to other languages."
 		},
 		"group_other" :
 		{
