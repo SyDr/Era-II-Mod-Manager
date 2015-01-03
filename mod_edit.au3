@@ -33,9 +33,11 @@ Func ModEdit_Editor(Const $iModIndex, Const $hParent)
 
 	$hGUI.GroupCaption = GUICtrlCreateGroup(Lng_Get("mod_edit.group_caption.caption"), $iItemSpacing, $iItemSpacing, $aSize[0] - 2 * $iItemSpacing, 7 * $iItemSpacing + 25 + $iButtonHeight + $iLabelHeight)
 	$hGUI.LabelCaptionLanguage = GUICtrlCreateLabel(Lng_Get("mod_edit.group_caption.language"), 2 * $iItemSpacing, 5 * $iItemSpacing, Default, $iLabelHeight, $SS_CENTERIMAGE)
-	$hGUI.ComboCaptionLanguage = GUICtrlCreateCombo("", GUICtrlGetPos($hGUI.LabelCaptionLanguage).NextX, 5 * $iItemSpacing, $aSize[0] - GUICtrlGetPos($hGUI.LabelCaptionLanguage).NextX - 3 * $iItemSpacing, 25, BitOR($CBS_DROPDOWNLIST, $CBS_AUTOHSCROLL))
+	$hGUI.ComboCaptionLanguage = GUICtrlCreateCombo("", GUICtrlGetPos($hGUI.LabelCaptionLanguage).NextX, 5 * $iItemSpacing, $aSize[0] - GUICtrlGetPos($hGUI.LabelCaptionLanguage).NextX - 5 * $iItemSpacing - 2 * $iButtonHeight, 25, BitOR($CBS_DROPDOWNLIST, $CBS_AUTOHSCROLL))
 	GUICtrlSetData($hGUI.ComboCaptionLanguage, _ArrayToString($MM_LNG_LIST, Default, 1, Default, "|", 2, 2))
 	GUICtrlSetData($hGUI.ComboCaptionLanguage, Lng_Get("lang.name"))
+
+	$hGUI.ButtonCaptionHelp = GUICtrlCreateButton("?", $aSize[0] - 3 * $iItemSpacing - $iButtonHeight, GUICtrlGetPos($hGUI.ComboCaptionLanguage).Top - 2, $iButtonHeight, $iButtonHeight)
 
 	$hGUI.LabelCaptionCaption = GUICtrlCreateLabel(Lng_Get("mod_edit.group_caption.caption_label"), 2 * $iItemSpacing, GUICtrlGetPos($hGUI.ComboCaptionLanguage).NextY + $iItemSpacing, Default, $iLabelHeight, $SS_CENTERIMAGE)
 	$hGUI.InputCaptionCaption = GUICtrlCreateInput($hGUI.Info["caption"][$hGUI.LngCode], GUICtrlGetPos($hGUI.LabelCaptionCaption).NextX, GUICtrlGetPos($hGUI.LabelCaptionCaption).Top, $aSize[0] - GUICtrlGetPos($hGUI.LabelCaptionCaption).NextX - 3 * $iItemSpacing, $iInputHeight)
@@ -106,6 +108,9 @@ Func ModEdit_Editor(Const $iModIndex, Const $hParent)
 				GUICtrlSetData($hGUI.InputCaptionFile, $hGUI.Info["description"]["full"][$hGUI.LngCode])
 
 				__ModEdit_SetControlAccessibility($hGUI)
+
+			Case $hGUI.ButtonCaptionHelp
+				MsgBox(0, "", Lng_Get("mod_edit.group_caption.hint"), Default, $hGUI.Form)
 			Case $hGUI.ButtonCaptionFile
 				$vRes = FileOpenDialog("", Mod_Get("dir\"), "(*.*)", $FD_PATHMUSTEXIST + $FD_FILEMUSTEXIST, GUICtrlRead($hGUI.InputCaptionFile), $hGUI.Form)
 				If Not @error  And StringLeft($vRes, StringLen(Mod_Get("dir\"))) = Mod_Get("dir\")  Then
