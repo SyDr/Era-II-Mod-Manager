@@ -64,6 +64,7 @@
 			"version" : "Версия: %s",
 			"author" : "Автор(ы): %s",
 			"link" : "Посетить домашнюю <A HREF=\"homepage\">страницу</A> мода"
+			"category" : "Категория: %s"
 		}
 	},
 	"compatibility" :
