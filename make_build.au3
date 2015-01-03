@@ -18,6 +18,7 @@ DirCopy("7z", "Mod Manager\7z", 1)
 DirCopy("icons", "Mod Manager\icons", 1)
 FileDelete("Mod Manager\icons\preferences-system.ico")
 DirCopy("lng", "Mod Manager\lng", 1)
+DirCopy("doc", "Mod Manager\doc", 1)
 
 FileChangeDir(@ScriptDir)
 ShellExecuteWait(@ProgramFilesDir & "\Inno Setup 5\ISCC.exe", "setup.iss", @ScriptDir)
