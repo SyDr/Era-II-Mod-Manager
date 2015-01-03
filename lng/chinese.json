@@ -2,7 +2,7 @@
 	"lang" :
 	{
 		"code" : "Cn_Simp",
-		"name" : "简体中文",
+		"name" : "简体中文 (old, unsupported)",
 		"author" : "kswdiy",
 		"language" : "Language"
 	},
@@ -10,7 +10,6 @@
 	{
 		"mod" : "Mod",
 		"caption" : "MOD的加载顺序列表 (在最前顶部加载就越优先)",
-		"no_game_dir" : "no game dir - select from \"More actions\"",
 		"up" : "上 移",
 		"down" : "下 移",
 		"enable" : "激 活",
@@ -23,7 +22,6 @@
 			"enabled_with_priority" : "激活 (%+i)",
 			"disabled" : "禁用"
 		},
-		"list_inaccessible" : "Can't delete/write file \"%s\" content\n\nPossible reasons:\n 1) File is \"read-only\"\n 2) Current user doesn't not have enough rights to create/delete this file \n\nOpen directory in explorer?",
 		"more" : "附加操作",
 		"plugins" : "插件",
 		"homepage" : "访问MOD网页",
@@ -32,45 +30,19 @@
 		"add_new" : "添加Mod",
 		"compatibility" : "兼容性",
 		"open_dir" : "打开MOD目录",
-		"edit_mod" : "Edit mod data"
-	},
-	"game" : {
-		"caption" : "Game",
-		"launch" : "Launch (%s)",
-		"change" : "Change",
 	},
 	"plugins_list" :
 	{
 		"caption" : "插件 (%s)",
-		"global" : "Global",
-		"before_wog" : "BeforeWoG",
-		"after_wog" : "AfterWoG",
-		"back" : "Back",
-		"default" : "Default"
 	},
 	"info_group" :
 	{
-		"desc" : "Descripton",
-		"screens" : 
-		{
-			"caption" : "Screenshots"
-		},
 		"no_info" : "无任何信息",
-		"info" :
-		{
-			"caption" : "Information",
-			"mod_caption" : "Mod %s (%s)",
-			"mod_caption_s" : "Mod %s",
-			"version" : "Version: %s",
-			"author" : "Author(s): %s",
-			"link" : "Visit mod <A HREF=\"homepage\">homepage</A>"
-		}
 	},
 	"compatibility" :
 	{
 		"part1" : "Mod %s 与如下Mod不兼容:",
 		"part2" : "禁用这些Mod以减少不必要出现的Bug :)",
-		"launch_anyway" : "Launch anyway?"
 	},
 	"add_new" :
 	{
@@ -93,81 +65,5 @@
 		"exit" : "退出",
 		"version_installed" : "Mod 已安装 (版本: %s)",
 		"install_package" : "安装封包版本: %s"
-	},
-	"settings" :
-	{
-		"game_dir" :
-		{
-			"change" : "Change game directory",
-			"caption" : "Select game directory"
-		},
-		"game_exe" :
-		{
-			"show_all" : "Show all"
-		}
-	},
-	"update" :
-	{
-		"caption" : "Check for program updates",
-		"current_version" : "Installed version: %s",
-		"available_versions" : "Available to download:",
-		"wait" : "wait...",
-		"select_from_list" : "select from list...",
-		"cancel" : "Cancel",
-		"update_group" : "Selected update",
-		"download_and_install" : "Download update and install automatically",
-		"only_download" : "Only download",
-		"change_dir" : "Change",
-		"select_dir" : "Select directory",
-		"start" : "Start",
-		"close" : "Close",
-		"cant_check" : "Can't check program update. Open link in browser?",
-		"cant_download" : "Can't download program update. Open link in browser?",
-		"info_invalid" : "invalid format...",
-	},
-	"mod_edit" :
-	{
-		"caption" : "Mod edit",
-		"save" : "Save",
-		"cancel" : "Cancel",
-		"group_caption" :
-		{
-			"caption" : "Caption and description",
-			"language" : "Language:",
-			"caption_label" : "Caption:",
-			"description_file" : "Description file:"
-		},
-		"group_other" :
-		{
-			"caption" : "Other",
-			"mod_version" : "Mod version:",
-			"author" : "Author:",
-			"homepage" : "Homepage:",
-			"icon" : "Icon:",
-			"priority" : "Priority:",
-			"category" : "Category:"
-		}
-		"group_compatibility" :
-		{
-			"caption" : "Compatibility",
-			"class" : "Compatibility class:",
-			"all" : "compatible with all mods",
-			"default" : "incompatible with \"none\" mods",
-			"none" : "incompatible with \"none\" and \"default\" mods",
-			"exclusions" : "Exclusions:",
-			"mod" : "Mod caption/id",
-			"compatible" : "Compatible",
-			"yes" : "Yes",
-			"no" : "No"
-		}
-	},
-	"category" :
-	{
-		"gameplay" : "Gameplay",
-		"graphics" : "Graphics",
-		"scenarios" : "Scenarios",
-		"cheats" : "Cheats",
-		"interface" : "Interface",
-		"towns" : "Towns"
 	}
 }
