@@ -61,7 +61,7 @@ Func __Mod_LoadInfo(Const $iIndex, Const ByRef $sId, Const $bIsEnabled)
 	$MM_LIST_CONTENT[$iIndex][$MOD_IS_EXIST] = FileExists($MM_LIST_DIR_PATH & "\" & $sId & "\") ? True : False
 	$MM_LIST_MAP[$sId] = Jsmn_Decode(FileRead($MM_LIST_DIR_PATH & "\" & $sId & "\mod.json"))
 	__Mod_Validate($MM_LIST_MAP[$sId], $MM_LIST_DIR_PATH & "\" & $sId)
-	$MM_LIST_CONTENT[$iIndex][$MOD_CAPTION] = Mod_Get("caption", $iIndex)
+	$MM_LIST_CONTENT[$iIndex][$MOD_CAPTION] = Mod_Get("caption\formatted", $iIndex)
 EndFunc
 
 Func __Mod_Validate(ByRef $Map, Const $sDir)
@@ -171,6 +171,8 @@ Func Mod_Get(Const $sPath, $iModIndex = -1)
 		$vReturn = ($MM_LIST_MAP[$sModId])["caption"][$MM_LANGUAGE_CODE]
 		If $vReturn = "" Then $vReturn = ($MM_LIST_MAP[$sModId])["caption"]["en_US"]
 		If $vReturn = "" Then $vReturn = $MM_LIST_CONTENT[$iModIndex][$MOD_ID]
+	ElseIf $sPath = "caption\formatted" Then
+		$vReturn = Mod_Get("caption", $iModIndex)
 		Local $sCategory = ($MM_LIST_MAP[$sModId])["category"]
 		If $sCategory <> "" Then $vReturn = StringFormat("[%s] %s", Lng_Get("category." & Mod_Get("category", $iModIndex)), $vReturn)
 	ElseIf $aParts[1] = "description" Then

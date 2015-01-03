@@ -52,6 +52,7 @@ If Not MapExists($MM_LNG_CACHE["info_group"]["info"], "mod_caption_s") Or Not Is
 If Not MapExists($MM_LNG_CACHE["info_group"]["info"], "version") Or Not IsString($MM_LNG_CACHE["info_group"]["info"]["version"]) Then $MM_LNG_CACHE["info_group"]["info"]["version"] = "Version: %s"
 If Not MapExists($MM_LNG_CACHE["info_group"]["info"], "author") Or Not IsString($MM_LNG_CACHE["info_group"]["info"]["author"]) Then $MM_LNG_CACHE["info_group"]["info"]["author"] = "Author(s): %s"
 If Not MapExists($MM_LNG_CACHE["info_group"]["info"], "link") Or Not IsString($MM_LNG_CACHE["info_group"]["info"]["link"]) Then $MM_LNG_CACHE["info_group"]["info"]["link"] = "Visit mod <A HREF=""homepage"">homepage</A>"
+If Not MapExists($MM_LNG_CACHE["info_group"]["info"], "category") Or Not IsString($MM_LNG_CACHE["info_group"]["info"]["category"]) Then $MM_LNG_CACHE["info_group"]["info"]["category"] = "Category: %s"
 If Not MapExists($MM_LNG_CACHE, "compatibility") Or Not IsMap($MM_LNG_CACHE["compatibility"]) Then $MM_LNG_CACHE["compatibility"] = MapEmpty()
 If Not MapExists($MM_LNG_CACHE["compatibility"], "part1") Or Not IsString($MM_LNG_CACHE["compatibility"]["part1"]) Then $MM_LNG_CACHE["compatibility"]["part1"] = "Mod %s is incompatible with following mods:"
 If Not MapExists($MM_LNG_CACHE["compatibility"], "part2") Or Not IsString($MM_LNG_CACHE["compatibility"]["part2"]) Then $MM_LNG_CACHE["compatibility"]["part2"] = "Disable these mods to reduce amount of unexpected bugs :)"

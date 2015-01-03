@@ -97,6 +97,10 @@ Func Lng_Get(Const ByRef $sKeyName)
 	Return Not IsKeyword($sReturn) ? $sReturn : $sKeyName
 EndFunc   ;==>Lng_Get
 
+Func Lng_GetCategory(Const $sKeyName)
+	Return Lng_Get("category." & $sKeyName)
+EndFunc
+
 Func Lng_GetF(Const ByRef $sKeyName, Const $vParam1, Const $vParam2 = Default)
 	If IsKeyword($vParam2) == $KEYWORD_DEFAULT Then
 		Return StringFormat(Lng_Get($sKeyName), $vParam1)

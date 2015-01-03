@@ -964,7 +964,7 @@ Func TreeViewFill()
 	For $iCount = 1 To $MM_LIST_CONTENT[0][0]
 		Local $bEnabled = $MM_LIST_CONTENT[$iCount][$MOD_IS_ENABLED]
 		Local $iPriority = Mod_Get("priority", $iCount)
-		Local $sCaption = Mod_Get("caption", $iCount)
+		Local $sCaption = Mod_Get("caption\formatted", $iCount)
 		$sCaption = $MM_LIST_CONTENT[$iCount][$MOD_IS_EXIST] ? $sCaption : Lng_GetF("mod_list.missing", $sCaption)
 
 		$iCurrentGroup = $aModListGroups[0][0]
@@ -1241,6 +1241,7 @@ Func SD_FormatDescription()
 		$sText = Lng_GetF("info_group.info.mod_caption_s", Mod_Get("caption"))
 	EndIf
 
+	If Mod_Get("category") <> "" Then $sText &= @CRLF & Lng_GetF("info_group.info.category", Lng_GetCategory(Mod_Get("category")))
 	If Mod_Get("mod_version") <> "0.0" Then	$sText &= @CRLF & Lng_GetF("info_group.info.version", Mod_Get("mod_version"))
 	If Mod_Get("author") <> "" Then	$sText &= @CRLF & Lng_GetF("info_group.info.author", Mod_Get("author"))
 	If Mod_Get("homepage") <> "" Then	$sText &= @CRLF & Lng_GetF("info_group.info.link", Mod_Get("homepage"))
