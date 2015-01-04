@@ -708,6 +708,7 @@ Func SD_GUI_Mod_Delete()
 	Local $iAnswer = MsgBox($MB_YESNO + $MB_ICONQUESTION + $MB_DEFBUTTON2 + $MB_TASKMODAL, "", StringFormat(Lng_Get("mod_list.delete_confirm"), Mod_Get("caption", $iModIndex)), Default, $MM_UI_MAIN)
 	If $iAnswer = $IDNO Then Return
 
+	SD_GUI_UpdateScreen(0)
 	Mod_Delete($iModIndex)
 	TreeViewMain()
 	If $MM_LIST_CONTENT[0][0] < $iModIndex Then
