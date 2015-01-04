@@ -10,6 +10,11 @@
 			"type": "beta",
 			"setup": "/beta/RAMM_0.91.1.0.beta.exe",
 			"portable": "/beta/RAMM_0.91.1.0.beta.zip"
+		},
+		"0.91.1.1": {
+			"type": "beta",
+			"setup": "/beta/RAMM_0.91.1.1.beta.exe",
+			"portable": "/beta/RAMM_0.91.1.1.beta.zip"
 		}
 	}
 }
