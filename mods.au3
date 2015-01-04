@@ -124,9 +124,11 @@ Func __Mod_LoadInfoFromINI(ByRef $Map, Const $sDir)
 	$Map["description"] = MapEmpty()
 	$Map["description"]["full"] = MapEmpty()
 	For $i = 1 To $MM_LNG_LIST[0][0]
-		$Map["caption"][$MM_LNG_LIST[$i][$MM_LNG_CODE]] = IniRead($sDir & "\mod_info.ini", "info", "Caption." & $MM_LNG_LIST[$i][$MM_LNG_CODE], IniRead($sDir & "\mod_info.ini", "info", "Caption", ""))
-		$Map["description"]["full"][$MM_LNG_LIST[$i][$MM_LNG_CODE]] = IniRead($sDir & "\mod_info.ini", "info", "Description File." & $MM_LNG_LIST[$i][$MM_LNG_CODE], IniRead($sDir & "\mod_info.ini", "info", "Description File", ""))
+		$Map["caption"][$MM_LNG_LIST[$i][$MM_LNG_CODE]] = IniRead($sDir & "\mod_info.ini", "info", "Caption." & $MM_LNG_LIST[$i][$MM_LNG_CODE], "")
+		$Map["description"]["full"][$MM_LNG_LIST[$i][$MM_LNG_CODE]] = IniRead($sDir & "\mod_info.ini", "info", "Description File." & $MM_LNG_LIST[$i][$MM_LNG_CODE], "")
 	Next
+	$Map["caption"]["en_US"] = IniRead($sDir & "\mod_info.ini", "info", "Caption", "")
+	$Map["description"]["full"]["en_US"] = IniRead($sDir & "\mod_info.ini", "info", "Description File", "")
 	$Map["author"] = IniRead($sDir & "\mod_info.ini", "info", "Author", "")
 	$Map["homepage"] = IniRead($sDir & "\mod_info.ini", "info", "Homepage", "")
 	$Map["icon"] = MapEmpty()
