@@ -445,6 +445,7 @@ Func SD_GUI_ModCategoriesUpdate()
 	Next
 
 	Mod_ListSave()
+	Mod_ListLoad()
 	$bExit = True
 EndFunc
 
