@@ -49,7 +49,7 @@ $hGUI.Screen = MapEmpty()
 Global $hDummyF5, $hDummyLinks, $hDummyCategories
 Global Const $iItemSpacing = 4
 
-Global $aModListGroups[1][3]; group item id, is enabled, priority
+Global $aModListGroups[1][3]; group item id, is enabled, priority/group tag
 Global $aPlugins[1][2], $hPluginsParts[3]
 Global $aScreens[1], $iScreenIndex, $iScreenWidth, $iScreenHeight, $hScreenImage, $hScreenBitmap, $sScreenPath
 Global $sFollowMod = ""
@@ -428,19 +428,19 @@ Func SD_GUI_ModCategoriesUpdate()
 		$sDir = $MM_LIST_CONTENT[$i][$MOD_ID]
 		$sCategory = ""
 		; this is specailly written in a bad manner. This SHOULD BE a temporary code
-		If StringLeft($sDir, StringLen("gameplay_")) = "gameplay_" Then $sCategory = "gameplay"
-		If StringLeft($sDir, StringLen("graphics_")) = "graphics_" Then $sCategory = "graphics"
-		If StringLeft($sDir, StringLen("scenarios_")) = "scenarios_" Then $sCategory = "scenarios"
-		If StringLeft($sDir, StringLen("cheats_")) = "cheats_" Then $sCategory = "cheats"
-		If StringLeft($sDir, StringLen("interface_")) = "interface_" Then $sCategory = "interface"
-		If StringLeft($sDir, StringLen("towns_")) = "towns_" Then $sCategory = "towns"
+		If StringLeft($sDir, StringLen("[gameplay] ")) = "[gameplay] " Then $sCategory = "gameplay"
+		If StringLeft($sDir, StringLen("[graphics] ")) = "[graphics] " Then $sCategory = "graphics"
+		If StringLeft($sDir, StringLen("[scenarios] ")) = "[scenarios] " Then $sCategory = "scenarios"
+		If StringLeft($sDir, StringLen("[cheats] ")) = "[cheats] " Then $sCategory = "cheats"
+		If StringLeft($sDir, StringLen("[interface] ")) = "[interface] " Then $sCategory = "interface"
+		If StringLeft($sDir, StringLen("[towns] ")) = "[towns] " Then $sCategory = "towns"
 
 		If $sCategory <> "" Then
 			$mMap = $MM_LIST_MAP[Mod_Get("id", $i)]
 			$mMap["category"] = $sCategory
 			Mod_Save($i, $mMap)
-			DirMove($MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$i][$MOD_ID], $MM_LIST_DIR_PATH & "\" & StringTrimLeft($MM_LIST_CONTENT[$i][$MOD_ID], StringLen($sCategory) + 1))
-			If Not @error Then $MM_LIST_CONTENT[$i][$MOD_ID] = StringTrimLeft($MM_LIST_CONTENT[$i][$MOD_ID], StringLen($sCategory) + 1)
+			DirMove($MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$i][$MOD_ID], $MM_LIST_DIR_PATH & "\" & StringTrimLeft($MM_LIST_CONTENT[$i][$MOD_ID], StringLen($sCategory) + 3))
+			If Not @error Then $MM_LIST_CONTENT[$i][$MOD_ID] = StringTrimLeft($MM_LIST_CONTENT[$i][$MOD_ID], StringLen($sCategory) + 3)
 		EndIf
 	Next
 
@@ -956,8 +956,6 @@ EndFunc   ;==>SD_GUI_Plugin_SelectionChanged
 Func TreeViewFill()
 	_GUICtrlTreeView_BeginUpdate($hGUI.ModList.List)
 
-	Local $bCurrentGroupEnabled = True
-
 	GUICtrlSetState($hGUI.MenuMore.Compatibility, $GUI_DISABLE)
 
 	Local $iCurrentGroup = -1
@@ -966,18 +964,18 @@ Func TreeViewFill()
 	For $iCount = 1 To $MM_LIST_CONTENT[0][0]
 		Local $bEnabled = $MM_LIST_CONTENT[$iCount][$MOD_IS_ENABLED]
 		Local $iPriority = Mod_Get("priority", $iCount)
-		Local $sCaption = Mod_Get("caption\formatted", $iCount)
+		Local $sCategory = Mod_Get("category", $iCount)
+		Local $sCaption = $bEnabled ? Mod_Get("caption\formatted", $iCount) : Mod_Get("caption", $iCount)
 		$sCaption = $MM_LIST_CONTENT[$iCount][$MOD_IS_EXIST] ? $sCaption : Lng_GetF("mod_list.missing", $sCaption)
 
-		$iCurrentGroup = $aModListGroups[0][0]
-		Local $bCreateNewGroup = $iCurrentGroup < 1
+		$iCurrentGroup = TreeViewFindCategory($bEnabled, $bEnabled ? $iPriority : $sCategory)
+		Local $bCreateNewGroup = $iCurrentGroup < 0
 
-		If Not $bCreateNewGroup And $bEnabled And $iPriority <> Mod_Get("priority", $iCount - 1) Then $bCreateNewGroup = True
-		If $bCurrentGroupEnabled And Not $bEnabled Then $bCreateNewGroup = True
 
 		If $bCreateNewGroup Then
 			Local $sText = $bEnabled ? Lng_Get("mod_list.group.enabled") : Lng_Get("mod_list.group.disabled")
 			If $bEnabled And $iPriority <> 0 Then $sText = StringFormat(Lng_Get("mod_list.group.enabled_with_priority"), $iPriority)
+			If Not $bEnabled And $sCategory <> "" Then $sText = Lng_GetF("mod_list.group.disabled_group", Lng_GetCategory($sCategory))
 
 			$aModListGroups[0][0] += 1
 			$iCurrentGroup = $aModListGroups[0][0]
@@ -993,9 +991,7 @@ Func TreeViewFill()
 			EndIf
 
 			$aModListGroups[$iCurrentGroup][1] = $bEnabled
-			$aModListGroups[$iCurrentGroup][2] = $iPriority
-
-			$bCurrentGroupEnabled = $bEnabled
+			$aModListGroups[$iCurrentGroup][2] = $bEnabled ? $iPriority : $sCategory
 		EndIf
 
 		$MM_LIST_CONTENT[$iCount][$MOD_PARENT_ID] = $iCurrentGroup
@@ -1015,6 +1011,14 @@ Func TreeViewFill()
 	TreeViewColor()
 	_GUICtrlTreeView_EndUpdate($hGUI.ModList.List)
 EndFunc   ;==>TreeViewFill
+
+Func TreeViewFindCategory(Const $bEnabled, Const $vData)
+	For $i = 1 To $aModListGroups[0][0]
+		If $bEnabled = $aModListGroups[$i][1] And $aModListGroups[$i][2] = $vData Then Return $i
+	Next
+
+	Return -1
+EndFunc
 
 Func TreeViewColor()
 	$MM_COMPATIBILITY_MESSAGE = ""

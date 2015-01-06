@@ -61,7 +61,7 @@ Func __Mod_LoadInfo(Const $iIndex, Const ByRef $sId, Const $bIsEnabled)
 	$MM_LIST_CONTENT[$iIndex][$MOD_IS_EXIST] = FileExists($MM_LIST_DIR_PATH & "\" & $sId & "\") ? True : False
 	$MM_LIST_MAP[$sId] = Jsmn_Decode(FileRead($MM_LIST_DIR_PATH & "\" & $sId & "\mod.json"))
 	__Mod_Validate($MM_LIST_MAP[$sId], $MM_LIST_DIR_PATH & "\" & $sId)
-	$MM_LIST_CONTENT[$iIndex][$MOD_CAPTION] = Mod_Get("caption\formatted", $iIndex)
+	$MM_LIST_CONTENT[$iIndex][$MOD_CAPTION] = Mod_Get("caption", $iIndex)
 EndFunc
 
 Func __Mod_Validate(ByRef $Map, Const $sDir)

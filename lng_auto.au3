@@ -18,7 +18,8 @@ If Not MapExists($MM_LNG_CACHE["mod_list"], "remove") Or Not IsString($MM_LNG_CA
 If Not MapExists($MM_LNG_CACHE["mod_list"], "group") Or Not IsMap($MM_LNG_CACHE["mod_list"]["group"]) Then $MM_LNG_CACHE["mod_list"]["group"] = MapEmpty()
 If Not MapExists($MM_LNG_CACHE["mod_list"]["group"], "enabled") Or Not IsString($MM_LNG_CACHE["mod_list"]["group"]["enabled"]) Then $MM_LNG_CACHE["mod_list"]["group"]["enabled"] = "Enabled"
 If Not MapExists($MM_LNG_CACHE["mod_list"]["group"], "enabled_with_priority") Or Not IsString($MM_LNG_CACHE["mod_list"]["group"]["enabled_with_priority"]) Then $MM_LNG_CACHE["mod_list"]["group"]["enabled_with_priority"] = "Enabled (%+i)"
-If Not MapExists($MM_LNG_CACHE["mod_list"]["group"], "disabled") Or Not IsString($MM_LNG_CACHE["mod_list"]["group"]["disabled"]) Then $MM_LNG_CACHE["mod_list"]["group"]["disabled"] = "Disabled"
+If Not MapExists($MM_LNG_CACHE["mod_list"]["group"], "disabled") Or Not IsString($MM_LNG_CACHE["mod_list"]["group"]["disabled"]) Then $MM_LNG_CACHE["mod_list"]["group"]["disabled"] = "Without category"
+If Not MapExists($MM_LNG_CACHE["mod_list"]["group"], "disabled_group") Or Not IsString($MM_LNG_CACHE["mod_list"]["group"]["disabled_group"]) Then $MM_LNG_CACHE["mod_list"]["group"]["disabled_group"] = "%s"
 If Not MapExists($MM_LNG_CACHE["mod_list"], "list_inaccessible") Or Not IsString($MM_LNG_CACHE["mod_list"]["list_inaccessible"]) Then $MM_LNG_CACHE["mod_list"]["list_inaccessible"] = ""
 If Not MapExists($MM_LNG_CACHE["mod_list"], "more") Or Not IsString($MM_LNG_CACHE["mod_list"]["more"]) Then $MM_LNG_CACHE["mod_list"]["more"] = ""
 If Not MapExists($MM_LNG_CACHE["mod_list"], "plugins") Or Not IsString($MM_LNG_CACHE["mod_list"]["plugins"]) Then $MM_LNG_CACHE["mod_list"]["plugins"] = "Plugins"
