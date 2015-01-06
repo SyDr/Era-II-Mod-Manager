@@ -1,6 +1,6 @@
 #include-once
 
-Global Const $MM_VERSION_NUMBER = "0.91.1.1"
+Global Const $MM_VERSION_NUMBER = "0.91.1.2"
 Global Const $MM_VERSION_SUBTYPE = "beta"
 Global Const $MM_VERSION_NAME = "Der Wassermann"
 Global Const $MM_VERSION = $MM_VERSION_SUBTYPE == "release" ? $MM_VERSION_NUMBER : ($MM_VERSION_NUMBER & "." & $MM_VERSION_SUBTYPE)
