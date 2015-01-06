@@ -10,7 +10,7 @@
 Global $MM_SELECTED_MOD = -1
 
 Func Mod_ListLoad()
-	Local $aModList_Dir, $aModList_File, $iFirstDisabled = 0
+	Local $aModList_Dir, $aModList_File, $iFirstDisabled = -1
 
 	ReDim $MM_LIST_CONTENT[1][$MOD_TOTAL]
 	$MM_LIST_CONTENT[0][0] = 0
@@ -18,11 +18,11 @@ Func Mod_ListLoad()
 
     $MM_LIST_CONTENT[0][$MOD_IS_ENABLED] = "$MOD_IS_ENABLED"
     $MM_LIST_CONTENT[0][$MOD_IS_EXIST] = "$MOD_IS_EXIST"
-    $MM_LIST_CONTENT[0][$MOD_CAPTION] = "$MOD_INFO_FILE"
+    $MM_LIST_CONTENT[0][$MOD_CAPTION] = "$MOD_CAPTION"
     $MM_LIST_CONTENT[0][$MOD_ITEM_ID] = "$MOD_ITEM_ID"
     $MM_LIST_CONTENT[0][$MOD_PARENT_ID] = "$MOD_PARENT_ID"
-    $MM_LIST_CONTENT[0][$MOD_PARENT_ID] = "$MOD_DESCRIPTION_CACHE"
-    $MM_LIST_CONTENT[0][$MOD_PARENT_ID] = "$MOD_PLUGIN_CACHE"
+    $MM_LIST_CONTENT[0][$MOD_DESCRIPTION_CACHE] = "$MOD_DESCRIPTION_CACHE"
+    $MM_LIST_CONTENT[0][$MOD_PLUGIN_CACHE] = "$MOD_PLUGIN_CACHE"
 
 	$MM_LIST_FILE_CONTENT = FileRead($MM_LIST_FILE_PATH)
     _FileReadToArray($MM_LIST_FILE_PATH, $aModList_File)
@@ -47,12 +47,12 @@ Func Mod_ListLoad()
 		If @error Then
 			$MM_LIST_CONTENT[0][0] += 1
 			__Mod_LoadInfo($MM_LIST_CONTENT[0][0], $aModList_Dir[$i], False)
-			If $iFirstDisabled = 0 Then $iFirstDisabled = $MM_LIST_CONTENT[0][0]
+			If $iFirstDisabled < 1 Then $iFirstDisabled = $MM_LIST_CONTENT[0][0]
 		EndIf
 	Next
 
 	ReDim $MM_LIST_CONTENT[1 + $MM_LIST_CONTENT[0][0]][$MOD_TOTAL]
-	_ArraySort($MM_LIST_CONTENT, Default, $iFirstDisabled, Default, $MOD_CAPTION)
+	If $iFirstDisabled > 0 Then _ArraySort($MM_LIST_CONTENT, Default, $iFirstDisabled, Default, $MOD_CAPTION)
 EndFunc   ;==>Mod_ListLoad
 
 Func __Mod_LoadInfo(Const $iIndex, Const ByRef $sId, Const $bIsEnabled)
