@@ -21,7 +21,8 @@
 		{
 			"enabled" : "Enabled",
 			"enabled_with_priority" : "Enabled (%+i)",
-			"disabled" : "Disabled"
+			"disabled" : "Without category",
+			"disabled_group" : "%s"
 		},
 		"list_inaccessible" : "Can't delete/write file \"%s\" content\n\nPossible reasons:\n 1) File is \"read-only\"\n 2) Current user doesn't not have enough rights to create/delete this file \n\nOpen directory in explorer?",
 		"more" : "More actions",
