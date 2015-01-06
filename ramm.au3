@@ -163,15 +163,6 @@ Func SD_GUI_Create()
 		If $MM_LNG_LIST[$iCount][$MM_LNG_FILE] = $MM_SETTINGS_LANGUAGE Then GUICtrlSetState($MM_LNG_LIST[$iCount][$MM_LNG_MENU_ID], $GUI_CHECKED)
 	Next
 
-	$hGUI.MenuMod.Menu = GUICtrlCreateMenu("-")
-	$hGUI.MenuMod.Plugins = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
-	$hGUI.MenuMod.OpenHomepage = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
-	GUICtrlCreateMenuItem("", $hGUI.MenuMod.Menu)
-	$hGUI.MenuMod.Delete = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
-	$hGUI.MenuMod.OpenFolder = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
-	$hGUI.MenuMod.EditMod = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
-	If $MM_GAME_NO_DIR Then GUICtrlSetState($hGUI.MenuMod.Menu, $GUI_DISABLE)
-
 	$hGUI.MenuGame.Menu = GUICtrlCreateMenu("-")
 	$hGUI.MenuGame.Launch = GUICtrlCreateMenuItem("-", $hGUI.MenuGame.Menu)
 	GUICtrlSetState($hGUI.MenuGame.Launch, $MM_GAME_EXE = "" ? $GUI_DISABLE : $GUI_ENABLE)
@@ -193,6 +184,16 @@ Func SD_GUI_Create()
 	$hGUI.PluginsList.Group = GUICtrlCreateGroup("-", 0, 0)
 
 	$hGUI.ModList.List = GUICtrlCreateTreeView(0, 0, Default, Default, BitOR($TVS_FULLROWSELECT, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
+
+	$hGUI.MenuMod.Menu = GUICtrlCreateContextMenu($hGUI.ModList.List)
+	$hGUI.MenuMod.Plugins = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
+	$hGUI.MenuMod.OpenHomepage = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
+	GUICtrlCreateMenuItem("", $hGUI.MenuMod.Menu)
+	$hGUI.MenuMod.Delete = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
+	$hGUI.MenuMod.OpenFolder = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
+	$hGUI.MenuMod.EditMod = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
+	If $MM_GAME_NO_DIR Then GUICtrlSetState($hGUI.MenuMod.Menu, $GUI_DISABLE)
+
 	$hGUI.PluginsList.List = GUICtrlCreateTreeView(0, 0, Default, Default, BitOR($TVS_FULLROWSELECT, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
 
 	$hGUI.ModList.Up = GUICtrlCreateButton("", 0, 0, 90, 25)
@@ -865,6 +866,8 @@ Func SD_GUI_Mod_SelectionChanged()
 
 	If $iSelected = -1 Then
 		SD_GUI_Mod_Controls_Disable()
+		$aScreens[0] = 0
+		SD_GUI_UpdateScreen(0)
 	Else
 		Local $iModIndex = $iSelected
 		$MM_SELECTED_MOD = $iModIndex
@@ -1172,6 +1175,7 @@ Func WM_NOTIFY($hwnd, $iMsg, $iwParam, $ilParam)
                     $tHitTest = _GUICtrlTreeView_HitTestEx($hWndFrom, DllStructGetData($tPoint, 1), DllStructGetData($tPoint, 2))
                     If BitAND(DllStructGetData($tHitTest, "Flags"), BitOR($TVHT_ONITEM, $TVHT_ONITEMRIGHT)) Then
                         _GUICtrlTreeView_SelectItem($hWndFrom, DllStructGetData($tHitTest, 'Item'))
+						SD_GUI_List_SelectionChanged()
                     EndIf
 			EndSwitch
 		Case $hGUI.Info.Desc
