@@ -1167,6 +1167,12 @@ Func WM_NOTIFY($hwnd, $iMsg, $iwParam, $ilParam)
 					$bEnableDisable = True
 				Case $TVN_SELCHANGEDA, $TVN_SELCHANGEDW
 					$bSelectionChanged = True
+				Case $NM_RCLICK
+                    Local $tPoint = _WinAPI_GetMousePos(True, $hWndFrom), $tHitTest
+                    $tHitTest = _GUICtrlTreeView_HitTestEx($hWndFrom, DllStructGetData($tPoint, 1), DllStructGetData($tPoint, 2))
+                    If BitAND(DllStructGetData($tHitTest, "Flags"), BitOR($TVHT_ONITEM, $TVHT_ONITEMRIGHT)) Then
+                        _GUICtrlTreeView_SelectItem($hWndFrom, DllStructGetData($tHitTest, 'Item'))
+                    EndIf
 			EndSwitch
 		Case $hGUI.Info.Desc
 			Local $tNMLINK = DllStructCreate($tagNMLINK, $ilParam)
