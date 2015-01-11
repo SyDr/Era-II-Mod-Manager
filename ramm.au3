@@ -56,6 +56,7 @@ Global $sFollowMod = ""
 Global $bEnableDisable, $bSelectionChanged
 Global $bInTrack = False
 Global $bMainUICycle = True, $bExit = True
+Global $bPackModHint = True
 #EndRegion Variables
 
 If @Compiled And @ScriptName = "installmod.exe" Then
@@ -515,15 +516,9 @@ Func SD_GUI_Mod_PackMod()
 
 	Local $sSavePath = FileSaveDialog("", "", "(*.*)", $FD_PATHMUSTEXIST + $FD_PROMPTOVERWRITE, Mod_Get("caption\formatted") & ".exe", $MM_UI_MAIN)
 	If Not @error Then
-		GUISetState(@SW_DISABLE, $MM_UI_MAIN)
-		GUISetState(@SW_HIDE, $MM_UI_MAIN)
-
 		Mod_CreatePackage($iModIndex, $sSavePath)
-
-		GUISetState(@SW_ENABLE, $MM_UI_MAIN)
-		GUISetState(@SW_RESTORE, $MM_UI_MAIN)
-		GUISetState(@SW_SHOW, $MM_UI_MAIN)
-		MsgBox(0, Default, "Done!")
+		If $bPackModHint Then MsgBox($MB_ICONINFORMATION, "", Lng_Get("mod_list.pack_mod_hint"))
+		$bPackModHint = False
 	EndIf
 EndFunc
 

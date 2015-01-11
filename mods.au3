@@ -235,8 +235,7 @@ Func Mod_CreatePackage(Const $iModIndex, Const $sSavePath)
 	SFX_FileClose($hFile)
 
 	Local $sCommand = StringFormat('%s a %s "Mods\%s" -sfx7z.sfx', '"' & $s7zTempDir & '\7z\7z.exe"', '"' & $sSavePath & '"', Mod_Get("id", $iModIndex))
-	RunWait($sCommand, $MM_GAME_DIR, @SW_HIDE, $STDERR_CHILD + $STDOUT_CHILD)
-;~ 	DirRemove($s7zTempDir, 1)
+	Run($sCommand, $MM_GAME_DIR, @SW_HIDE, $STDERR_CHILD + $STDOUT_CHILD)
 EndFunc
 
 Func Mod_IsCompatible(Const $iModIndex1, Const $iModIndex2)

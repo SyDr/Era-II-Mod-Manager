@@ -34,7 +34,8 @@
 		"compatibility" : "Compatibility",
 		"open_dir" : "Open mod directory",
 		"edit_mod" : "Edit mod data",
-		"pack_mod" : "Create self-extracting package"
+		"pack_mod" : "Create self-extracting package",
+		"pack_mod_hint" : "Package will be created in background. You can continue to use MM or even close it."
 	},
 	"game" : {
 		"caption" : "Game",
