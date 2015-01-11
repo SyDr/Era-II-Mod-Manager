@@ -32,8 +32,9 @@
 		"delete_confirm" : "Do you really want to delete this mod? \n%s\n\n(The mod will be moved to recycle bin, if it's possible))",
 		"add_new" : "Add new mod(s)",
 		"compatibility" : "Compatibility",
-		"open_dir" : "Open mod directory"
-		"edit_mod" : "Edit mod data"
+		"open_dir" : "Open mod directory",
+		"edit_mod" : "Edit mod data",
+		"pack_mod" : "Create self-extracting package"
 	},
 	"game" : {
 		"caption" : "Game",
