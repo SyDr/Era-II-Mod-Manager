@@ -192,6 +192,7 @@ Func SD_GUI_Create()
 	$hGUI.MenuMod.Delete = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
 	$hGUI.MenuMod.OpenFolder = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
 	$hGUI.MenuMod.EditMod = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
+	$hGUI.MenuMod.PackMod = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
 	If $MM_GAME_NO_DIR Then GUICtrlSetState($hGUI.MenuMod.Menu, $GUI_DISABLE)
 
 	$hGUI.PluginsList.List = GUICtrlCreateTreeView(0, 0, Default, Default, BitOR($TVS_FULLROWSELECT, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
@@ -403,6 +404,7 @@ Func SD_GUI_Events_Register()
 	GUICtrlSetOnEvent($hGUI.MenuMore.Add, "SD_GUI_Mod_Add")
 	GUICtrlSetOnEvent($hGUI.MenuMod.OpenFolder, "SD_GUI_Mod_OpenFolder")
 	GUICtrlSetOnEvent($hGUI.MenuMod.EditMod, "SD_GUI_Mod_EditMod")
+	GUICtrlSetOnEvent($hGUI.MenuMod.PackMod, "SD_GUI_Mod_PackMod")
 	GUICtrlSetOnEvent($hGUI.MenuMore.ChangeModDir, "SD_GUI_ChangeGameDir")
 
 	GUICtrlSetOnEvent($hGUI.PluginsList.Back, "SD_GUI_Plugins_Close")
@@ -463,6 +465,7 @@ Func SD_GUI_SetLng()
 	GUICtrlSetData($hGUI.MenuMod.OpenHomepage, Lng_Get("mod_list.homepage"))
 	GUICtrlSetData($hGUI.MenuMod.OpenFolder, Lng_Get("mod_list.open_dir"))
 	GUICtrlSetData($hGUI.MenuMod.EditMod, Lng_Get("mod_list.edit_mod"))
+	GUICtrlSetData($hGUI.MenuMod.PackMod, Lng_Get("mod_list.pack_mod"))
 
 	GUICtrlSetData($hGUI.MenuGame.Menu, Lng_Get("game.caption"))
 	GUICtrlSetData($hGUI.MenuGame.Launch, Lng_GetF("game.launch", $MM_GAME_EXE))
@@ -504,6 +507,24 @@ Func SD_GUI_Mod_EditMod()
 	Local $iModIndex = TreeViewGetSelectedIndex()
 	If $iModIndex = -1 Then Return -1 ; never
 	If ModEdit_Editor($iModIndex, $MM_UI_MAIN) Then SD_GUI_Update()
+EndFunc
+
+Func SD_GUI_Mod_PackMod()
+	Local $iModIndex = TreeViewGetSelectedIndex()
+	If $iModIndex = -1 Then Return -1 ; never
+
+	Local $sSavePath = FileSaveDialog("", "", "(*.*)", $FD_PATHMUSTEXIST + $FD_PROMPTOVERWRITE, Mod_Get("caption\formatted") & ".exe", $MM_UI_MAIN)
+	If Not @error Then
+		GUISetState(@SW_DISABLE, $MM_UI_MAIN)
+		GUISetState(@SW_HIDE, $MM_UI_MAIN)
+
+		Mod_CreatePackage($iModIndex, $sSavePath)
+
+		GUISetState(@SW_ENABLE, $MM_UI_MAIN)
+		GUISetState(@SW_RESTORE, $MM_UI_MAIN)
+		GUISetState(@SW_SHOW, $MM_UI_MAIN)
+		MsgBox(0, Default, "Done!")
+	EndIf
 EndFunc
 
 Func SD_GUI_Manage_Plugins()
@@ -846,6 +867,7 @@ Func SD_GUI_Mod_Controls_Disable()
 	GUICtrlSetState($hGUI.MenuMod.OpenHomepage, $GUI_DISABLE)
 	GUICtrlSetState($hGUI.MenuMod.OpenFolder, $GUI_DISABLE)
 	GUICtrlSetState($hGUI.MenuMod.EditMod, $GUI_DISABLE)
+	GUICtrlSetState($hGUI.MenuMod.PackMod, $GUI_DISABLE)
 	GUICtrlSetState($hGUI.MenuMod.Menu, $GUI_DISABLE)
 	GUICtrlSetData($hGUI.Info.Edit, Lng_Get("info_group.no_info"))
 	_GUICtrlSysLink_SetText($hGUI.Info.Desc, "")
@@ -924,11 +946,13 @@ Func SD_GUI_Mod_SelectionChanged()
 			GUICtrlSetState($hGUI.MenuMod.Delete, $GUI_DISABLE)
 			GUICtrlSetState($hGUI.MenuMod.OpenFolder, $GUI_DISABLE)
 			GUICtrlSetState($hGUI.MenuMod.EditMod, $GUI_DISABLE)
+			GUICtrlSetState($hGUI.MenuMod.PackMod, $GUI_DISABLE)
 			GUICtrlSetState($hGUI.MenuMod.Menu, $GUI_DISABLE)
 		Else
 			GUICtrlSetState($hGUI.MenuMod.Delete, $GUI_ENABLE)
 			GUICtrlSetState($hGUI.MenuMod.OpenFolder, $GUI_ENABLE)
 			GUICtrlSetState($hGUI.MenuMod.EditMod, $GUI_ENABLE)
+			GUICtrlSetState($hGUI.MenuMod.PackMod, $GUI_ENABLE)
 			GUICtrlSetState($hGUI.MenuMod.Menu, $GUI_ENABLE)
 		EndIf
 

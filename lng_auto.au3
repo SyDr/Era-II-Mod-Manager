@@ -30,6 +30,7 @@ If Not MapExists($MM_LNG_CACHE["mod_list"], "add_new") Or Not IsString($MM_LNG_C
 If Not MapExists($MM_LNG_CACHE["mod_list"], "compatibility") Or Not IsString($MM_LNG_CACHE["mod_list"]["compatibility"]) Then $MM_LNG_CACHE["mod_list"]["compatibility"] = "Compatibility"
 If Not MapExists($MM_LNG_CACHE["mod_list"], "open_dir") Or Not IsString($MM_LNG_CACHE["mod_list"]["open_dir"]) Then $MM_LNG_CACHE["mod_list"]["open_dir"] = "Open mod directory"
 If Not MapExists($MM_LNG_CACHE["mod_list"], "edit_mod") Or Not IsString($MM_LNG_CACHE["mod_list"]["edit_mod"]) Then $MM_LNG_CACHE["mod_list"]["edit_mod"] = "Edit mod data"
+If Not MapExists($MM_LNG_CACHE["mod_list"], "pack_mod") Or Not IsString($MM_LNG_CACHE["mod_list"]["pack_mod"]) Then $MM_LNG_CACHE["mod_list"]["pack_mod"] = "Create self-extracting package"
 If Not MapExists($MM_LNG_CACHE, "game") Or Not IsMap($MM_LNG_CACHE["game"]) Then $MM_LNG_CACHE["game"] = MapEmpty()
 If Not MapExists($MM_LNG_CACHE["game"], "caption") Or Not IsString($MM_LNG_CACHE["game"]["caption"]) Then $MM_LNG_CACHE["game"]["caption"] = "Game"
 If Not MapExists($MM_LNG_CACHE["game"], "launch") Or Not IsString($MM_LNG_CACHE["game"]["launch"]) Then $MM_LNG_CACHE["game"]["launch"] = "Launch (%s)"

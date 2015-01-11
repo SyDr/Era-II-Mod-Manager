@@ -223,6 +223,22 @@ Func Mod_Save(Const $iModIndex, Const $mModData)
 	EndIf
 EndFunc
 
+Func Mod_CreatePackage(Const $iModIndex, Const $sSavePath)
+	Local $s7zTempDir = _TempFile()
+	DirCreate($s7zTempDir)
+
+	FileCopy(@ScriptDir & '\7z\7z.*', $s7zTempDir & '\7z\7z.*', $FC_OVERWRITE + $FC_CREATEPATH)
+
+	Local $hFile = SFX_FileOpen($s7zTempDir & '\7z\7z.sfx')
+	If Mod_Get("icon\file", $iModIndex) <> "" Then SFX_UpdateIcon($hFile, Mod_Get("dir\", $iModIndex) & Mod_Get("icon\file", $iModIndex))
+	SFX_UpdateModDirName($hFile, Mod_Get("id", $iModIndex))
+	SFX_FileClose($hFile)
+
+	Local $sCommand = StringFormat('%s a %s "Mods\%s" -sfx7z.sfx', '"' & $s7zTempDir & '\7z\7z.exe"', '"' & $sSavePath & '"', Mod_Get("id", $iModIndex))
+	RunWait($sCommand, $MM_GAME_DIR, @SW_HIDE, $STDERR_CHILD + $STDOUT_CHILD)
+;~ 	DirRemove($s7zTempDir, 1)
+EndFunc
+
 Func Mod_IsCompatible(Const $iModIndex1, Const $iModIndex2)
 	Return $MM_LIST_COMPATIBILITY[Mod_Get("id", $iModIndex1)][Mod_Get("id", $iModIndex2)]
 EndFunc

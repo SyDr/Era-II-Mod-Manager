@@ -30,3 +30,4 @@
 #include "include\GUISysLink.au3"
 #include "data_fwd.au3"
 #include "maps.au3"
+#include "sfx_helper.au3"
