@@ -24,7 +24,8 @@
 #include <TabConstants.au3>
 #include <UpDownConstants.au3>
 #include <WindowsConstants.au3>
-
+#include <APIShellExConstants.au3>
+#include <WinAPIShellEx.au3>
 
 #include "include\JSMN.au3"
 #include "include\GUISysLink.au3"
