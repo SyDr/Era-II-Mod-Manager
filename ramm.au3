@@ -93,6 +93,7 @@ Func UI_Main()
 	TreeViewTryFollow($MM_LIST_CONTENT[0][0] > 0 ? $MM_LIST_CONTENT[1][$MOD_ID] : "")
 	SD_SwitchView()
 	SD_SwitchSubView()
+	GUISetState(@SW_SHOW)
 	_TraceEnd()
 	MainLoop()
 EndFunc
@@ -246,7 +247,6 @@ Func SD_GUI_Create()
 	WinMove($MM_UI_MAIN, '', (@DesktopWidth - $MM_WINDOW_WIDTH) / 2, (@DesktopHeight - $MM_WINDOW_HEIGHT) / 2, $MM_WINDOW_WIDTH, $MM_WINDOW_HEIGHT)
 	If $MM_WINDOW_MAXIMIZED Then WinSetState($MM_UI_MAIN, '', @SW_MAXIMIZE)
 
-	GUISetState(@SW_SHOW)
 	AutoItSetOption("GUICoordMode", $iOptionGUICoordMode)
 EndFunc   ;==>SD_GUI_Create
 
