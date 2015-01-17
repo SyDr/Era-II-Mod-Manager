@@ -33,6 +33,7 @@ AutoItSetOption("MustDeclareVars", 1)
 AutoItSetOption("GUIOnEventMode", 1)
 AutoItSetOption("GUICloseOnESC", 1)
 If Not @Compiled Then AutoItSetOption("TrayIconHide", 0)
+If Not @Compiled Then Global $__DEBUG
 
 #Region Variables
 Global $hGUI[]
@@ -84,6 +85,7 @@ If Not IsDeclared("__MM_NO_UI") Then
 EndIf
 
 Func UI_Main()
+	_TraceStart("Init UI")
 	_GDIPlus_Startup()
 	SD_GUI_LoadSize()
 	SD_GUI_Create()
@@ -91,6 +93,7 @@ Func UI_Main()
 	TreeViewTryFollow($MM_LIST_CONTENT[0][0] > 0 ? $MM_LIST_CONTENT[1][$MOD_ID] : "")
 	SD_SwitchView()
 	SD_SwitchSubView()
+	_TraceEnd()
 	MainLoop()
 EndFunc
 
@@ -248,6 +251,7 @@ Func SD_GUI_Create()
 EndFunc   ;==>SD_GUI_Create
 
 Func SD_GUI_UpdateScreen(Const $iIndex)
+	_TraceStart("UI: UpdateScreen")
 	If $hScreenBitmap Or $hScreenImage Then
 		_WinAPI_DeleteObject($hScreenBitmap)
         _GDIPlus_ImageDispose($hScreenImage)
@@ -272,7 +276,8 @@ Func SD_GUI_UpdateScreen(Const $iIndex)
 		GUICtrlSetPos($hGUI.Screen.Control, 0, 0, 0, 0)
 	EndIf
 
-	SD_GUI_MainWindowResize()
+	SD_GUI_MainWindowResize($MM_SUBVIEW_CURRENT = $MM_SUBVIEW_SCREENS)
+	_TraceEnd()
 EndFunc
 
 Func SD_GUI_UpdateScreenByPath(Const $sPath)
@@ -316,9 +321,11 @@ Func SD_GUI_BigScreen()
 	EndIf
 EndFunc
 
-Func SD_GUI_MainWindowResize()
+Func SD_GUI_MainWindowResize(Const $bForce = False)
 	Local $iTimer = TimerInit()
 	Local $aSize = WinGetClientSize($MM_UI_MAIN)
+	If Not $bForce And $aSize[0] == $MM_WINDOW_CLIENT_WIDTH And $aSize[1] == $MM_WINDOW_CLIENT_HEIGHT Then Return
+
 	$MM_WINDOW_CLIENT_WIDTH = $aSize[0]
 	$MM_WINDOW_CLIENT_HEIGHT = $aSize[1]
 
@@ -714,10 +721,11 @@ Func SD_GUI_Mod_Move_Down()
 EndFunc   ;==>SD_GUI_Mod_Move_Down
 
 Func SD_GUI_Mod_Swap($iModIndex1, $iModIndex2)
+	_TraceStart("UI: Swap")
 	Mod_ListSwap($iModIndex1, $iModIndex2)
 	TreeViewSwap($iModIndex1, $iModIndex2)
 	TreeViewTryFollow($sFollowMod)
-;~ 	ControlFocus($MM_UI_MAIN, "", @GUI_CtrlId)
+	_TraceEnd()
 EndFunc   ;==>SD_GUI_Mod_Swap
 
 Func SD_GUI_Mod_Delete()
@@ -879,6 +887,7 @@ Func SD_GUI_List_SelectionChanged()
 EndFunc   ;==>SD_GUI_List_SelectionChanged
 
 Func SD_GUI_Mod_SelectionChanged()
+	_TraceStart("UI: Mod Selected")
 	Local $iSelected = TreeViewGetSelectedIndex()
 
 	If $iSelected = -1 Then
@@ -956,6 +965,7 @@ Func SD_GUI_Mod_SelectionChanged()
 		$aScreens = Mod_ScreenListLoad($MM_LIST_CONTENT[$iModIndex][$MOD_ID])
 		SD_GUI_UpdateScreenByPath($sScreenPath)
 	EndIf
+	_TraceEnd()
 EndFunc   ;==>SD_GUI_Mod_SelectionChanged
 
 Func SD_GUI_Plugin_SelectionChanged()
@@ -1225,7 +1235,7 @@ Func SD_SwitchView(Const $iNewView = $MM_VIEW_MODS)
 
 	$MM_VIEW_PREV = $MM_VIEW_CURRENT
 	$MM_VIEW_CURRENT = $iNewView
-	SD_GUI_MainWindowResize()
+	SD_GUI_MainWindowResize(True)
 
 	GUICtrlSetState($hGUI.ModList.Group, $MM_VIEW_CURRENT = $MM_VIEW_MODS ? $GUI_SHOW : $GUI_HIDE)
 	GUICtrlSetState($hGUI.ModList.List, $MM_VIEW_CURRENT = $MM_VIEW_MODS ? $GUI_SHOW : $GUI_HIDE)
@@ -1251,7 +1261,7 @@ EndFunc   ;==>SD_SwitchView
 Func SD_SwitchSubView(Const $iNewView = $MM_SUBVIEW_DESC)
 	$MM_SUBVIEW_PREV = $MM_SUBVIEW_CURRENT
 	$MM_SUBVIEW_CURRENT = $iNewView
-	SD_GUI_MainWindowResize()
+	SD_GUI_MainWindowResize(True)
 
 	GUICtrlSetState($hGUI.Info.Edit, $MM_SUBVIEW_CURRENT = $MM_SUBVIEW_DESC ? $GUI_SHOW : $GUI_HIDE)
 
