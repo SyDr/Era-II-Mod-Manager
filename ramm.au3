@@ -990,38 +990,77 @@ Func TreeViewFill()
 	Local $iCurrentGroup = -1
 	$aModListGroups[0][0] = 0
 
+	Local $aGroupEnabledList[1], $aGroupDisabledList[1]
+	Local $bEnabled, $iPriority, $sCategory, $vGroup, $bFound, $sCaption
+
+	For $i = 1 To $MM_LIST_CONTENT[0][0]
+		$bEnabled = $MM_LIST_CONTENT[$i][$MOD_IS_ENABLED]
+		$iPriority = Mod_Get("priority", $i)
+		$sCategory = Mod_Get("category", $i)
+		$vGroup = $bEnabled ? $iPriority : $sCategory
+
+		$bFound = False
+
+		If $bEnabled Then
+			For $j = 1 To $aGroupEnabledList[0]
+				If $aGroupEnabledList[$j] = $vGroup Then
+					$bFound = True
+					ExitLoop
+				EndIf
+			Next
+		Else
+			For $j = 1 To $aGroupDisabledList[0]
+				If $aGroupDisabledList[$j] = $vGroup Then
+					$bFound = True
+					ExitLoop
+				EndIf
+			Next
+		EndIf
+
+		If Not $bFound Then
+			If $bEnabled Then
+				$aGroupEnabledList[0] += 1
+				ReDim $aGroupEnabledList[$aGroupEnabledList[0] + 1]
+				$aGroupEnabledList[$aGroupEnabledList[0]] = $vGroup
+			Else
+				$aGroupDisabledList[0] += 1
+				ReDim $aGroupDisabledList[$aGroupDisabledList[0] + 1]
+				$aGroupDisabledList[$aGroupDisabledList[0]] = $vGroup
+			EndIf
+		EndIf
+	Next
+
+	For $i = 1 To $aGroupEnabledList[0]
+		TreeViewAddGroup(True, $aGroupEnabledList[$i])
+	Next
+
+	Local $aCategories = MapKeys(Lng_Get("category"))
+	_ArraySort($aGroupDisabledList, Default, 1)
+	For $i = 0 To UBound($aCategories) - 1
+		_ArraySearch($aGroupDisabledList, $aCategories[$i], 1)
+		If Not @error Then TreeViewAddGroup(False, $aCategories[$i])
+	Next
+
+	Local $bAddEmpty = False
+	For $i = 1 To $aGroupDisabledList[0]
+		If $aGroupDisabledList[$i] = "" Then
+			$bAddEmpty = True
+		Else
+			_ArraySearch($aCategories, $aGroupDisabledList[$i])
+			If @error Then TreeViewAddGroup(False, $aGroupDisabledList[$i])
+		EndIf
+	Next
+
+	If $bAddEmpty Then TreeViewAddGroup(False, "")
+
 	For $iCount = 1 To $MM_LIST_CONTENT[0][0]
-		Local $bEnabled = $MM_LIST_CONTENT[$iCount][$MOD_IS_ENABLED]
-		Local $iPriority = Mod_Get("priority", $iCount)
-		Local $sCategory = Mod_Get("category", $iCount)
-		Local $sCaption = $bEnabled ? Mod_Get("caption\formatted", $iCount) : Mod_Get("caption", $iCount)
+		$bEnabled = $MM_LIST_CONTENT[$iCount][$MOD_IS_ENABLED]
+		$iPriority = Mod_Get("priority", $iCount)
+		$sCategory = Mod_Get("category", $iCount)
+		$sCaption = $bEnabled ? Mod_Get("caption\formatted", $iCount) : Mod_Get("caption", $iCount)
 		$sCaption = $MM_LIST_CONTENT[$iCount][$MOD_IS_EXIST] ? $sCaption : Lng_GetF("mod_list.missing", $sCaption)
 
 		$iCurrentGroup = TreeViewFindCategory($bEnabled, $bEnabled ? $iPriority : $sCategory)
-		Local $bCreateNewGroup = $iCurrentGroup < 0
-
-
-		If $bCreateNewGroup Then
-			Local $sText = $bEnabled ? Lng_Get("mod_list.group.enabled") : Lng_Get("mod_list.group.disabled")
-			If $bEnabled And $iPriority <> 0 Then $sText = StringFormat(Lng_Get("mod_list.group.enabled_with_priority"), $iPriority)
-			If Not $bEnabled And $sCategory <> "" Then $sText = Lng_GetF("mod_list.group.disabled_group", Lng_GetCategory($sCategory))
-
-			$aModListGroups[0][0] += 1
-			$iCurrentGroup = $aModListGroups[0][0]
-			ReDim $aModListGroups[$iCurrentGroup + 1][3]
-
-			$aModListGroups[$iCurrentGroup][0] = GUICtrlCreateTreeViewItem($sText, $hGUI.ModList.List)
-			GUICtrlSetColor($aModListGroups[$iCurrentGroup][0], 0x0000C0)
-
-			If $bEnabled Then
-				_GUICtrlTreeView_SetIcon($hGUI.ModList.List, $aModListGroups[$iCurrentGroup][0], @ScriptDir & "\icons\folder-green.ico", 0, 6)
-			Else
-				_GUICtrlTreeView_SetIcon($hGUI.ModList.List, $aModListGroups[$iCurrentGroup][0], @ScriptDir & "\icons\folder-red.ico", 0, 6)
-			EndIf
-
-			$aModListGroups[$iCurrentGroup][1] = $bEnabled
-			$aModListGroups[$iCurrentGroup][2] = $bEnabled ? $iPriority : $sCategory
-		EndIf
 
 		$MM_LIST_CONTENT[$iCount][$MOD_PARENT_ID] = $iCurrentGroup
 		$MM_LIST_CONTENT[$iCount][$MOD_ITEM_ID] = GUICtrlCreateTreeViewItem($sCaption, $aModListGroups[$MM_LIST_CONTENT[$iCount][$MOD_PARENT_ID]][0])
@@ -1040,6 +1079,28 @@ Func TreeViewFill()
 	TreeViewColor()
 	_GUICtrlTreeView_EndUpdate($hGUI.ModList.List)
 EndFunc   ;==>TreeViewFill
+
+Func TreeViewAddGroup(Const $bEnabled, Const $vItem)
+	Local $sText = $bEnabled ? Lng_Get("mod_list.group.enabled") : Lng_Get("mod_list.group.disabled")
+	If $bEnabled And $vItem <> 0 Then $sText = StringFormat(Lng_Get("mod_list.group.enabled_with_priority"), $vItem)
+	If Not $bEnabled And $vItem <> "" Then $sText = Lng_GetF("mod_list.group.disabled_group", Lng_GetCategory($vItem))
+
+	$aModListGroups[0][0] += 1
+	ReDim $aModListGroups[$aModListGroups[0][0] + 1][3]
+
+	$aModListGroups[$aModListGroups[0][0]][0] = GUICtrlCreateTreeViewItem($sText, $hGUI.ModList.List)
+	GUICtrlSetColor($aModListGroups[$aModListGroups[0][0]][0], 0x0000C0)
+
+	If $bEnabled Then
+		_GUICtrlTreeView_SetIcon($hGUI.ModList.List, $aModListGroups[$aModListGroups[0][0]][0], @ScriptDir & "\icons\folder-green.ico", 0, 6)
+	Else
+		_GUICtrlTreeView_SetIcon($hGUI.ModList.List, $aModListGroups[$aModListGroups[0][0]][0], @ScriptDir & "\icons\folder-red.ico", 0, 6)
+	EndIf
+
+	$aModListGroups[$aModListGroups[0][0]][1] = $bEnabled
+	$aModListGroups[$aModListGroups[0][0]][2] = $vItem
+EndFunc
+
 
 Func TreeViewFindCategory(Const $bEnabled, Const $vData)
 	For $i = 1 To $aModListGroups[0][0]
