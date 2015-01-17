@@ -167,11 +167,13 @@
 	},
 	"category" :
 	{
-		"gameplay" : "Gameplay",
-		"graphics" : "Graphics",
-		"scenarios" : "Scenarios",
-		"cheats" : "Cheats",
-		"interface" : "Interface",
-		"towns" : "Towns"
+		"gameplay" : "GAMEPLAY",
+		"graphics" : "GRAPHICS",
+		"scenarios" : "SCENARIOS",
+		"cheats" : "CHEATS",
+		"interface" : "INTERFACE",
+		"towns" : "TOWNS",
+		"other" : "OTHER",
+		"platforms" : "PLATFORMS"
 	}
 }
