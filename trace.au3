@@ -14,11 +14,11 @@ Func _TracePoint(Const $sToPrint = StringFormat("Called from %i line", @ScriptLi
 
 	Local $iEndTime = Int(TimerDiff($__T_POINT))
 	$__T_POINT = TimerInit()
-	_TracePrint(StringFormat("%s\t%s sec later", $sToPrint, $iEndTime/1000))
+	_TracePrint(StringFormat("%s\t%s msec later", $sToPrint, $iEndTime))
 	Return $__T_POINT
 EndFunc
 
-Func _TraceStart(Const $sToPrint = @ScriptLineNumber)
+Func _TraceStart(Const $sToPrint = StringFormat("Called from %i line", @ScriptLineNumber))
 	If Not IsDeclared("__DEBUG") Then Return
 
 	$_TRACE[0][0] += 1
@@ -33,6 +33,6 @@ Func _TraceEnd()
 	Local $iEndTime = Int(TimerDiff($_TRACE[$_TRACE[0][0]][1]))
 
 	_TracePoint($_TRACE[$_TRACE[0][0]][0] & " (<-)")
-	_TracePrint(StringFormat("%s\t%s sec total", $_TRACE[$_TRACE[0][0]][0] & " (==)", $iEndTime/1000))
+	_TracePrint(StringFormat("%s\t%s msec total", $_TRACE[$_TRACE[0][0]][0] & " (==)", $iEndTime))
 	$_TRACE[0][0] -= 1
 EndFunc
