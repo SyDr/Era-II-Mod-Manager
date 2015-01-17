@@ -52,7 +52,7 @@ Global Const $iItemSpacing = 4
 
 Global $aModListGroups[1][3]; group item id, is enabled, priority/group tag
 Global $aPlugins[1][2], $hPluginsParts[3]
-Global $aScreens[1], $iScreenIndex, $iScreenWidth, $iScreenHeight, $hScreenImage, $hScreenBitmap, $sScreenPath
+Global $aScreens[1], $iScreenIndex, $iScreenWidth, $iScreenHeight, $sScreenPath
 Global $sFollowMod = ""
 Global $bEnableDisable, $bSelectionChanged
 Global $bInTrack = False
@@ -251,15 +251,8 @@ Func SD_GUI_Create()
 EndFunc   ;==>SD_GUI_Create
 
 Func SD_GUI_UpdateScreen(Const $iIndex)
-	_TraceStart("UI: UpdateScreen")
-	If $hScreenBitmap Or $hScreenImage Then
-		_WinAPI_DeleteObject($hScreenBitmap)
-        _GDIPlus_ImageDispose($hScreenImage)
-		$hScreenImage = 0
-		$hScreenBitmap = 0
-		$iScreenWidth = 0
-		$iScreenHeight = 0
-	EndIf
+	$iScreenWidth = 0
+	$iScreenHeight = 0
 
 	$iScreenIndex = $iIndex
 	$sScreenPath = $iIndex > 0 ? $aScreens[$iIndex] : ""
@@ -268,19 +261,20 @@ Func SD_GUI_UpdateScreen(Const $iIndex)
 	GUICtrlSetState($hGUI.Screen.Control, $iIndex = 0 ? $GUI_DISABLE : $GUI_ENABLE)
 	GUICtrlSetState($hGUI.Screen.Open, $iIndex = 0 ? $GUI_DISABLE : $GUI_ENABLE)
 
-	If $MM_SUBVIEW_CURRENT <> $MM_SUBVIEW_SCREENS Then Return _TraceEnd()
+	If $MM_SUBVIEW_CURRENT <> $MM_SUBVIEW_SCREENS Then Return
 
 	If $iIndex <> 0 Then
-		$hScreenImage = _GDIPlus_ImageLoadFromFile($sScreenPath)
-		$hScreenBitmap = _GDIPlus_BitmapCreateHBITMAPFromBitmap($hScreenImage)
+		Local $hScreenImage = _GDIPlus_ImageLoadFromFile($sScreenPath)
+		Local $hScreenBitmap = _GDIPlus_BitmapCreateHBITMAPFromBitmap($hScreenImage)
 		$iScreenWidth = _GDIPlus_ImageGetWidth($hScreenImage)
 		$iScreenHeight = _GDIPlus_ImageGetHeight($hScreenImage)
 		_WinAPI_DeleteObject(GUICtrlSendMsg($hGUI.Screen.Control, $STM_SETIMAGE, $IMAGE_BITMAP, $hScreenBitmap))
+		_GDIPlus_ImageDispose($hScreenImage)
+		_WinAPI_DeleteObject($hScreenBitmap)
 		GUICtrlSetPos($hGUI.Screen.Control, 0, 0, 0, 0)
 	EndIf
 
 	SD_GUI_MainWindowResize(True)
-	_TraceEnd()
 EndFunc
 
 Func SD_GUI_UpdateScreenByPath(Const $sPath)
