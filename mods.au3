@@ -10,6 +10,7 @@
 Global $MM_SELECTED_MOD = -1
 
 Func Mod_ListLoad()
+	_TraceStart("ModList: Load")
 	Local $aModList_Dir, $aModList_File, $iFirstDisabled = -1
 
 	ReDim $MM_LIST_CONTENT[1][$MOD_TOTAL]
@@ -53,6 +54,7 @@ Func Mod_ListLoad()
 
 	ReDim $MM_LIST_CONTENT[1 + $MM_LIST_CONTENT[0][0]][$MOD_TOTAL]
 	If $iFirstDisabled > 0 Then _ArraySort($MM_LIST_CONTENT, Default, $iFirstDisabled, Default, $MOD_CAPTION)
+	_TraceEnd()
 EndFunc   ;==>Mod_ListLoad
 
 Func __Mod_LoadInfo(Const $iIndex, Const ByRef $sId, Const $bIsEnabled)
