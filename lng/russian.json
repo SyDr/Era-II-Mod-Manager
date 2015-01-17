@@ -150,7 +150,7 @@
 			"icon" : "Значок:",
 			"priority" : "Приоритет:",
 			"category" : "Категория:"
-		}
+		},
 		"group_compatibility" :
 		{
 			"caption" : "Совместимость",
@@ -172,6 +172,8 @@
 		"scenarios" : "Сценарии",
 		"cheats" : "Читы",
 		"interface" : "Интерфейс",
-		"towns" : "Города"
+		"towns" : "Города",
+		"other" : "Другие",
+		"platforms" : "Платформы"
 	}
 }
