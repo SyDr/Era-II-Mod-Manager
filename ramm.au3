@@ -267,6 +267,9 @@ Func SD_GUI_UpdateScreen(Const $iIndex)
 	GUICtrlSetState($hGUI.Screen.Forward, $iIndex >= $aScreens[0] ? $GUI_DISABLE : $GUI_ENABLE)
 	GUICtrlSetState($hGUI.Screen.Control, $iIndex = 0 ? $GUI_DISABLE : $GUI_ENABLE)
 	GUICtrlSetState($hGUI.Screen.Open, $iIndex = 0 ? $GUI_DISABLE : $GUI_ENABLE)
+
+	If $MM_SUBVIEW_CURRENT <> $MM_SUBVIEW_SCREENS Then Return _TraceEnd()
+
 	If $iIndex <> 0 Then
 		$hScreenImage = _GDIPlus_ImageLoadFromFile($sScreenPath)
 		$hScreenBitmap = _GDIPlus_BitmapCreateHBITMAPFromBitmap($hScreenImage)
@@ -276,7 +279,7 @@ Func SD_GUI_UpdateScreen(Const $iIndex)
 		GUICtrlSetPos($hGUI.Screen.Control, 0, 0, 0, 0)
 	EndIf
 
-	SD_GUI_MainWindowResize($MM_SUBVIEW_CURRENT = $MM_SUBVIEW_SCREENS)
+	SD_GUI_MainWindowResize(True)
 	_TraceEnd()
 EndFunc
 
@@ -1275,6 +1278,7 @@ Func SD_SwitchSubView(Const $iNewView = $MM_SUBVIEW_DESC)
 	GUICtrlSetState($hGUI.Screen.Open, $MM_SUBVIEW_CURRENT = $MM_SUBVIEW_SCREENS ? $GUI_SHOW : $GUI_HIDE)
 	GUICtrlSetState($hGUI.Screen.Back, $MM_SUBVIEW_CURRENT = $MM_SUBVIEW_SCREENS ? $GUI_SHOW : $GUI_HIDE)
 	GUICtrlSetState($hGUI.Screen.Forward, $MM_SUBVIEW_CURRENT = $MM_SUBVIEW_SCREENS ? $GUI_SHOW : $GUI_HIDE)
+	If $MM_SUBVIEW_CURRENT = $MM_SUBVIEW_SCREENS Then SD_GUI_UpdateScreenByPath($sScreenPath)
 EndFunc
 
 Func SD_FormatDescription()

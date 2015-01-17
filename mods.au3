@@ -381,12 +381,14 @@ EndFunc   ;==>Mod_ModIsInstalled
 Func Mod_InfoLoad(Const $sModName, Const $sFile)
 	Local $sReturn = FileRead($MM_LIST_DIR_PATH & "\" & $sModName & "\" & $sFile)
 	If @error Or $sReturn = "" Then $sReturn = Lng_Get("info_group.no_info")
+
 	Return $sReturn
 EndFunc   ;==>Mod_InfoLoad
 
 Func Mod_ScreenListLoad(Const $sModName)
 	Local $aReturn = _FileListToArray($MM_LIST_DIR_PATH & "\" & $sModName & "\Screens\", Default, $FLTA_FILES, True)
 	If @error Then Dim $aReturn[1]
+
 	Return $aReturn
 EndFunc
 
