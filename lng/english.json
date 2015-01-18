@@ -167,13 +167,16 @@
 	},
 	"category" :
 	{
-		"gameplay" : "GAMEPLAY",
-		"graphics" : "GRAPHICS",
-		"scenarios" : "SCENARIOS",
-		"cheats" : "CHEATS",
-		"interface" : "INTERFACE",
-		"towns" : "TOWNS",
-		"other" : "OTHER",
-		"platforms" : "PLATFORMS"
+		"gameplay" : "Gameplay",
+		"graphics" : "Graphics",
+		"scenarios" : "Scenarios",
+		"cheats" : "Cheats",
+		"interface" : "Interface",
+		"towns" : "Towns",
+		"other" : "Other",
+		"platforms" : "Platforms"
+        "personal mods": "My personal mods"
+        "utilities" : "Utilities"
 	}
 }
+
