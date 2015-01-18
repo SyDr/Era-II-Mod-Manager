@@ -428,33 +428,33 @@ Func SD_GUI_Events_Register()
 EndFunc   ;==>SD_GUI_Events_Register
 
 Func SD_GUI_ModCategoriesUpdate()
-	$bExit = False
-	SD_GUI_Close()
+	Local $sFiles = FileOpenDialog("", "", "(*.*)", $FD_FILEMUSTEXIST + $FD_MULTISELECT, "", $MM_UI_MAIN)
+	If @error Then Return
 
-	Local $sDir, $sCategory, $mMap
-	For $i = 1 To $MM_LIST_CONTENT[0][0]
-		$sDir = $MM_LIST_CONTENT[$i][$MOD_ID]
-		$sCategory = ""
-		; this is specailly written in a bad manner. This SHOULD BE a temporary code
-		If StringLeft($sDir, StringLen("[gameplay] ")) = "[gameplay] " Then $sCategory = "gameplay"
-		If StringLeft($sDir, StringLen("[graphics] ")) = "[graphics] " Then $sCategory = "graphics"
-		If StringLeft($sDir, StringLen("[scenarios] ")) = "[scenarios] " Then $sCategory = "scenarios"
-		If StringLeft($sDir, StringLen("[cheats] ")) = "[cheats] " Then $sCategory = "cheats"
-		If StringLeft($sDir, StringLen("[interface] ")) = "[interface] " Then $sCategory = "interface"
-		If StringLeft($sDir, StringLen("[towns] ")) = "[towns] " Then $sCategory = "towns"
+	Local $aFiles = StringSplit($sFiles, "|")
+	If $aFiles[0] = 1 Then
+		ReDim $aFiles[3]
+		$aFiles[2] = StringRight($aFiles[1], StringLen($aFiles[1]) - StringInStr($aFiles[1], "\", 0, -1))
+		$aFiles[1] = StringLeft($aFiles[1], StringLen($aFiles[1]) - StringLen($aFiles[2]) - 1)
+		$aFiles[0] += 1
+	EndIf
 
-		If $sCategory <> "" Then
-			$mMap = $MM_LIST_MAP[Mod_Get("id", $i)]
-			$mMap["category"] = $sCategory
-			Mod_Save($i, $mMap)
-			DirMove($MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$i][$MOD_ID], $MM_LIST_DIR_PATH & "\" & StringTrimLeft($MM_LIST_CONTENT[$i][$MOD_ID], StringLen($sCategory) + 3))
-			If Not @error Then $MM_LIST_CONTENT[$i][$MOD_ID] = StringTrimLeft($MM_LIST_CONTENT[$i][$MOD_ID], StringLen($sCategory) + 3)
+	For $i = 2 To $aFiles[0]
+		Local $aPattern = StringRegExp($aFiles[$i], "^\[(.*?)\]\s(.*)$", $STR_REGEXPARRAYMATCH)
+		If @error Or Not IsArray($aPattern) Or UBound($aPattern) < 2 Then ContinueLoop
+
+		Local $sCategory = $aPattern[0]
+		Local $sName = $aPattern[1]
+
+		If StringIsUpper($sCategory) Then
+			$sCategory = StringLeft($sCategory, 1) & StringLower(StringTrimLeft($sCategory, 1))
+		Else
+			$sCategory = StringUpper($sCategory)
 		EndIf
-	Next
 
-	Mod_ListSave()
-	Mod_ListLoad()
-	$bExit = True
+		FileMove($aFiles[1] & "\" & $aFiles[$i], $aFiles[1] & "\" & StringFormat("_temp_[%s] %s" , $sCategory, $sName))
+		FileMove($aFiles[1] & "\" & StringFormat("_temp_[%s] %s" , $sCategory, $sName), $aFiles[1] & "\" & StringFormat("[%s] %s" , $sCategory, $sName))
+	Next
 EndFunc
 
 Func SD_GUI_SetLng()
