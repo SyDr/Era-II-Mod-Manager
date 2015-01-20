@@ -174,9 +174,8 @@
 		"interface" : "Interface",
 		"towns" : "Towns",
 		"other" : "Other",
-		"platforms" : "Platforms"
-        "personal mods": "My personal mods"
-        "utilities" : "Utilities"
+		"platforms" : "Platforms",
+		"personal mods": "My personal mods",
+		"utilities" : "Utilities"
 	}
 }
-
