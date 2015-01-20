@@ -175,10 +175,10 @@ Func Mod_Get(Const $sPath, $iModIndex = -1)
 		$vReturn = ($MM_LIST_MAP[$sModId])["caption"][$MM_LANGUAGE_CODE]
 		If $vReturn = "" Then $vReturn = ($MM_LIST_MAP[$sModId])["caption"]["en_US"]
 		If $vReturn = "" Then $vReturn = $MM_LIST_CONTENT[$iModIndex][$MOD_ID]
-	ElseIf $sPath = "caption\formatted" Then
+	ElseIf $aParts[1] = "caption" And $aParts[2] = "formatted" Then
 		$vReturn = Mod_Get("caption", $iModIndex)
 		Local $sCategory = ($MM_LIST_MAP[$sModId])["category"]
-		If $sCategory <> "" Then $vReturn = StringFormat("[%s] %s", Lng_Get("category." & Mod_Get("category", $iModIndex)), $vReturn)
+		If $sCategory <> "" Then $vReturn = StringFormat("[%s] %s", ($aParts[0] > 2 And $aParts[3] = "caps") ? StringUpper(Lng_GetCategory($sCategory)) : Lng_GetCategory($sCategory), $vReturn)
 	ElseIf $aParts[1] = "description" Then
 		$vReturn = ($MM_LIST_MAP[$sModId])["description"][$aParts[2]][$MM_LANGUAGE_CODE]
 		If $vReturn = "" Then $vReturn = ($MM_LIST_MAP[$sModId])["description"][$aParts[2]]["en_US"]

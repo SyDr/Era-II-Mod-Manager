@@ -1057,7 +1057,7 @@ Func TreeViewFill()
 		$bEnabled = $MM_LIST_CONTENT[$iCount][$MOD_IS_ENABLED]
 		$iPriority = Mod_Get("priority", $iCount)
 		$sCategory = Mod_Get("category", $iCount)
-		$sCaption = $bEnabled ? Mod_Get("caption\formatted", $iCount) : Mod_Get("caption", $iCount)
+		$sCaption = $bEnabled ? Mod_Get("caption\formatted\caps", $iCount) : Mod_Get("caption", $iCount)
 		$sCaption = $MM_LIST_CONTENT[$iCount][$MOD_IS_EXIST] ? $sCaption : Lng_GetF("mod_list.missing", $sCaption)
 
 		$iCurrentGroup = TreeViewFindCategory($bEnabled, $bEnabled ? $iPriority : $sCategory)
@@ -1081,9 +1081,9 @@ Func TreeViewFill()
 EndFunc   ;==>TreeViewFill
 
 Func TreeViewAddGroup(Const $bEnabled, Const $vItem)
-	Local $sText = $bEnabled ? Lng_Get("mod_list.group.enabled") : Lng_Get("mod_list.group.disabled")
+	Local $sText = StringUpper($bEnabled ? Lng_Get("mod_list.group.enabled") : Lng_Get("mod_list.group.disabled"))
 	If $bEnabled And $vItem <> 0 Then $sText = StringFormat(Lng_Get("mod_list.group.enabled_with_priority"), $vItem)
-	If Not $bEnabled And $vItem <> "" Then $sText = Lng_GetF("mod_list.group.disabled_group", Lng_GetCategory($vItem))
+	If Not $bEnabled And $vItem <> "" Then $sText = Lng_GetF("mod_list.group.disabled_group", StringUpper(Lng_GetCategory($vItem)))
 
 	$aModListGroups[0][0] += 1
 	ReDim $aModListGroups[$aModListGroups[0][0] + 1][3]
