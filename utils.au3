@@ -134,3 +134,7 @@ Func GUIRegisterMsgStateful(Const $iMessage, Const ByRef $sFuncName)
 		MapRemove($mRegistered, $iMessage)
 	EndIf
 EndFunc
+
+Func Utils_InnoLangToMM(Const $sInnoLng)
+	Return $sInnoLng & ".json"
+EndFunc

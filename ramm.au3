@@ -68,10 +68,10 @@ If $CMDLine[0] > 0 And $CMDLine[1] = '/assocdel' Then
 	StartUp_Assoc_Delete()
 EndIf
 
-$MM_SETTINGS_LANGUAGE = Settings_Get("language")
 Lng_LoadList()
-
-If $CMDLine[0] > 0 Then
+If $CMDLine[0] > 1 And $CMDLine[1] = '/install' Then
+	Settings_Set("language",  Utils_InnoLangToMM($CMDLine[2]))
+ElseIf $CMDLine[0] > 0 Then
 	If Not SD_CLI_Mod_Add() Then Exit
 EndIf
 
