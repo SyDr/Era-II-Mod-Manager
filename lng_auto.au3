@@ -82,6 +82,7 @@ If Not MapExists($MM_LNG_CACHE, "settings") Or Not IsMap($MM_LNG_CACHE["settings
 If Not MapExists($MM_LNG_CACHE["settings"], "game_dir") Or Not IsMap($MM_LNG_CACHE["settings"]["game_dir"]) Then $MM_LNG_CACHE["settings"]["game_dir"] = MapEmpty()
 If Not MapExists($MM_LNG_CACHE["settings"]["game_dir"], "change") Or Not IsString($MM_LNG_CACHE["settings"]["game_dir"]["change"]) Then $MM_LNG_CACHE["settings"]["game_dir"]["change"] = "Change game directory"
 If Not MapExists($MM_LNG_CACHE["settings"]["game_dir"], "caption") Or Not IsString($MM_LNG_CACHE["settings"]["game_dir"]["caption"]) Then $MM_LNG_CACHE["settings"]["game_dir"]["caption"] = "Select game directory"
+If Not MapExists($MM_LNG_CACHE["settings"]["game_dir"], "incorrect_dir") Or Not IsString($MM_LNG_CACHE["settings"]["game_dir"]["incorrect_dir"]) Then $MM_LNG_CACHE["settings"]["game_dir"]["incorrect_dir"] = "This directory doesn't look like Era II directory (no ""h3era.exe"" file here).\nDo you still want to use this dir?\n\nIn any case, you always can change dir later (menu ""More"" -> ""Change game directory"")"
 If Not MapExists($MM_LNG_CACHE["settings"], "game_exe") Or Not IsMap($MM_LNG_CACHE["settings"]["game_exe"]) Then $MM_LNG_CACHE["settings"]["game_exe"] = MapEmpty()
 If Not MapExists($MM_LNG_CACHE["settings"]["game_exe"], "show_all") Or Not IsString($MM_LNG_CACHE["settings"]["game_exe"]["show_all"]) Then $MM_LNG_CACHE["settings"]["game_exe"]["show_all"] = "Show all"
 If Not MapExists($MM_LNG_CACHE, "update") Or Not IsMap($MM_LNG_CACHE["update"]) Then $MM_LNG_CACHE["update"] = MapEmpty()

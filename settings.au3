@@ -87,6 +87,8 @@ Func Settings_Get(Const ByRef $sName)
 			EndIf
 		Case "game.blacklist"
 			Return $MM_SETTINGS_CACHE["game"]["blacklist"]
+		Case "available_path_list"
+			Return MapKeys($MM_SETTINGS_CACHE["game"]["items"])
 	EndSwitch
 EndFunc   ;==>Settings_Get
 

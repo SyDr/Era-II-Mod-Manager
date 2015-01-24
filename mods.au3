@@ -40,6 +40,7 @@ Func Mod_ListLoad()
 		If @error Then
 			$MM_LIST_CONTENT[0][0] += 1
 			__Mod_LoadInfo($MM_LIST_CONTENT[0][0], $aModList_File[$i], True)
+			_TracePoint("ModList: InfoLoaded")
 		EndIf
 	Next
 
@@ -52,6 +53,7 @@ Func Mod_ListLoad()
 		EndIf
 	Next
 
+	_TracePoint("ModList: Sort")
 	ReDim $MM_LIST_CONTENT[1 + $MM_LIST_CONTENT[0][0]][$MOD_TOTAL]
 	If $iFirstDisabled > 0 Then _ArraySort($MM_LIST_CONTENT, Default, $iFirstDisabled, Default, $MOD_CAPTION)
 	_TraceEnd()
