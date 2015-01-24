@@ -93,8 +93,13 @@ Func Settings_Get(Const ByRef $sName)
 EndFunc   ;==>Settings_Get
 
 Func Settings_Set(Const ByRef $sName, Const ByRef $vValue)
+	If Not $MM_SETTINGS_INIT Then __Settings_Init()
+
 	Switch $sName
-		Case "language", "portable", "version"
+		Case "language"
+			$MM_SETTINGS_CACHE["language"] = $vValue
+			$MM_SETTINGS_LANGUAGE = $vValue
+		Case "portable", "version"
 			$MM_SETTINGS_CACHE[StringLower($sName)] = $vValue
 		Case "width", "height", "maximized"
 			$MM_SETTINGS_CACHE["window"][StringLower($sName)] = $vValue

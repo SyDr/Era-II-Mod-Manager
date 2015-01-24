@@ -66,7 +66,7 @@ Func UI_SelectGameDir()
 	GUISetState(@SW_ENABLE, $MM_UI_MAIN)
 	GUISetState(@SW_RESTORE, $MM_UI_MAIN)
 
-	If Not $bSelected Then
+	If Not $bSelected Or Not $sPath Then
 		Return False
 	Else
 		$MM_GAME_DIR = $sPath
