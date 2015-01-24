@@ -66,29 +66,25 @@ EndFunc
 Func Settings_Get(Const ByRef $sName)
 	If Not $MM_SETTINGS_INIT Then __Settings_Init()
 
+	Local $vReturn
+
 	Switch $sName
 		Case "language", "version"
-			Return $MM_SETTINGS_CACHE[StringLower($sName)]
+			$vReturn = $MM_SETTINGS_CACHE[StringLower($sName)]
 		Case "width", "height", "maximized"
-			Return $MM_SETTINGS_CACHE["window"][StringLower($sName)]
+			$vReturn = $MM_SETTINGS_CACHE["window"][StringLower($sName)]
 		Case "path"
-			If $MM_PORTABLE Then
-				Return $MM_GAME_DIR
-			Else
-				Return $MM_SETTINGS_CACHE["game"]["selected"]
-			EndIf
+			$vReturn = $MM_PORTABLE ? $MM_GAME_DIR : $MM_SETTINGS_CACHE["game"]["selected"]
 		Case "exe"
-			If $MM_PORTABLE Then
-				Return $MM_SETTINGS_CACHE["game"]["exe"]
-			Else
-				Local $sSelected = $MM_SETTINGS_CACHE["game"]["selected"]
-				Return $sSelected <> "" ? $MM_SETTINGS_CACHE["game"]["items"][$sSelected]["exe"] : ""
-			EndIf
+			$vReturn = $MM_PORTABLE ? $MM_SETTINGS_CACHE["game"]["exe"] : ($MM_SETTINGS_CACHE["game"]["exe"] ? $MM_SETTINGS_CACHE["game"]["items"][$MM_SETTINGS_CACHE["game"]["exe"]]["exe"] : "")
+			If Not $vReturn And FileExists(Settings_Get("path") & "\h3era.exe") Then $vReturn = "h3era.exe"
 		Case "game.blacklist"
-			Return $MM_SETTINGS_CACHE["game"]["blacklist"]
-		Case "available_path_list"
-			Return MapKeys($MM_SETTINGS_CACHE["game"]["items"])
+			$vReturn = $MM_SETTINGS_CACHE["game"]["blacklist"]
+		Case "available_path._list"
+			$vReturn = MapKeys($MM_SETTINGS_CACHE["game"]["items"])
 	EndSwitch
+
+	Return $vReturn
 EndFunc   ;==>Settings_Get
 
 Func Settings_Set(Const ByRef $sName, Const ByRef $vValue)
@@ -137,4 +133,3 @@ Func __Settings_Load()
 
 	$MM_GAME_EXE = Settings_Get("exe")
 EndFunc
-
