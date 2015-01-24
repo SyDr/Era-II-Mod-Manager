@@ -17,7 +17,6 @@ Func __Settings_Validate()
 	Local $aItems, $i
 	If Not IsMap($MM_SETTINGS_CACHE) Then $MM_SETTINGS_CACHE = MapEmpty()
 	If Not MapExists($MM_SETTINGS_CACHE, "version") Or Not IsString($MM_SETTINGS_CACHE["version"]) Then $MM_SETTINGS_CACHE["version"] = $MM_VERSION_NUMBER
-	If Not MapExists($MM_SETTINGS_CACHE, "portable") Or Not IsBool($MM_SETTINGS_CACHE["portable"]) Then $MM_SETTINGS_CACHE["portable"] = False
 	If Not MapExists($MM_SETTINGS_CACHE, "language") Or Not IsString($MM_SETTINGS_CACHE["language"]) Then $MM_SETTINGS_CACHE["language"] = "english.json"
 	If Not MapExists($MM_SETTINGS_CACHE, "window") Or Not IsMap($MM_SETTINGS_CACHE["window"]) Then $MM_SETTINGS_CACHE["window"] = MapEmpty()
 	If Not MapExists($MM_SETTINGS_CACHE["window"], "width") Or Not IsInt($MM_SETTINGS_CACHE["window"]["width"]) Or _
@@ -26,7 +25,7 @@ Func __Settings_Validate()
 		$MM_SETTINGS_CACHE["window"]["height"] < $MM_WINDOW_MIN_HEIGHT Then $MM_SETTINGS_CACHE["window"]["height"] = $MM_WINDOW_MIN_HEIGHT
 	If Not MapExists($MM_SETTINGS_CACHE["window"], "maximized") Or Not IsBool($MM_SETTINGS_CACHE["window"]["maximized"]) Then $MM_SETTINGS_CACHE["window"]["maximized"] = False
 	If Not MapExists($MM_SETTINGS_CACHE, "game") Or Not IsMap($MM_SETTINGS_CACHE["game"]) Then $MM_SETTINGS_CACHE["game"] = MapEmpty()
-	If Not $MM_SETTINGS_CACHE["portable"] Then
+	If Not $MM_PORTABLE Then
 		If Not MapExists($MM_SETTINGS_CACHE["game"], "selected") Or Not IsString($MM_SETTINGS_CACHE["game"]["selected"]) Then $MM_SETTINGS_CACHE["game"]["selected"] = ""
 		If Not MapExists($MM_SETTINGS_CACHE["game"], "items") Or Not IsMap($MM_SETTINGS_CACHE["game"]["items"]) Then $MM_SETTINGS_CACHE["game"]["items"] = MapEmpty()
 
@@ -68,18 +67,18 @@ Func Settings_Get(Const ByRef $sName)
 	If Not $MM_SETTINGS_INIT Then __Settings_Init()
 
 	Switch $sName
-		Case "language", "portable", "version"
+		Case "language", "version"
 			Return $MM_SETTINGS_CACHE[StringLower($sName)]
 		Case "width", "height", "maximized"
 			Return $MM_SETTINGS_CACHE["window"][StringLower($sName)]
 		Case "path"
-			If $MM_SETTINGS_PORTABLE Then
+			If $MM_PORTABLE Then
 				Return $MM_GAME_DIR
 			Else
 				Return $MM_SETTINGS_CACHE["game"]["selected"]
 			EndIf
 		Case "exe"
-			If $MM_SETTINGS_PORTABLE Then
+			If $MM_PORTABLE Then
 				Return $MM_SETTINGS_CACHE["game"]["exe"]
 			Else
 				Local $sSelected = $MM_SETTINGS_CACHE["game"]["selected"]
@@ -99,7 +98,7 @@ Func Settings_Set(Const ByRef $sName, Const ByRef $vValue)
 		Case "language"
 			$MM_SETTINGS_CACHE["language"] = $vValue
 			$MM_SETTINGS_LANGUAGE = $vValue
-		Case "portable", "version"
+		Case "version"
 			$MM_SETTINGS_CACHE[StringLower($sName)] = $vValue
 		Case "width", "height", "maximized"
 			$MM_SETTINGS_CACHE["window"][StringLower($sName)] = $vValue
@@ -107,7 +106,7 @@ Func Settings_Set(Const ByRef $sName, Const ByRef $vValue)
 			$MM_SETTINGS_CACHE["game"]["selected"] = $vValue
 			__Settings_Validate()
 		Case "exe"
-			If Not Settings_Get("portable") Then
+			If Not $MM_PORTABLE Then
 				Local $sSelected = $MM_SETTINGS_CACHE["game"]["selected"]
 				$MM_SETTINGS_CACHE["game"]["items"][$sSelected]["exe"] = $vValue
 			Else
@@ -119,21 +118,15 @@ EndFunc   ;==>Settings_Set
 Func __Settings_Init()
 	$MM_SETTINGS_INIT = True
 	__Settings_Load()
-	If Not $MM_SETTINGS_PORTABLE Then
-		$MM_SETTINGS_PATH = @AppDataCommonDir & "\RAMM\settings.json"
-		FileClose(FileOpen($MM_SETTINGS_PATH, $FO_APPEND + $FO_CREATEPATH))
-		__Settings_Load(True)
-	EndIf
 EndFunc
 
-Func __Settings_Load(Const $bForceAppData = False)
+Func __Settings_Load()
 	$MM_SETTINGS_CACHE = Jsmn_Decode(FileRead($MM_SETTINGS_PATH))
 	__Settings_Validate()
-	If $bForceAppData Then $MM_SETTINGS_CACHE["portable"] = False
-	$MM_SETTINGS_PORTABLE = $MM_SETTINGS_CACHE["portable"]
+
 	$MM_SETTINGS_LANGUAGE = $MM_SETTINGS_CACHE["language"]
 
-	If Not $MM_SETTINGS_PORTABLE Then
+	If Not $MM_PORTABLE Then
 		$MM_GAME_DIR = Settings_Get("path")
 		$MM_GAME_NO_DIR = $MM_GAME_DIR = ""
 		If Not $MM_GAME_NO_DIR Then

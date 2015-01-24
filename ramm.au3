@@ -1,7 +1,7 @@
 #NoTrayIcon
 #cs
-	; this is a drity hack to allow easy overwrite #AutoIt3Wrapper_Res_Fileversion via simple IniWrite in make_build.au3
-	[Version]
+this allows easy overwrite #AutoIt3Wrapper_Res_Fileversion via simple IniWrite
+[Version]
 #ce
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Version=Beta
@@ -87,7 +87,7 @@ EndIf
 Func UI_Main()
 	_TraceStart("Init UI")
 	_GDIPlus_Startup()
-	If Not Settings_Get("portable") And Not Settings_Get("path") Then UI_SelectGameDir()
+	If Not $MM_PORTABLE And Not Settings_Get("path") Then UI_SelectGameDir()
 	SD_GUI_LoadSize()
 	SD_GUI_Create()
 	TreeViewMain()
@@ -177,7 +177,7 @@ Func SD_GUI_Create()
 	$hGUI.MenuSettings.Compatibility = GUICtrlCreateMenuItem("-", $hGUI.MenuSettings.Menu)
 	$hGUI.MenuSettings.ChangeModDir = GUICtrlCreateMenuItem("-", $hGUI.MenuSettings.Menu)
 	If $MM_GAME_NO_DIR Then GUICtrlSetState($hGUI.MenuSettings.Add, $GUI_DISABLE)
-	If $MM_SETTINGS_PORTABLE Then GUICtrlSetState($hGUI.MenuSettings.ChangeModDir, $GUI_DISABLE)
+	If $MM_PORTABLE Then GUICtrlSetState($hGUI.MenuSettings.ChangeModDir, $GUI_DISABLE)
 	GUICtrlCreateMenuItem("", $hGUI.MenuSettings.Menu)
 
 	$hGUI.MenuSettings.Settings = GUICtrlCreateMenuItem("-", $hGUI.MenuSettings.Menu)
@@ -507,7 +507,7 @@ Func SD_GUI_Mod_Compatibility()
 EndFunc   ;==>SD_GUI_Mod_Compatibility
 
 Func SD_GUI_CheckForUpdates()
-	Update_CheckNewPorgram(Settings_Get("Portable"), $MM_UI_MAIN)
+	Update_CheckNewPorgram($MM_PORTABLE, $MM_UI_MAIN)
 EndFunc   ;==>SD_GUI_CheckForUpdates
 
 Func SD_GUI_Mod_OpenFolder()
@@ -1309,7 +1309,7 @@ Func SD_SwitchView(Const $iNewView = $MM_VIEW_MODS)
 	GUICtrlSetState($hGUI.ModList.Up, $MM_VIEW_CURRENT = $MM_VIEW_MODS ? $GUI_SHOW : $GUI_HIDE)
 	GUICtrlSetState($hGUI.ModList.Down, $MM_VIEW_CURRENT = $MM_VIEW_MODS ? $GUI_SHOW : $GUI_HIDE)
 	GUICtrlSetState($hGUI.ModList.ChangeState, $MM_VIEW_CURRENT = $MM_VIEW_MODS ? $GUI_SHOW : $GUI_HIDE)
-	If Not $MM_SETTINGS_PORTABLE Then GUICtrlSetState($hGUI.MenuSettings.ChangeModDir, $MM_VIEW_CURRENT = $MM_VIEW_MODS ? $GUI_ENABLE : $GUI_DISABLE)
+	If Not $MM_PORTABLE Then GUICtrlSetState($hGUI.MenuSettings.ChangeModDir, $MM_VIEW_CURRENT = $MM_VIEW_MODS ? $GUI_ENABLE : $GUI_DISABLE)
 
 	GUICtrlSetState($hGUI.PluginsList.Group, $MM_VIEW_CURRENT = $MM_VIEW_PLUGINS ? $GUI_SHOW : $GUI_HIDE)
 	GUICtrlSetState($hGUI.PluginsList.List, $MM_VIEW_CURRENT = $MM_VIEW_PLUGINS ? $GUI_SHOW : $GUI_HIDE)
