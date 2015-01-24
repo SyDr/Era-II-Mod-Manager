@@ -10,7 +10,7 @@
 	{
 		"mod" : "Mod",
 		"caption" : "Mod list (%s)",
-		"no_game_dir" : "no game dir - select from \"More actions\"",
+		"no_game_dir" : "no game dir - select from \"Tools\"",
 		"up" : "Move up",
 		"down" : "Move down",
 		"enable" : "Enable",
@@ -25,7 +25,6 @@
 			"disabled_group" : "%s"
 		},
 		"list_inaccessible" : "Can't delete/write file \"%s\" content\n\nPossible reasons:\n 1) File is \"read-only\"\n 2) Current user doesn't not have enough rights to create/delete this file \n\nOpen directory in explorer?",
-		"more" : "More actions",
 		"plugins" : "Plugins",
 		"homepage" : "Go to webpage",
 		"delete" : "Delete",
@@ -102,11 +101,14 @@
 		"game_dir" : {
 			"change" : "Change game directory",
 			"caption" : "Select game directory",
-			"incorrect_dir" : "This directory doesn't look like Era II directory (no \"h3era.exe\" file here).\nDo you still want to use this dir?\n\nIn any case, you always can change dir later (menu \"More\" -> \"Change game directory\")"
+			"incorrect_dir" : "This directory doesn't look like Era II directory (no \"h3era.exe\" file here).\nDo you still want to use this dir?\n\nIn any case, you always can change dir later (menu \"Tools\" -> \"Change game directory\")"
 		},
-		"game_exe" :
-		{
+		"game_exe" : {
 			"show_all" : "Show all"
+		},
+		"menu" : {
+			"caption" : "Tools",
+			"settings" : "Settings"
 		}
 	},
 	"update" :
