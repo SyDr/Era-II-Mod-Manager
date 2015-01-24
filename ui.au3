@@ -9,7 +9,7 @@
 #include "settings.au3"
 #include "utils.au3"
 
-Global $__UI_DBLCLK = False, $__UI_LIST
+Global $__UI_EVENT = False, $__UI_LIST
 
 Func UI_GameExeLaunch()
 	If $MM_COMPATIBILITY_MESSAGE <> "" Then
@@ -18,6 +18,76 @@ Func UI_GameExeLaunch()
 	EndIf
 
 	Run($MM_GAME_DIR & "\" & $MM_GAME_EXE, $MM_GAME_DIR)
+EndFunc
+
+Func UI_Settings()
+	GUISetState(@SW_DISABLE, $MM_UI_MAIN)
+	Local Const $iOptionGUIOnEventMode = AutoItSetOption("GUIOnEventMode", 0)
+	Local Const $iItemSpacing = 4
+	Local $bClose = False
+	Local $bSave = False
+
+	Local $hGUI = GUICreate(Lng_Get("settings.menu.settings"), 370, 100, Default, Default, Default, Default, $MM_UI_MAIN)
+	Local $aSize = WinGetClientSize($hGUI)
+	If Not @Compiled Then GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
+	GUIRegisterMsgStateful($WM_NOTIFY, "__UI_WM_NOTIFY_SETTINGS")
+
+	GUICtrlCreateGroup(Lng_Get("settings.auto_update.group"), $iItemSpacing, $iItemSpacing, $aSize[0] - 2 * $iItemSpacing, $aSize[1] - 3 * $iItemSpacing - 25)
+	Local $hLabelAuto = GUICtrlCreateLabel(Lng_Get("settings.auto_update.label"), 2 * $iItemSpacing, 5 * $iItemSpacing, Default, 17, $SS_CENTERIMAGE)
+	Local $hComboAuto = GUICtrlCreateCombo("", GUICtrlGetPos($hLabelAuto).NextX, 5 * $iItemSpacing, $aSize[0] - GUICtrlGetPos($hLabelAuto).NextX - 2 * $iItemSpacing, 25, $CBS_DROPDOWNLIST)
+	GUICtrlSetData($hComboAuto, Lng_Get("settings.auto_update.day") & "|" & Lng_Get("settings.auto_update.week") & "|" & Lng_Get("settings.auto_update.never"), UI_IntervalToItem(Settings_Get("update_interval")))
+
+	Local $hCheckboxAuto = GUICtrlCreateCheckbox(Lng_Get("settings.auto_update.auto"), 6 * $iItemSpacing, GUICtrlGetPos($hLabelAuto).NextY + 2 * $iItemSpacing, Default, 17)
+	GUICtrlSetState($hCheckboxAuto, Settings_Get("update_auto") ? $GUI_CHECKED : $GUI_UNCHECKED)
+	GUICtrlSetState($hCheckboxAuto, (UI_ItemToInterval(GUICtrlRead($hComboAuto)) = 0 Or $MM_PORTABLE) ? $GUI_DISABLE : $GUI_ENABLE)
+	Local $hOk = GUICtrlCreateButton("OK", $aSize[0] - $iItemSpacing - 75, $aSize[1] - $iItemSpacing - 25, 75, 25)
+
+	GUISetState(@SW_SHOW)
+
+	While Not $bClose And Not $bSave
+		Switch GUIGetMsg()
+			Case $GUI_EVENT_CLOSE
+				$bClose = True
+			Case $hOk
+				$bSave = True
+			Case $hComboAuto
+				GUICtrlSetState($hCheckboxAuto, (UI_ItemToInterval(GUICtrlRead($hComboAuto)) = 0 Or $MM_PORTABLE) ? $GUI_DISABLE : $GUI_ENABLE)
+		EndSwitch
+	WEnd
+
+	If $bSave Then
+		Settings_Set("update_interval", UI_ItemToInterval(GUICtrlRead($hComboAuto)))
+		Settings_Set("update_auto", GUICtrlRead($hCheckboxAuto) = $GUI_CHECKED)
+		Settings_Save()
+	EndIf
+
+	GUIDelete($hGUI)
+
+	AutoItSetOption("GUIOnEventMode", $iOptionGUIOnEventMode)
+	GUISetState(@SW_ENABLE, $MM_UI_MAIN)
+	GUISetState(@SW_RESTORE, $MM_UI_MAIN)
+EndFunc
+
+Func UI_IntervalToItem(Const $iInterval)
+	Switch $iInterval
+		Case 1
+			Return Lng_Get("settings.auto_update.day")
+		Case 7
+			Return Lng_Get("settings.auto_update.week")
+		Case Else
+			Return Lng_Get("settings.auto_update.never")
+	EndSwitch
+EndFunc
+
+Func UI_ItemToInterval(Const $sItem)
+	Switch $sItem
+		Case Lng_Get("settings.auto_update.day")
+			Return 1
+		Case Lng_Get("settings.auto_update.week")
+			Return 7
+		Case Else
+			Return 0
+	EndSwitch
 EndFunc
 
 Func UI_SelectGameDir()
@@ -33,6 +103,7 @@ Func UI_SelectGameDir()
 
 	Local $hGUI = GUICreate(Lng_Get("settings.game_dir.caption"), 420, $iItemSpacing + 50, Default, Default, Default, Default, $MM_UI_MAIN)
 	Local $aSize = WinGetClientSize($hGUI)
+	If Not @Compiled Then GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
 
 	Local $hCombo = GUICtrlCreateCombo("", $iItemSpacing, $iItemSpacing, $aSize[0] - 3 * $iItemSpacing - 35, 25, BitOR($CBS_DROPDOWNLIST, $CBS_AUTOHSCROLL))
 	GUICtrlSetData($hCombo, _ArrayToString($aList, Default, 1), Settings_Get("path"))
@@ -155,9 +226,9 @@ Func UI_SelectGameExe()
 				Next
 				_GUICtrlTreeView_EndUpdate($__UI_LIST)
 		EndSwitch
-		If $__UI_DBLCLK Then
+		If $__UI_EVENT Then
 			$bSelected = True
-			$__UI_DBLCLK = False
+			$__UI_EVENT = False
 		EndIf
 	WEnd
 
@@ -187,9 +258,10 @@ Func __UI_WM_NOTIFY($hwnd, $iMsg, $iwParam, $ilParam)
 		Case GUICtrlGetHandle($__UI_LIST)
 			Switch $iCode
 				Case $NM_DBLCLK
-					$__UI_DBLCLK = True
+					$__UI_EVENT = True
 			EndSwitch
 	EndSwitch
 
 	Return $GUI_RUNDEFMSG
 EndFunc   ;==>WM_NOTIFY
+

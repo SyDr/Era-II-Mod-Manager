@@ -187,7 +187,6 @@ Func SD_GUI_Create()
 		If $MM_LNG_LIST[$iCount][$MM_LNG_FILE] = $MM_SETTINGS_LANGUAGE Then GUICtrlSetState($MM_LNG_LIST[$iCount][$MM_LNG_MENU_ID], $GUI_CHECKED)
 	Next
 
-
 	$hGUI.MenuHelp.Menu = GUICtrlCreateMenu("?")
 	$hGUI.MenuHelp.CheckForUpdates = GUICtrlCreateMenuItem("-", $hGUI.MenuHelp.Menu)
 
@@ -407,6 +406,7 @@ Func SD_GUI_Events_Register()
 	GUICtrlSetOnEvent($hGUI.ModList.Down, "SD_GUI_Mod_Move_Down")
 	GUICtrlSetOnEvent($hGUI.ModList.ChangeState, "SD_GUI_Mod_EnableDisable")
 	GUICtrlSetOnEvent($hGUI.MenuSettings.Compatibility, "SD_GUI_Mod_Compatibility")
+	GUICtrlSetOnEvent($hGUI.MenuSettings.Settings, "SD_GUI_ChangeSettings")
 	GUICtrlSetOnEvent($hGUI.MenuMod.Plugins, "SD_GUI_Manage_Plugins")
 	GUICtrlSetOnEvent($hGUI.MenuMod.OpenHomepage, "SD_GUI_Mod_Website")
 	GUICtrlSetOnEvent($hGUI.MenuMod.Delete, "SD_GUI_Mod_Delete")
@@ -432,6 +432,11 @@ Func SD_GUI_Events_Register()
 	GUICtrlSetOnEvent($hDummyLinks, "SD_GUI_Mod_Website")
 	GUICtrlSetOnEvent($hDummyCategories, "SD_GUI_ModCategoriesUpdate")
 EndFunc   ;==>SD_GUI_Events_Register
+
+Func SD_GUI_ChangeSettings()
+	UI_Settings()
+EndFunc
+
 
 Func SD_GUI_ModCategoriesUpdate()
 	Local $sFiles = FileOpenDialog("", "", "(*.*)", $FD_FILEMUSTEXIST + $FD_MULTISELECT, "", $MM_UI_MAIN)

@@ -14,6 +14,7 @@
 #include <GDIPlus.au3>
 #include <GUIConstantsEx.au3>
 #include <GuiButton.au3>
+#include <GuiComboBoxEx.au3>
 #include <GuiMenu.au3>
 #include <GuiTreeView.au3>
 #include <InetConstants.au3>
