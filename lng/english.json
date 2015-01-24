@@ -109,6 +109,14 @@
 		"menu" : {
 			"caption" : "Tools",
 			"settings" : "Settings"
+		},
+		"auto_update" : {
+			"group" : "Program updates",
+			"label" : "Update program:",
+			"day" : "Every day",
+			"week" : "Every week",
+			"never" : "Never",
+			"auto" : "Install updates automatically"
 		}
 	},
 	"update" :

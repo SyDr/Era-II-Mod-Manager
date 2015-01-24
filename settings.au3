@@ -59,6 +59,13 @@ Func __Settings_Validate()
 	WEnd
 	$MM_SETTINGS_CACHE["game"]["blacklist"] = $aItems
 
+	; 0.91.5.0
+	If Not MapExists($MM_SETTINGS_CACHE, "update") Or Not IsMap($MM_SETTINGS_CACHE["update"]) Then $MM_SETTINGS_CACHE["update"] = MapEmpty()
+	If Not MapExists($MM_SETTINGS_CACHE["update"], "interval") Or Not IsInt($MM_SETTINGS_CACHE["update"]["interval"]) Then $MM_SETTINGS_CACHE["update"]["interval"] = 7
+	If Not $MM_PORTABLE Then
+		If Not MapExists($MM_SETTINGS_CACHE["update"], "auto") Or Not IsBool($MM_SETTINGS_CACHE["update"]["auto"]) Then $MM_SETTINGS_CACHE["update"]["auto"] = False
+	EndIf
+
 
 	If VersionCompare($MM_SETTINGS_CACHE["version"], $MM_VERSION_NUMBER) < 0 Then $MM_SETTINGS_CACHE["version"] = $MM_VERSION_NUMBER
 EndFunc
@@ -80,8 +87,12 @@ Func Settings_Get(Const ByRef $sName)
 			If Not $vReturn And FileExists(Settings_Get("path") & "\h3era.exe") Then $vReturn = "h3era.exe"
 		Case "game.blacklist"
 			$vReturn = $MM_SETTINGS_CACHE["game"]["blacklist"]
-		Case "available_path._list"
+		Case "available_path_list"
 			$vReturn = MapKeys($MM_SETTINGS_CACHE["game"]["items"])
+		Case "update_interval"
+			$vReturn = $MM_SETTINGS_CACHE["update"]["interval"]
+		Case "update_auto"
+			$vReturn = Not $MM_PORTABLE ? $MM_SETTINGS_CACHE["update"]["auto"] : False
 	EndSwitch
 
 	Return $vReturn
@@ -108,6 +119,10 @@ Func Settings_Set(Const ByRef $sName, Const ByRef $vValue)
 			Else
 				$MM_SETTINGS_CACHE["game"]["exe"] = $vValue
 			EndIf
+		Case "update_interval"
+			$MM_SETTINGS_CACHE["update"]["interval"] = $vValue
+		Case "update_auto"
+			If Not $MM_PORTABLE Then $MM_SETTINGS_CACHE["update"]["auto"] = $vValue
 	EndSwitch
 EndFunc   ;==>Settings_Set
 

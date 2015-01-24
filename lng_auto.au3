@@ -87,6 +87,13 @@ If Not MapExists($MM_LNG_CACHE["settings"]["game_exe"], "show_all") Or Not IsStr
 If Not MapExists($MM_LNG_CACHE["settings"], "menu") Or Not IsMap($MM_LNG_CACHE["settings"]["menu"]) Then $MM_LNG_CACHE["settings"]["menu"] = MapEmpty()
 If Not MapExists($MM_LNG_CACHE["settings"]["menu"], "caption") Or Not IsString($MM_LNG_CACHE["settings"]["menu"]["caption"]) Then $MM_LNG_CACHE["settings"]["menu"]["caption"] = "Tools"
 If Not MapExists($MM_LNG_CACHE["settings"]["menu"], "settings") Or Not IsString($MM_LNG_CACHE["settings"]["menu"]["settings"]) Then $MM_LNG_CACHE["settings"]["menu"]["settings"] = "Settings"
+If Not MapExists($MM_LNG_CACHE["settings"], "auto_update") Or Not IsMap($MM_LNG_CACHE["settings"]["auto_update"]) Then $MM_LNG_CACHE["settings"]["auto_update"] = MapEmpty()
+If Not MapExists($MM_LNG_CACHE["settings"]["auto_update"], "group") Or Not IsString($MM_LNG_CACHE["settings"]["auto_update"]["group"]) Then $MM_LNG_CACHE["settings"]["auto_update"]["group"] = "Program updates"
+If Not MapExists($MM_LNG_CACHE["settings"]["auto_update"], "label") Or Not IsString($MM_LNG_CACHE["settings"]["auto_update"]["label"]) Then $MM_LNG_CACHE["settings"]["auto_update"]["label"] = "Update program:"
+If Not MapExists($MM_LNG_CACHE["settings"]["auto_update"], "day") Or Not IsString($MM_LNG_CACHE["settings"]["auto_update"]["day"]) Then $MM_LNG_CACHE["settings"]["auto_update"]["day"] = "Every day"
+If Not MapExists($MM_LNG_CACHE["settings"]["auto_update"], "week") Or Not IsString($MM_LNG_CACHE["settings"]["auto_update"]["week"]) Then $MM_LNG_CACHE["settings"]["auto_update"]["week"] = "Every week"
+If Not MapExists($MM_LNG_CACHE["settings"]["auto_update"], "never") Or Not IsString($MM_LNG_CACHE["settings"]["auto_update"]["never"]) Then $MM_LNG_CACHE["settings"]["auto_update"]["never"] = "Never"
+If Not MapExists($MM_LNG_CACHE["settings"]["auto_update"], "auto") Or Not IsString($MM_LNG_CACHE["settings"]["auto_update"]["auto"]) Then $MM_LNG_CACHE["settings"]["auto_update"]["auto"] = "Install updates automatically"
 If Not MapExists($MM_LNG_CACHE, "update") Or Not IsMap($MM_LNG_CACHE["update"]) Then $MM_LNG_CACHE["update"] = MapEmpty()
 If Not MapExists($MM_LNG_CACHE["update"], "caption") Or Not IsString($MM_LNG_CACHE["update"]["caption"]) Then $MM_LNG_CACHE["update"]["caption"] = "Check for program updates"
 If Not MapExists($MM_LNG_CACHE["update"], "current_version") Or Not IsString($MM_LNG_CACHE["update"]["current_version"]) Then $MM_LNG_CACHE["update"]["current_version"] = "Installed version: %s"
