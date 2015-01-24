@@ -87,6 +87,7 @@ EndIf
 Func UI_Main()
 	_TraceStart("Init UI")
 	_GDIPlus_Startup()
+	If Not Settings_Get("portable") And Not Settings_Get("path") Then UI_SelectGameDir()
 	SD_GUI_LoadSize()
 	SD_GUI_Create()
 	TreeViewMain()

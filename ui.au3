@@ -21,8 +21,52 @@ Func UI_GameExeLaunch()
 EndFunc
 
 Func UI_SelectGameDir()
-	Local $sPath = FileSelectFolder(Lng_Get("settings.game_dir.caption"), "", Default, Settings_Get("path"), $MM_UI_MAIN)
-	If @error Then
+	Local $aList = UI_GetSuggestedGameDirList()
+	GUISetState(@SW_DISABLE, $MM_UI_MAIN)
+
+	Local Const $iOptionGUIOnEventMode = AutoItSetOption("GUIOnEventMode", 0)
+	Local Const $iItemSpacing = 4
+	Local $bClose = False
+	Local $bSelected = False
+	Local $sPath
+	Local $iAnswer
+
+	Local $hGUI = GUICreate(Lng_Get("settings.game_dir.caption"), 420, $iItemSpacing + 50, Default, Default, Default, Default, $MM_UI_MAIN)
+	Local $aSize = WinGetClientSize($hGUI)
+
+	Local $hCombo = GUICtrlCreateCombo("", $iItemSpacing, $iItemSpacing, $aSize[0] - 3 * $iItemSpacing - 35, 25, BitOR($CBS_DROPDOWNLIST, $CBS_AUTOHSCROLL))
+	GUICtrlSetData($hCombo, _ArrayToString($aList, Default, 1), Settings_Get("path"))
+	Local $hDir = GUICtrlCreateButton("...", GUICtrlGetPos($hCombo).NextX + $iItemSpacing, $iItemSpacing - 2, 35, 25)
+	Local $hOk = GUICtrlCreateButton("OK", $aSize[0] - $iItemSpacing - 75, GUICtrlGetPos($hDir).NextY, 75, 25)
+
+	GUISetState(@SW_SHOW)
+
+	While Not $bClose And Not $bSelected
+		Switch GUIGetMsg()
+			Case $GUI_EVENT_CLOSE
+				$bClose = True
+			Case $hOk
+				$sPath = GUICtrlRead($hCombo)
+				If Not FileExists($sPath & "\h3era.exe") Then
+					$iAnswer = MsgBox($MB_YESNO + $MB_ICONQUESTION + $MB_DEFBUTTON2 + $MB_SYSTEMMODAL, "", Lng_Get("settings.game_dir.incorrect_dir"), Default, $hGUI)
+				Else
+					$iAnswer = $IDYES
+				EndIf
+
+				If $iAnswer = $IDYES Then $bSelected = True
+			Case $hDir
+				$sPath = FileSelectFolder(Lng_Get("settings.game_dir.caption"), "", Default, GUICtrlRead($hCombo), $hGUI)
+				If Not @error Then GUICtrlSetData($hCombo, $sPath, $sPath)
+		EndSwitch
+	WEnd
+
+	GUIDelete($hGUI)
+
+	AutoItSetOption("GUIOnEventMode", $iOptionGUIOnEventMode)
+	GUISetState(@SW_ENABLE, $MM_UI_MAIN)
+	GUISetState(@SW_RESTORE, $MM_UI_MAIN)
+
+	If Not $bSelected Then
 		Return False
 	Else
 		$MM_GAME_DIR = $sPath
@@ -31,9 +75,23 @@ Func UI_SelectGameDir()
 		$MM_LIST_DIR_PATH = $MM_GAME_DIR & "\Mods"
 		$MM_LIST_FILE_PATH = $MM_LIST_DIR_PATH & "\list.txt"
 		$MM_GAME_EXE = Settings_Get("exe")
+		Return True
 	EndIf
+EndFunc
 
-	Return True
+Func UI_GetSuggestedGameDirList()
+	Local $aSettings = Settings_Get("available_path_list")
+	Local $aList[1]
+
+	For $i = 0 To UBound($aSettings) - 1
+		If FileExists($aSettings[$i] & "\h3era.exe") Or Settings_Get("path") = $aSettings[$i] Then
+			ReDim $aList[$aList[0] + 2]
+			$aList[0] += 1
+			$aList[$aList[0]] = $aSettings[$i]
+		EndIf
+	Next
+
+	Return $aList
 EndFunc
 
 Func UI_SelectGameExe()
