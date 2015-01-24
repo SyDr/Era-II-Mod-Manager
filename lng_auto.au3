@@ -8,7 +8,7 @@ If Not MapExists($MM_LNG_CACHE["lang"], "language") Or Not IsString($MM_LNG_CACH
 If Not MapExists($MM_LNG_CACHE, "mod_list") Or Not IsMap($MM_LNG_CACHE["mod_list"]) Then $MM_LNG_CACHE["mod_list"] = MapEmpty()
 If Not MapExists($MM_LNG_CACHE["mod_list"], "mod") Or Not IsString($MM_LNG_CACHE["mod_list"]["mod"]) Then $MM_LNG_CACHE["mod_list"]["mod"] = "Mod"
 If Not MapExists($MM_LNG_CACHE["mod_list"], "caption") Or Not IsString($MM_LNG_CACHE["mod_list"]["caption"]) Then $MM_LNG_CACHE["mod_list"]["caption"] = "Mod list (%s)"
-If Not MapExists($MM_LNG_CACHE["mod_list"], "no_game_dir") Or Not IsString($MM_LNG_CACHE["mod_list"]["no_game_dir"]) Then $MM_LNG_CACHE["mod_list"]["no_game_dir"] = "no game dir - select from ""More actions"""
+If Not MapExists($MM_LNG_CACHE["mod_list"], "no_game_dir") Or Not IsString($MM_LNG_CACHE["mod_list"]["no_game_dir"]) Then $MM_LNG_CACHE["mod_list"]["no_game_dir"] = "no game dir - select from ""Tools"""
 If Not MapExists($MM_LNG_CACHE["mod_list"], "up") Or Not IsString($MM_LNG_CACHE["mod_list"]["up"]) Then $MM_LNG_CACHE["mod_list"]["up"] = "Move up"
 If Not MapExists($MM_LNG_CACHE["mod_list"], "down") Or Not IsString($MM_LNG_CACHE["mod_list"]["down"]) Then $MM_LNG_CACHE["mod_list"]["down"] = "Move down"
 If Not MapExists($MM_LNG_CACHE["mod_list"], "enable") Or Not IsString($MM_LNG_CACHE["mod_list"]["enable"]) Then $MM_LNG_CACHE["mod_list"]["enable"] = "Enable"
@@ -21,7 +21,6 @@ If Not MapExists($MM_LNG_CACHE["mod_list"]["group"], "enabled_with_priority") Or
 If Not MapExists($MM_LNG_CACHE["mod_list"]["group"], "disabled") Or Not IsString($MM_LNG_CACHE["mod_list"]["group"]["disabled"]) Then $MM_LNG_CACHE["mod_list"]["group"]["disabled"] = "Without category"
 If Not MapExists($MM_LNG_CACHE["mod_list"]["group"], "disabled_group") Or Not IsString($MM_LNG_CACHE["mod_list"]["group"]["disabled_group"]) Then $MM_LNG_CACHE["mod_list"]["group"]["disabled_group"] = "%s"
 If Not MapExists($MM_LNG_CACHE["mod_list"], "list_inaccessible") Or Not IsString($MM_LNG_CACHE["mod_list"]["list_inaccessible"]) Then $MM_LNG_CACHE["mod_list"]["list_inaccessible"] = ""
-If Not MapExists($MM_LNG_CACHE["mod_list"], "more") Or Not IsString($MM_LNG_CACHE["mod_list"]["more"]) Then $MM_LNG_CACHE["mod_list"]["more"] = ""
 If Not MapExists($MM_LNG_CACHE["mod_list"], "plugins") Or Not IsString($MM_LNG_CACHE["mod_list"]["plugins"]) Then $MM_LNG_CACHE["mod_list"]["plugins"] = "Plugins"
 If Not MapExists($MM_LNG_CACHE["mod_list"], "homepage") Or Not IsString($MM_LNG_CACHE["mod_list"]["homepage"]) Then $MM_LNG_CACHE["mod_list"]["homepage"] = "Go to webpage"
 If Not MapExists($MM_LNG_CACHE["mod_list"], "delete") Or Not IsString($MM_LNG_CACHE["mod_list"]["delete"]) Then $MM_LNG_CACHE["mod_list"]["delete"] = "Delete"
@@ -82,9 +81,12 @@ If Not MapExists($MM_LNG_CACHE, "settings") Or Not IsMap($MM_LNG_CACHE["settings
 If Not MapExists($MM_LNG_CACHE["settings"], "game_dir") Or Not IsMap($MM_LNG_CACHE["settings"]["game_dir"]) Then $MM_LNG_CACHE["settings"]["game_dir"] = MapEmpty()
 If Not MapExists($MM_LNG_CACHE["settings"]["game_dir"], "change") Or Not IsString($MM_LNG_CACHE["settings"]["game_dir"]["change"]) Then $MM_LNG_CACHE["settings"]["game_dir"]["change"] = "Change game directory"
 If Not MapExists($MM_LNG_CACHE["settings"]["game_dir"], "caption") Or Not IsString($MM_LNG_CACHE["settings"]["game_dir"]["caption"]) Then $MM_LNG_CACHE["settings"]["game_dir"]["caption"] = "Select game directory"
-If Not MapExists($MM_LNG_CACHE["settings"]["game_dir"], "incorrect_dir") Or Not IsString($MM_LNG_CACHE["settings"]["game_dir"]["incorrect_dir"]) Then $MM_LNG_CACHE["settings"]["game_dir"]["incorrect_dir"] = "This directory doesn't look like Era II directory (no ""h3era.exe"" file here).\nDo you still want to use this dir?\n\nIn any case, you always can change dir later (menu ""More"" -> ""Change game directory"")"
+If Not MapExists($MM_LNG_CACHE["settings"]["game_dir"], "incorrect_dir") Or Not IsString($MM_LNG_CACHE["settings"]["game_dir"]["incorrect_dir"]) Then $MM_LNG_CACHE["settings"]["game_dir"]["incorrect_dir"] = "This directory doesn't look like Era II directory (no ""h3era.exe"" file here).\nDo you still want to use this dir?\n\nIn any case, you always can change dir later (menu ""Tools"" -> ""Change game directory"")"
 If Not MapExists($MM_LNG_CACHE["settings"], "game_exe") Or Not IsMap($MM_LNG_CACHE["settings"]["game_exe"]) Then $MM_LNG_CACHE["settings"]["game_exe"] = MapEmpty()
 If Not MapExists($MM_LNG_CACHE["settings"]["game_exe"], "show_all") Or Not IsString($MM_LNG_CACHE["settings"]["game_exe"]["show_all"]) Then $MM_LNG_CACHE["settings"]["game_exe"]["show_all"] = "Show all"
+If Not MapExists($MM_LNG_CACHE["settings"], "menu") Or Not IsMap($MM_LNG_CACHE["settings"]["menu"]) Then $MM_LNG_CACHE["settings"]["menu"] = MapEmpty()
+If Not MapExists($MM_LNG_CACHE["settings"]["menu"], "caption") Or Not IsString($MM_LNG_CACHE["settings"]["menu"]["caption"]) Then $MM_LNG_CACHE["settings"]["menu"]["caption"] = "Tools"
+If Not MapExists($MM_LNG_CACHE["settings"]["menu"], "settings") Or Not IsString($MM_LNG_CACHE["settings"]["menu"]["settings"]) Then $MM_LNG_CACHE["settings"]["menu"]["settings"] = "Settings"
 If Not MapExists($MM_LNG_CACHE, "update") Or Not IsMap($MM_LNG_CACHE["update"]) Then $MM_LNG_CACHE["update"] = MapEmpty()
 If Not MapExists($MM_LNG_CACHE["update"], "caption") Or Not IsString($MM_LNG_CACHE["update"]["caption"]) Then $MM_LNG_CACHE["update"]["caption"] = "Check for program updates"
 If Not MapExists($MM_LNG_CACHE["update"], "current_version") Or Not IsString($MM_LNG_CACHE["update"]["current_version"]) Then $MM_LNG_CACHE["update"]["current_version"] = "Installed version: %s"
