@@ -4,6 +4,7 @@ Mod Manager/
 Mod Manager_*zip
 presets/
 Publish/
+Build/
 ftp_pass.txt
 7z\7z.sfx
 settings.json
