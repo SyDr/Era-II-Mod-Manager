@@ -65,7 +65,8 @@ Func __Settings_Validate()
 	If Not $MM_PORTABLE Then
 		If Not MapExists($MM_SETTINGS_CACHE["update"], "auto") Or Not IsBool($MM_SETTINGS_CACHE["update"]["auto"]) Then $MM_SETTINGS_CACHE["update"]["auto"] = False
 	EndIf
-
+	If Not MapExists($MM_SETTINGS_CACHE["update"], "last_check") Or Not IsString($MM_SETTINGS_CACHE["update"]["last_check"]) Or _
+		Not _DateIsValid($MM_SETTINGS_CACHE["update"]["last_check"]) Then $MM_SETTINGS_CACHE["update"]["last_check"] = _NowCalc()
 
 	If VersionCompare($MM_SETTINGS_CACHE["version"], $MM_VERSION_NUMBER) < 0 Then $MM_SETTINGS_CACHE["version"] = $MM_VERSION_NUMBER
 EndFunc
@@ -93,6 +94,8 @@ Func Settings_Get(Const ByRef $sName)
 			$vReturn = $MM_SETTINGS_CACHE["update"]["interval"]
 		Case "update_auto"
 			$vReturn = Not $MM_PORTABLE ? $MM_SETTINGS_CACHE["update"]["auto"] : False
+		Case "update_last_check"
+			$vReturn = $MM_SETTINGS_CACHE["update"]["last_check"]
 	EndSwitch
 
 	Return $vReturn
@@ -123,6 +126,8 @@ Func Settings_Set(Const ByRef $sName, Const ByRef $vValue)
 			$MM_SETTINGS_CACHE["update"]["interval"] = $vValue
 		Case "update_auto"
 			If Not $MM_PORTABLE Then $MM_SETTINGS_CACHE["update"]["auto"] = $vValue
+		Case "update_last_check"
+			$MM_SETTINGS_CACHE["update"]["last_check"] = $vValue
 	EndSwitch
 EndFunc   ;==>Settings_Set
 

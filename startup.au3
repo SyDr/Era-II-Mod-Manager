@@ -42,3 +42,4 @@ Func StartUp_Assoc_Delete()
 	DllCall("shell32.dll", "none", "SHChangeNotify", "long", $SHCNE_ASSOCCHANGED, "int", $SHCNF_IDLIST, "ptr", Null, "ptr", Null)
 	Exit
 EndFunc   ;==>StartUp_Assoc_Delete
+

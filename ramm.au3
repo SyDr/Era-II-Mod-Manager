@@ -10,7 +10,7 @@ this allows easy overwrite #AutoIt3Wrapper_Res_Fileversion via simple IniWrite
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseUpx=y
 #AutoIt3Wrapper_Res_Description=A mod manager for Era II
-#AutoIt3Wrapper_Res_Fileversion=0.91.4.1
+#AutoIt3Wrapper_Res_Fileversion=0.91.5.0
 #AutoIt3Wrapper_Res_LegalCopyright=Aliaksei SyDr Karalenka
 #AutoIt3Wrapper_Res_requestedExecutionLevel=asInvoker
 #AutoIt3Wrapper_AU3Check_Parameters=-d -w 1 -w 2 -w 3 -w 4 -w 5 -w 6 -w 7
@@ -76,6 +76,7 @@ ElseIf $CMDLine[0] > 0 Then
 EndIf
 
 StartUp_CheckRunningInstance()
+Update_AutoInit()
 
 If Not IsDeclared("__MM_NO_UI") Then
 	While True
@@ -129,6 +130,8 @@ Func MainLoop()
 				ShellExecute("explorer.exe", "/select," & $MM_LIST_FILE_PATH, $MM_LIST_DIR_PATH)
 			EndIf
 		EndIf
+
+		Update_AutoCycle()
 	WEnd
 EndFunc   ;==>MainLoop
 
@@ -162,8 +165,6 @@ Func SD_GUI_Create()
 	$MM_WINDOW_MIN_WIDTH_FULL = WinGetPos($MM_UI_MAIN)[2]
 	$MM_WINDOW_MIN_HEIGHT_FULL = WinGetPos($MM_UI_MAIN)[3]
 	GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
-
-
 
 	$hGUI.MenuGame.Menu = GUICtrlCreateMenu("-")
 	$hGUI.MenuGame.Launch = GUICtrlCreateMenuItem("-", $hGUI.MenuGame.Menu)
@@ -419,7 +420,7 @@ Func SD_GUI_Events_Register()
 	GUICtrlSetOnEvent($hGUI.MenuSettings.ChangeModDir, "SD_GUI_ChangeGameDir")
 
 	GUICtrlSetOnEvent($hGUI.PluginsList.Back, "SD_GUI_Plugins_Close")
-	GUICtrlSetOnEvent($hGUI.MenuHelp.CheckForUpdates, "SD_GUI_CheckForUpdates")
+	GUICtrlSetOnEvent($hGUI.MenuHelp.CheckForUpdates, "Update_CheckNewPorgram")
 
 	GUICtrlSetOnEvent($hGUI.Info.TabControl, "SD_GUI_TabChanged")
 
@@ -510,10 +511,6 @@ EndFunc   ;==>SD_GUI_SetLng
 Func SD_GUI_Mod_Compatibility()
 	MsgBox(4096, "", $MM_COMPATIBILITY_MESSAGE, Default, $MM_UI_MAIN)
 EndFunc   ;==>SD_GUI_Mod_Compatibility
-
-Func SD_GUI_CheckForUpdates()
-	Update_CheckNewPorgram($MM_PORTABLE, $MM_UI_MAIN)
-EndFunc   ;==>SD_GUI_CheckForUpdates
 
 Func SD_GUI_Mod_OpenFolder()
 	Local $iModIndex = TreeViewGetSelectedIndex()

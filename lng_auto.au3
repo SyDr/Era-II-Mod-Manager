@@ -99,7 +99,6 @@ If Not MapExists($MM_LNG_CACHE["update"], "caption") Or Not IsString($MM_LNG_CAC
 If Not MapExists($MM_LNG_CACHE["update"], "current_version") Or Not IsString($MM_LNG_CACHE["update"]["current_version"]) Then $MM_LNG_CACHE["update"]["current_version"] = "Installed version: %s"
 If Not MapExists($MM_LNG_CACHE["update"], "available_versions") Or Not IsString($MM_LNG_CACHE["update"]["available_versions"]) Then $MM_LNG_CACHE["update"]["available_versions"] = "Available to download:"
 If Not MapExists($MM_LNG_CACHE["update"], "wait") Or Not IsString($MM_LNG_CACHE["update"]["wait"]) Then $MM_LNG_CACHE["update"]["wait"] = "wait..."
-If Not MapExists($MM_LNG_CACHE["update"], "select_from_list") Or Not IsString($MM_LNG_CACHE["update"]["select_from_list"]) Then $MM_LNG_CACHE["update"]["select_from_list"] = "select from list..."
 If Not MapExists($MM_LNG_CACHE["update"], "cancel") Or Not IsString($MM_LNG_CACHE["update"]["cancel"]) Then $MM_LNG_CACHE["update"]["cancel"] = "Cancel"
 If Not MapExists($MM_LNG_CACHE["update"], "update_group") Or Not IsString($MM_LNG_CACHE["update"]["update_group"]) Then $MM_LNG_CACHE["update"]["update_group"] = "Selected update"
 If Not MapExists($MM_LNG_CACHE["update"], "download_and_install") Or Not IsString($MM_LNG_CACHE["update"]["download_and_install"]) Then $MM_LNG_CACHE["update"]["download_and_install"] = "Download update and install automatically"
@@ -111,6 +110,7 @@ If Not MapExists($MM_LNG_CACHE["update"], "close") Or Not IsString($MM_LNG_CACHE
 If Not MapExists($MM_LNG_CACHE["update"], "cant_check") Or Not IsString($MM_LNG_CACHE["update"]["cant_check"]) Then $MM_LNG_CACHE["update"]["cant_check"] = "Can't check program update. Open link in browser?"
 If Not MapExists($MM_LNG_CACHE["update"], "cant_download") Or Not IsString($MM_LNG_CACHE["update"]["cant_download"]) Then $MM_LNG_CACHE["update"]["cant_download"] = "Can't download program update. Open link in browser?"
 If Not MapExists($MM_LNG_CACHE["update"], "info_invalid") Or Not IsString($MM_LNG_CACHE["update"]["info_invalid"]) Then $MM_LNG_CACHE["update"]["info_invalid"] = "invalid format..."
+If Not MapExists($MM_LNG_CACHE["update"], "new_version_available") Or Not IsString($MM_LNG_CACHE["update"]["new_version_available"]) Then $MM_LNG_CACHE["update"]["new_version_available"] = "New program version available. Do you want to download it?"
 If Not MapExists($MM_LNG_CACHE, "mod_edit") Or Not IsMap($MM_LNG_CACHE["mod_edit"]) Then $MM_LNG_CACHE["mod_edit"] = MapEmpty()
 If Not MapExists($MM_LNG_CACHE["mod_edit"], "caption") Or Not IsString($MM_LNG_CACHE["mod_edit"]["caption"]) Then $MM_LNG_CACHE["mod_edit"]["caption"] = "Mod edit"
 If Not MapExists($MM_LNG_CACHE["mod_edit"], "save") Or Not IsString($MM_LNG_CACHE["mod_edit"]["save"]) Then $MM_LNG_CACHE["mod_edit"]["save"] = "Save"
