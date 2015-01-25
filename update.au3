@@ -9,24 +9,23 @@
 #include "settings.au3"
 #include "utils.au3"
 
-Func Update_CheckNewPorgram(Const $bIsPortable, Const $hParent)
+Func Update_CheckNewPorgram()
 	Local Const $iOptionGUIOnEventMode = AutoItSetOption("GUIOnEventMode", 0)
 	Local Const $iOptionGUICoordMode = AutoItSetOption("GUICoordMode", 0)
 
-	GUISetState(@SW_DISABLE, $hParent)
+	GUISetState(@SW_DISABLE, $MM_UI_MAIN)
 	Local Const $iMinWidth = 400
 	Local Const $iItemSpacing = 4
 
 	Local $hGUI = MapEmpty()
 	$hGUI.Info = MapEmpty()
-	$hGUI.Info.RemotePath = "http://wakeofgods.org/ramm"
 	$hGUI.Info.Download = True
 	$hGUI.Setup = MapEmpty()
 	$hGUI.Setup.Version = ""
 	$hGUI.Close = False
 	Local $bIsSuccess, $nMsg, $aSize, $iAnswer
 
-	$hGUI.Form = GUICreate(Lng_Get("update.caption"), $iMinWidth + Round(Random(0, (@DesktopWidth - $iMinWidth)/10, 1)), 173, Default, Default, Default, Default, $hParent)
+	$hGUI.Form = GUICreate(Lng_Get("update.caption"), $iMinWidth + Round(Random(0, (@DesktopWidth - $iMinWidth)/10, 1)), 173, Default, Default, Default, Default, $MM_UI_MAIN)
 	If Not @Compiled Then GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
 	$aSize = WinGetClientSize($hGUI.Form)
 
@@ -52,9 +51,9 @@ Func Update_CheckNewPorgram(Const $bIsPortable, Const $hParent)
 
 	GUICtrlSetImage($hGUI.PathRefresh, @ScriptDir & "\icons\view-refresh.ico")
 	GUICtrlSetImage($hGUI.PathFromClip, @ScriptDir & "\icons\edit-copy.ico")
-	GUICtrlSetState($bIsPortable ? $hGUI.RadioOnlyDownload : $hGUI.RadioDownloadAndInstall, $GUI_CHECKED)
-	$hGUI.Setup.OnlyDownloadSetup = $bIsPortable ? True : False
-	$hGUI.Setup.OnlyPortable = $bIsPortable
+	GUICtrlSetState($MM_PORTABLE ? $hGUI.RadioOnlyDownload : $hGUI.RadioDownloadAndInstall, $GUI_CHECKED)
+	$hGUI.Setup.OnlyDownloadSetup = $MM_PORTABLE ? True : False
+	$hGUI.Setup.OnlyPortable = $MM_PORTABLE
 
 	GUISetState(@SW_SHOW)
 
@@ -71,7 +70,7 @@ Func Update_CheckNewPorgram(Const $bIsPortable, Const $hParent)
 				Else
 					$hGUI.Info.Valid = False
 					$iAnswer = MsgBox($MB_YESNO + $MB_ICONQUESTION + $MB_TASKMODAL, "", Lng_Get("update.cant_check"), Default, $hGUI.Form)
-					If $iAnswer = $IDYES Then Utils_LaunchInBrowser($hGUI.Info.RemotePath & "/ramm.html")
+					If $iAnswer = $IDYES Then Utils_LaunchInBrowser($MM_UPDATE_URL & "/ramm.html")
 				EndIf
 				__Update_GUIUpdateInfoView($hGUI)
 				__Update_GUIUpdateAccessibility($hGUI)
@@ -81,7 +80,7 @@ Func Update_CheckNewPorgram(Const $bIsPortable, Const $hParent)
 		If $hGUI.Info.Download Then
 			$hGUI.Info.Download = False
 			$hGUI.Info.Location = _TempFile()
-			$hGUI.Info.Handle = InetGet($hGUI.Info.RemotePath & "/ramm.json", $hGUI.Info.Location, $INET_FORCERELOAD, $INET_DOWNLOADBACKGROUND)
+			$hGUI.Info.Handle = InetGet($MM_UPDATE_URL & "/ramm.json", $hGUI.Info.Location, $INET_FORCERELOAD, $INET_DOWNLOADBACKGROUND)
 			$hGUI.Info.InProgress = True
 			$hGUI.Info.Valid = False
 			__Update_GUIUpdateInfoView($hGUI)
@@ -118,7 +117,7 @@ Func Update_CheckNewPorgram(Const $bIsPortable, Const $hParent)
 
 		If $hGUI.Setup.Download Then
 			$hGUI.Setup.Download = False
-			Local $sType = $bIsPortable ? "portable" : "setup"
+			Local $sType = $MM_PORTABLE ? "portable" : "setup"
 			Local $sFile = $hGUI.Info.Parsed["items"][$hGUI.Setup.Version][$sType]
 
 			$hGUI.Setup.Location = __Update_GetSaveToFile(GUICtrlRead($hGUI.InputSaveTo), $sFile, Not $hGUI.Setup.OnlyDownloadSetup)
@@ -192,8 +191,84 @@ Func Update_CheckNewPorgram(Const $bIsPortable, Const $hParent)
 	AutoItSetOption("GUIOnEventMode", $iOptionGUIOnEventMode)
 	AutoItSetOption("GUICoordMode", $iOptionGUICoordMode)
 
-	GUISetState(@SW_ENABLE, $hParent)
-	GUISetState(@SW_RESTORE, $hParent)
+	GUISetState(@SW_ENABLE, $MM_UI_MAIN)
+	GUISetState(@SW_RESTORE, $MM_UI_MAIN)
+EndFunc
+
+Func Update_AutoInit()
+	If FileExists($MM_DATA_DIRECTORY & "\update\setup.exe") And FileExists($MM_DATA_DIRECTORY & "\update\complete.txt") Then
+		FileDelete($MM_DATA_DIRECTORY & "\update\complete.txt")
+		ShellExecute($MM_DATA_DIRECTORY & "\update\setup.exe", "/SILENT")
+		Exit
+	EndIf
+
+	FileDelete($MM_DATA_DIRECTORY & "\update\*.*")
+	DirCreate($MM_DATA_DIRECTORY & "\update")
+
+	If Update_UpdateNeeded() Then
+		_TracePoint("Update: download info")
+		$MM_UPDATE[0] = 1
+		$MM_UPDATE[1] = InetGet($MM_UPDATE_URL & "/ramm.json", $MM_DATA_DIRECTORY & "\update\setup.json", $INET_FORCERELOAD, $INET_DOWNLOADBACKGROUND)
+	EndIf
+EndFunc
+
+Func Update_UpdateNeeded()
+	Const $sLastUpdateCheck = Settings_Get("update_last_check")
+	Const $sNow = _NowCalc()
+	Const $iInterval = Settings_Get("update_interval")
+
+	If $iInterval = 0 Then Return
+	Local $iDiff = _DateDiff("s", $sNow, _DateAdd("D", $iInterval, $sLastUpdateCheck))
+	_TracePoint(StringFormat("Update: next update in %s seconds", $iDiff))
+
+	Return $iDiff < 0
+EndFunc
+
+Func Update_AutoCycle()
+	If $MM_UPDATE[0] = 0 Then Return
+
+	If $MM_UPDATE[0] = 1 Or $MM_UPDATE[0] = 2 Then
+		If Not InetGetInfo($MM_UPDATE[1], $INET_DOWNLOADCOMPLETE) Then Return
+		If Not InetGetInfo($MM_UPDATE[1], $INET_DOWNLOADSUCCESS) Then
+			$MM_UPDATE[0] = 0
+			Return
+		EndIf
+	EndIf
+
+	Local $hParsedInfo
+
+	If $MM_UPDATE[0] = 1 Then
+		_TracePoint("Update: info loaded")
+		InetClose($MM_UPDATE[1])
+		$hParsedInfo = Jsmn_Decode(FileRead($MM_DATA_DIRECTORY & "\update\setup.json"))
+
+		If Not __Update_InfoFileValidate($hParsedInfo) Then
+			$MM_UPDATE[0] = 0
+		ElseIf $hParsedInfo["last"] = $MM_VERSION_NUMBER Then
+			_TracePoint("Update: same version")
+			$MM_UPDATE[0] = 0
+			Settings_Set("update_last_check", _NowCalc())
+			Settings_Save()
+		ElseIf Settings_Get("update_auto") Then
+			_TracePoint("Update: new version")
+			$MM_UPDATE[0] = 2
+			$MM_UPDATE[1] = InetGet($MM_UPDATE_URL & $hParsedInfo["items"][$hParsedInfo["last"]]["setup"], $MM_DATA_DIRECTORY & "\update\setup.exe", $INET_FORCERELOAD, $INET_DOWNLOADBACKGROUND)
+		Else
+			$MM_UPDATE[0] = 3
+		EndIf
+
+	ElseIf $MM_UPDATE[0] = 2 Then
+		_TracePoint("Update: new version downloaded")
+		FileClose(FileOpen($MM_DATA_DIRECTORY & "\update\complete.txt", $FO_OVERWRITE))
+		$MM_UPDATE[0] = 0
+		Settings_Set("update_last_check", _NowCalc())
+		Settings_Save()
+	ElseIf $MM_UPDATE[0] = 3 Then
+		$MM_UPDATE[0] = 0
+		Settings_Set("update_last_check", _NowCalc())
+		Settings_Save()
+		If MsgBox($MB_YESNO + $MB_ICONQUESTION + $MB_SYSTEMMODAL, "", Lng_Get("update.new_version_available"), Default, $MM_UI_MAIN) = $IDYES Then Update_CheckNewPorgram()
+	EndIf
 EndFunc
 
 Func __Update_SetupSelectionChanged(ByRef $hGUI, Const $sNewVersion)
@@ -225,7 +300,9 @@ Func __Update_GUIUpdateInfoView(ByRef $hGUI, Const $bOnlyCancelButton = False)
 		ElseIf Not $hGUI.Info.Valid Then
 			GUICtrlSetData($hGUI.ComboAvaVersion, "|" & Lng_Get("update.info_invalid"), Lng_Get("update.info_invalid"))
 		Else
-			GUICtrlSetData($hGUI.ComboAvaVersion, "|" & Lng_Get("update.select_from_list") & "|" & _ArrayToString($hGUI.Info.ParsedKeys), Lng_Get("update.select_from_list"))
+			GUICtrlSetData($hGUI.ComboAvaVersion, "|" & _ArrayToString($hGUI.Info.ParsedKeys), _
+				$hGUI.Info.Parsed["last"] & ($hGUI.Info.Parsed["items"][$hGUI.Info.Parsed["last"]]["type"] <> "release" ? "." & $hGUI.Info.Parsed["items"][$hGUI.Info.Parsed["last"]]["type"] : ""))
+			__Update_SetupSelectionChanged($hGUI, GUICtrlRead($hGUI.ComboAvaVersion))
 		EndIf
 	EndIf
 
@@ -270,6 +347,7 @@ Func __Update_InfoFileValidate($Map)
 	If Not IsMap($Map) Then Return False
 	If Not MapExists($Map, "info_version") Or Not IsString($Map["info_version"]) Then Return False
 	If Not MapExists($Map, "base_path") Or Not IsString($Map["base_path"]) Then Return False
+	If Not MapExists($Map, "last") Or Not IsString($Map["last"]) Then Return False
 	If Not IsMap($Map["items"]) Then Return False
 	Local $aKeys = MapKeys($Map["items"])
 	For $i = 0 To UBound($aKeys) - 1

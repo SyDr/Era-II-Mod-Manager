@@ -40,7 +40,6 @@ Func Mod_ListLoad()
 		If @error Then
 			$MM_LIST_CONTENT[0][0] += 1
 			__Mod_LoadInfo($MM_LIST_CONTENT[0][0], $aModList_File[$i], True)
-			_TracePoint("ModList: InfoLoaded")
 		EndIf
 	Next
 

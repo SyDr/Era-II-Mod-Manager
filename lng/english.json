@@ -119,13 +119,11 @@
 			"auto" : "Install updates automatically"
 		}
 	},
-	"update" :
-	{
+	"update" : {
 		"caption" : "Check for program updates",
 		"current_version" : "Installed version: %s",
 		"available_versions" : "Available to download:",
 		"wait" : "wait...",
-		"select_from_list" : "select from list...",
 		"cancel" : "Cancel",
 		"update_group" : "Selected update",
 		"download_and_install" : "Download update and install automatically",
@@ -137,6 +135,7 @@
 		"cant_check" : "Can't check program update. Open link in browser?",
 		"cant_download" : "Can't download program update. Open link in browser?",
 		"info_invalid" : "invalid format...",
+		"new_version_available" : "New program version available. Do you want to download it?"
 	},
 	"mod_edit" :
 	{

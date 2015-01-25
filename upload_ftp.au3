@@ -22,6 +22,7 @@ _FTP_ProgressUpload($hConnection, @ScriptDir & "\Publish\RAMM_" & $MM_VERSION & 
 _FTP_DirSetCurrent($hConnection, "../")
 
 Global $mVersion = Jsmn_Decode(FileRead(@ScriptDir & "\update_ftp.json"))
+$mVersion["last"] = $MM_VERSION_NUMBER
 $mVersion["items"][$MM_VERSION_NUMBER] = MapEmpty()
 $mVersion["items"][$MM_VERSION_NUMBER]["type"] = $MM_VERSION_SUBTYPE
 $mVersion["items"][$MM_VERSION_NUMBER]["setup"] = "/" & $MM_VERSION_SUBTYPE & "/RAMM_" & $MM_VERSION & ".exe"
