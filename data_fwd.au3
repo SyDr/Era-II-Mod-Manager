@@ -10,7 +10,7 @@ Global $MM_GAME_EXE = "h3era.exe"
 Global $MM_LIST_DIR_PATH = $MM_GAME_DIR & "\Mods"
 Global $MM_LIST_FILE_PATH = $MM_LIST_DIR_PATH & "\list.txt"
 
-Global $MM_DATA_DIRECTORY = $MM_PORTABLE ? @ScriptDir : @AppDataCommonDir & "\RAMM"
+Global $MM_DATA_DIRECTORY = $MM_PORTABLE ? @ScriptDir : @AppDataDir & "\Era II Mod Manager"
 Global $MM_SETTINGS_PATH = $MM_DATA_DIRECTORY & "\settings.json"
 
 Global $MM_SETTINGS_LANGUAGE = "english.json"

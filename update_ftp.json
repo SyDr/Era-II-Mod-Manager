@@ -1,21 +1,18 @@
 {
-	"info_version": "1.2",
-	"base_path": "http://wakeofgods.org/ramm",
+	"info_version": "1.3",
+	"base_path": "http://wakeofgods.org/mm",
 	"help": {
 		"ru_RU": "Скопируйте этот текст (включая фигурные скобки в начале и конце), если вы испытываете проблемы с автоматической проверкой обновлений. В окне обновления нажмите кнопку 'из буфера обмена'.",
 		"en_US": "Copy this text (including start and end curly braces), if you experience problems with automatic updates. In update window press button 'from clipboard'."
 	},
-	"last": "0.91.5.0",
-	"items": {
-		"0.91.4.1": {
-			"type": "beta",
-			"setup": "/beta/RAMM_0.91.4.1.beta.exe",
-			"portable": "/beta/RAMM_0.91.4.1.beta.zip"
-		},
-		"0.91.5.0": {
-			"type": "beta",
-			"setup": "/beta/RAMM_0.91.5.0.beta.exe",
-			"portable": "/beta/RAMM_0.91.5.0.beta.zip"
-		}
+	"release": {
+		"version": "0.92.0.0",
+		"setup": "/beta/MM_0.92.0.0.beta.exe",
+		"portable": "/beta/MM_0.92.0.0.beta.zip"
+	},
+	"beta": {
+		"version": "0.92.0.0",
+		"setup": "/beta/RAMM_0.92.0.0.beta.exe",
+		"portable": "/beta/RAMM_0.92.0.0.beta.zip"
 	}
 }
