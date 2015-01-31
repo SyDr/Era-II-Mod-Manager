@@ -1,5 +1,6 @@
 ; Author:         Aliaksei SyDr Karalenka
 
+#AutoIt3Wrapper_Version=Beta
 #include-once
 #include "include_fwd.au3"
 
@@ -52,7 +53,20 @@ Func Lng_LoadList()
 			EndIf
 		EndIf
 	Next
+
 	$MM_LNG_LIST = $asReturn
+EndFunc
+
+Func Lng_GetCodeByName(Const $sName)
+	For $i = 1 To $MM_LNG_LIST[0][0]
+		If $MM_LNG_LIST[$i][$MM_LNG_NAME] = $sName Then Return $MM_LNG_LIST[$i][$MM_LNG_CODE]
+	Next
+
+	Return "en_US"
+EndFunc
+
+Func Lng_GetCategoryList()
+	Return MapKeys($MM_LNG_CACHE["category"])
 EndFunc
 
 Func Lng_Get(Const ByRef $sKeyName)
@@ -60,26 +74,32 @@ Func Lng_Get(Const ByRef $sKeyName)
 	If Not IsMap($MM_LNG_CACHE) Then Return $sKeyName
 
 	Local $sReturn
+	Local $aPartsLower = StringSplit(StringLower($sKeyName), ".")
 	Local $aParts = StringSplit($sKeyName, ".")
 
 	If $aParts[0] > 0 And Not IsMap($MM_LNG_CACHE) Then Return $sKeyName
-	If $aParts[0] > 1 And Not IsMap($MM_LNG_CACHE[$aParts[1]]) Then Return $sKeyName
-	If $aParts[0] > 2 And Not IsMap($MM_LNG_CACHE[$aParts[1]][$aParts[2]]) Then Return $sKeyName
-	If $aParts[0] > 3 And Not IsMap($MM_LNG_CACHE[$aParts[1]][$aParts[2]][$aParts[3]]) Then Return $sKeyName
+	If $aParts[0] > 1 And Not IsMap($MM_LNG_CACHE[$aPartsLower[1]]) Then Return $sKeyName
+	If $aParts[0] > 2 And Not IsMap($MM_LNG_CACHE[$aPartsLower[1]][$aPartsLower[2]]) Then Return $sKeyName
+	If $aParts[0] > 3 And Not IsMap($MM_LNG_CACHE[$aPartsLower[1]][$aPartsLower[2]][$aPartsLower[3]]) Then Return $sKeyName
 
 	Switch $aParts[0]
 		Case 1
-			$sReturn = $MM_LNG_CACHE[$aParts[1]]
+			$sReturn = $MM_LNG_CACHE[$aPartsLower[1]]
 		Case 2
-			$sReturn = $MM_LNG_CACHE[$aParts[1]][$aParts[2]]
+			$sReturn = $MM_LNG_CACHE[$aPartsLower[1]][$aPartsLower[2]]
+			If IsKeyword($sReturn) And $aPartsLower[1] = "category" Then $sReturn = $aParts[2]
 		Case 3
-			$sReturn = $MM_LNG_CACHE[$aParts[1]][$aParts[2]][$aParts[3]]
+			$sReturn = $MM_LNG_CACHE[$aPartsLower[1]][$aPartsLower[2]][$aPartsLower[3]]
 		Case 4
-			$sReturn = $MM_LNG_CACHE[$aParts[1]][$aParts[2]][$aParts[3]][$aParts[4]] ; who need recursion anyway? :)
+			$sReturn = $MM_LNG_CACHE[$aPartsLower[1]][$aPartsLower[2]][$aPartsLower[3]][$aPartsLower[4]] ; who need recursion anyway? :)
 	EndSwitch
 
-	Return $sReturn ? $sReturn : $sKeyName
+	Return Not IsKeyword($sReturn) ? $sReturn : $sKeyName
 EndFunc   ;==>Lng_Get
+
+Func Lng_GetCategory(Const $sKeyName)
+	Return Lng_Get("category." & $sKeyName)
+EndFunc
 
 Func Lng_GetF(Const ByRef $sKeyName, Const $vParam1, Const $vParam2 = Default)
 	If IsKeyword($vParam2) == $KEYWORD_DEFAULT Then

@@ -8,9 +8,9 @@
 	},
 	"mod_list" :
 	{
-		"mod" : "Mod",	
+		"mod" : "Mod",
 		"caption" : "Mod list (%s)",
-		"no_game_dir" : "no game dir - select from \"More actions\"",
+		"no_game_dir" : "no game dir - select from \"Tools\"",
 		"up" : "Move up",
 		"down" : "Move down",
 		"enable" : "Enable",
@@ -21,16 +21,20 @@
 		{
 			"enabled" : "Enabled",
 			"enabled_with_priority" : "Enabled (%+i)",
-			"disabled" : "Disabled"
+			"disabled" : "Without category",
+			"disabled_group" : "%s"
 		},
-		"more" : "More actions",
+		"list_inaccessible" : "Can't delete/write file \"%s\" content\n\nPossible reasons:\n 1) File is \"read-only\"\n 2) Current user doesn't not have enough rights to create/delete this file \n\nOpen directory in explorer?",
 		"plugins" : "Plugins",
 		"homepage" : "Go to webpage",
 		"delete" : "Delete",
 		"delete_confirm" : "Do you really want to delete this mod? \n%s\n\n(The mod will be moved to recycle bin, if it's possible))",
 		"add_new" : "Add new mod(s)",
 		"compatibility" : "Compatibility",
-		"open_dir" : "Open mod directory"
+		"open_dir" : "Open mod directory",
+		"edit_mod" : "Edit mod data",
+		"pack_mod" : "Create self-extracting package",
+		"pack_mod_hint" : "Package will be created in background. You can continue to use MM or even close it. \n\nClose 7z console window to cancel package creation (you need then to delete created file). When 7z window disaapear - it safe to use created file."
 	},
 	"game" : {
 		"caption" : "Game",
@@ -49,11 +53,9 @@
 	"info_group" :
 	{
 		"desc" : "Descripton",
-		"screens" : 
+		"screens" :
 		{
-			"caption" : "Screenshots",
-			"back" : "Back (%s)",
-			"forward" : "Forward (%s)"
+			"caption" : "Screenshots"
 		},
 		"no_info" : "No description available",
 		"info" :
@@ -63,7 +65,8 @@
 			"mod_caption_s" : "Mod %s",
 			"version" : "Version: %s",
 			"author" : "Author(s): %s",
-			"link" : "Visit mod <A HREF=\"homepage\">homepage</A>"
+			"link" : "Visit mod <A HREF=\"homepage\">homepage</A>",
+			"category" : "Category: %s"
 		}
 	},
 	"compatibility" :
@@ -94,26 +97,34 @@
 		"version_installed" : "Mod is installed (version %s)",
 		"install_package" : "Install package (version %s)"
 	},
-	"settings" :
-	{
-		"game_dir" :
-		{
+	"settings" : {
+		"game_dir" : {
 			"change" : "Change game directory",
-			"caption" : "Select game directory"
+			"caption" : "Select game directory",
+			"incorrect_dir" : "This directory doesn't look like Era II directory (no \"h3era.exe\" file here).\nDo you still want to use this dir?\n\nIn any case, you always can change dir later (menu \"Tools\" -> \"Change game directory\")"
 		},
-		"game_exe" :
-		{
+		"game_exe" : {
 			"show_all" : "Show all"
+		},
+		"menu" : {
+			"caption" : "Tools",
+			"settings" : "Settings"
+		},
+		"auto_update" : {
+			"group" : "Program updates",
+			"label" : "Update program:",
+			"day" : "Every day",
+			"week" : "Every week",
+			"never" : "Never",
+			"auto" : "Install updates automatically"
 		}
 	},
-	"update" :
-	{
+	"update" : {
 		"caption" : "Check for program updates",
 		"current_version" : "Installed version: %s",
 		"available_versions" : "Available to download:",
 		"wait" : "wait...",
-		"select_from_list" : "select from list...",
-		"check_path" : "Check path:",
+		"cancel" : "Cancel",
 		"update_group" : "Selected update",
 		"download_and_install" : "Download update and install automatically",
 		"only_download" : "Only download",
@@ -124,5 +135,55 @@
 		"cant_check" : "Can't check program update. Open link in browser?",
 		"cant_download" : "Can't download program update. Open link in browser?",
 		"info_invalid" : "invalid format...",
+		"new_version_available" : "New program version available. Do you want to download it?"
+	},
+	"mod_edit" :
+	{
+		"caption" : "Mod edit",
+		"save" : "Save",
+		"cancel" : "Cancel",
+		"group_caption" :
+		{
+			"caption" : "Caption and description",
+			"language" : "Language:",
+			"caption_label" : "Caption:",
+			"description_file" : "Description file:"
+		},
+		"group_other" :
+		{
+			"caption" : "Other",
+			"mod_version" : "Mod version:",
+			"author" : "Author:",
+			"homepage" : "Homepage:",
+			"icon" : "Icon:",
+			"priority" : "Priority:",
+			"category" : "Category:"
+		},
+		"group_compatibility" :
+		{
+			"caption" : "Compatibility",
+			"class" : "Compatibility class:",
+			"all" : "compatible with all mods",
+			"default" : "incompatible with \"none\" mods",
+			"none" : "incompatible with \"none\" and \"default\" mods",
+			"exclusions" : "Exclusions:",
+			"mod" : "Mod caption/id",
+			"compatible" : "Compatible",
+			"yes" : "Yes",
+			"no" : "No"
+		}
+	},
+	"category" :
+	{
+		"gameplay" : "Gameplay",
+		"graphics" : "Graphics",
+		"scenarios" : "Scenarios",
+		"cheats" : "Cheats",
+		"interface" : "Interface",
+		"towns" : "Towns",
+		"other" : "Other",
+		"platforms" : "Platforms",
+		"personal mods": "My personal mods",
+		"utilities" : "Utilities"
 	}
 }

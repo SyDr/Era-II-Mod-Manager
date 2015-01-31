@@ -1,8 +1,9 @@
 ; Author:         Aliaksei SyDr Karalenka
 
+#AutoIt3Wrapper_Version=Beta
 #include-once
 #include "include_fwd.au3"
-#include "folder_mods.au3"
+#include "mods.au3"
 
 Func StartUp_CheckRunningInstance()
 	Local $hSingleton = _Singleton("RAMM {{C3125006-CAFE-4F97-B2A5-B287236A9DC6}", 1)
@@ -41,3 +42,4 @@ Func StartUp_Assoc_Delete()
 	DllCall("shell32.dll", "none", "SHChangeNotify", "long", $SHCNE_ASSOCCHANGED, "int", $SHCNF_IDLIST, "ptr", Null, "ptr", Null)
 	Exit
 EndFunc   ;==>StartUp_Assoc_Delete
+

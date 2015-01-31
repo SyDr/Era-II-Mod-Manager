@@ -1,7 +1,7 @@
 #NoTrayIcon
 #cs
-	; this is a drity hack to allow easy overwrite #AutoIt3Wrapper_Res_Fileversion via simple IniWrite in make_build.au3
-	[Version]
+this allows easy overwrite #AutoIt3Wrapper_Res_Fileversion via simple IniWrite
+[Version]
 #ce
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Version=Beta
@@ -10,7 +10,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseUpx=y
 #AutoIt3Wrapper_Res_Description=A mod manager for Era II
-#AutoIt3Wrapper_Res_Fileversion=0.90.5.0
+#AutoIt3Wrapper_Res_Fileversion=0.91.5.0
 #AutoIt3Wrapper_Res_LegalCopyright=Aliaksei SyDr Karalenka
 #AutoIt3Wrapper_Res_requestedExecutionLevel=asInvoker
 #AutoIt3Wrapper_AU3Check_Parameters=-d -w 1 -w 2 -w 3 -w 4 -w 5 -w 6 -w 7
@@ -19,7 +19,8 @@
 
 #include "include_fwd.au3"
 
-#include "folder_mods.au3"
+#include "mod_edit.au3"
+#include "mods.au3"
 #include "lng.au3"
 #include "packed_mods.au3"
 #include "plugins.au3"
@@ -32,12 +33,13 @@ AutoItSetOption("MustDeclareVars", 1)
 AutoItSetOption("GUIOnEventMode", 1)
 AutoItSetOption("GUICloseOnESC", 1)
 If Not @Compiled Then AutoItSetOption("TrayIconHide", 0)
+If Not @Compiled Then Global $__DEBUG
 
 #Region Variables
 Global $hGUI[]
 $hGUI.MenuMod = MapEmpty()
 $hGUI.MenuGame = MapEmpty()
-$hGUI.MenuMore = MapEmpty()
+$hGUI.MenuSettings = MapEmpty()
 $hGUI.MenuHelp = MapEmpty()
 $hGUI.ModList = MapEmpty()
 $hGUI.PluginsList = MapEmpty()
@@ -45,15 +47,17 @@ $hGUI.Info = MapEmpty()
 $hGUI.WindowResizeInProgress = False
 $hGUI.WindowResizeLags = False
 $hGUI.Screen = MapEmpty()
-Global $hDummyF5, $hDummyLinks
+Global $hDummyF5, $hDummyLinks, $hDummyCategories
 Global Const $iItemSpacing = 4
 
-Global $aModListGroups[1][3]; group item id, is enabled, priority
+Global $aModListGroups[1][3]; group item id, is enabled, priority/group tag
 Global $aPlugins[1][2], $hPluginsParts[3]
-Global $aScreens[1], $iScreenIndex, $iScreenWidth, $iScreenHeight, $hScreenImage, $hScreenBitmap, $sScreenPath
+Global $aScreens[1], $iScreenIndex, $iScreenWidth, $iScreenHeight, $sScreenPath
 Global $sFollowMod = ""
 Global $bEnableDisable, $bSelectionChanged
 Global $bInTrack = False
+Global $bMainUICycle = True, $bExit = True
+Global $bPackModHint = True
 #EndRegion Variables
 
 If @Compiled And @ScriptName = "installmod.exe" Then
@@ -64,36 +68,43 @@ If $CMDLine[0] > 0 And $CMDLine[1] = '/assocdel' Then
 	StartUp_Assoc_Delete()
 EndIf
 
-$MM_SETTINGS_LANGUAGE = Settings_Get("language")
 Lng_LoadList()
-Lng_Load()
-
-If $CMDLine[0] > 0 Then
+If $CMDLine[0] > 1 And $CMDLine[1] = '/install' Then
+	Settings_Set("language",  Utils_InnoLangToMM($CMDLine[2]))
+ElseIf $CMDLine[0] > 0 Then
 	If Not SD_CLI_Mod_Add() Then Exit
 EndIf
 
 StartUp_CheckRunningInstance()
+Update_AutoInit()
 
 If Not IsDeclared("__MM_NO_UI") Then
-	UI_Main()
+	While True
+		$bMainUICycle = True
+		UI_Main()
+	WEnd
 EndIf
 
 Func UI_Main()
+	_TraceStart("Init UI")
 	_GDIPlus_Startup()
+	If Not $MM_PORTABLE And Not Settings_Get("path") Then UI_SelectGameDir()
 	SD_GUI_LoadSize()
 	SD_GUI_Create()
 	TreeViewMain()
 	TreeViewTryFollow($MM_LIST_CONTENT[0][0] > 0 ? $MM_LIST_CONTENT[1][$MOD_ID] : "")
 	SD_SwitchView()
 	SD_SwitchSubView()
+	GUISetState(@SW_SHOW)
+	_TraceEnd()
 	MainLoop()
 EndFunc
 
 Func MainLoop()
 	Local $bGUINeedUpdate = False
 
-	While True
-		Sleep(50)
+	While $bMainUICycle
+		Sleep(10)
 		If Not $bGUINeedUpdate And Not WinActive($MM_UI_MAIN) Then
 			$bGUINeedUpdate = True
 		EndIf
@@ -112,6 +123,15 @@ Func MainLoop()
 			$bSelectionChanged = False
 			SD_GUI_List_SelectionChanged()
 		EndIf
+
+		If $MM_LIST_CANT_WORK Then
+			$MM_LIST_CANT_WORK = False
+			If MsgBox($MB_SYSTEMMODAL + $MB_YESNO, "", Lng_GetF("mod_list.list_inaccessible", $MM_LIST_FILE_PATH)) = $IDYES Then
+				ShellExecute("explorer.exe", "/select," & $MM_LIST_FILE_PATH, $MM_LIST_DIR_PATH)
+			EndIf
+		EndIf
+
+		Update_AutoCycle()
 	WEnd
 EndFunc   ;==>MainLoop
 
@@ -146,19 +166,6 @@ Func SD_GUI_Create()
 	$MM_WINDOW_MIN_HEIGHT_FULL = WinGetPos($MM_UI_MAIN)[3]
 	GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
 
-	$hGUI.MenuLanguage = GUICtrlCreateMenu("-")
-	For $iCount = 1 To $MM_LNG_LIST[0][0]
-		$MM_LNG_LIST[$iCount][$MM_LNG_MENU_ID] = GUICtrlCreateMenuItem($MM_LNG_LIST[$iCount][$MM_LNG_NAME], $hGUI.MenuLanguage, Default, 1)
-		If $MM_LNG_LIST[$iCount][$MM_LNG_FILE] = $MM_SETTINGS_LANGUAGE Then GUICtrlSetState($MM_LNG_LIST[$iCount][$MM_LNG_MENU_ID], $GUI_CHECKED)
-	Next
-
-	$hGUI.MenuMod.Menu = GUICtrlCreateMenu("-")
-	$hGUI.MenuMod.Plugins = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
-	$hGUI.MenuMod.OpenHomepage = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
-	$hGUI.MenuMod.Delete = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
-	$hGUI.MenuMod.OpenFolder = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
-	If $MM_GAME_NO_DIR Then GUICtrlSetState($hGUI.MenuMod.Menu, $GUI_DISABLE)
-
 	$hGUI.MenuGame.Menu = GUICtrlCreateMenu("-")
 	$hGUI.MenuGame.Launch = GUICtrlCreateMenuItem("-", $hGUI.MenuGame.Menu)
 	GUICtrlSetState($hGUI.MenuGame.Launch, $MM_GAME_EXE = "" ? $GUI_DISABLE : $GUI_ENABLE)
@@ -166,12 +173,20 @@ Func SD_GUI_Create()
 	$hGUI.MenuGame.Change = GUICtrlCreateMenuItem("-", $hGUI.MenuGame.Menu)
 	If $MM_GAME_NO_DIR Then GUICtrlSetState($hGUI.MenuGame.Menu, $GUI_DISABLE)
 
-	$hGUI.MenuMore.Menu = GUICtrlCreateMenu("-")
-	$hGUI.MenuMore.Add = GUICtrlCreateMenuItem("-", $hGUI.MenuMore.Menu)
-	$hGUI.MenuMore.Compatibility = GUICtrlCreateMenuItem("-", $hGUI.MenuMore.Menu)
-	$hGUI.MenuMore.ChangeModDir = GUICtrlCreateMenuItem("-", $hGUI.MenuMore.Menu)
-	If $MM_GAME_NO_DIR Then GUICtrlSetState($hGUI.MenuMore.Add, $GUI_DISABLE)
-	If $MM_SETTINGS_PORTABLE Then GUICtrlSetState($hGUI.MenuMore.ChangeModDir, $GUI_DISABLE)
+	$hGUI.MenuSettings.Menu = GUICtrlCreateMenu("-")
+	$hGUI.MenuSettings.Add = GUICtrlCreateMenuItem("-", $hGUI.MenuSettings.Menu)
+	$hGUI.MenuSettings.Compatibility = GUICtrlCreateMenuItem("-", $hGUI.MenuSettings.Menu)
+	$hGUI.MenuSettings.ChangeModDir = GUICtrlCreateMenuItem("-", $hGUI.MenuSettings.Menu)
+	If $MM_GAME_NO_DIR Then GUICtrlSetState($hGUI.MenuSettings.Add, $GUI_DISABLE)
+	If $MM_PORTABLE Then GUICtrlSetState($hGUI.MenuSettings.ChangeModDir, $GUI_DISABLE)
+	GUICtrlCreateMenuItem("", $hGUI.MenuSettings.Menu)
+
+	$hGUI.MenuSettings.Settings = GUICtrlCreateMenuItem("-", $hGUI.MenuSettings.Menu)
+	$hGUI.MenuLanguage = GUICtrlCreateMenu("-", $hGUI.MenuSettings.Menu)
+	For $iCount = 1 To $MM_LNG_LIST[0][0]
+		$MM_LNG_LIST[$iCount][$MM_LNG_MENU_ID] = GUICtrlCreateMenuItem($MM_LNG_LIST[$iCount][$MM_LNG_NAME], $hGUI.MenuLanguage, Default, 1)
+		If $MM_LNG_LIST[$iCount][$MM_LNG_FILE] = $MM_SETTINGS_LANGUAGE Then GUICtrlSetState($MM_LNG_LIST[$iCount][$MM_LNG_MENU_ID], $GUI_CHECKED)
+	Next
 
 	$hGUI.MenuHelp.Menu = GUICtrlCreateMenu("?")
 	$hGUI.MenuHelp.CheckForUpdates = GUICtrlCreateMenuItem("-", $hGUI.MenuHelp.Menu)
@@ -180,6 +195,17 @@ Func SD_GUI_Create()
 	$hGUI.PluginsList.Group = GUICtrlCreateGroup("-", 0, 0)
 
 	$hGUI.ModList.List = GUICtrlCreateTreeView(0, 0, Default, Default, BitOR($TVS_FULLROWSELECT, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
+
+	$hGUI.MenuMod.Menu = GUICtrlCreateContextMenu($hGUI.ModList.List)
+	$hGUI.MenuMod.Plugins = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
+	$hGUI.MenuMod.OpenHomepage = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
+	GUICtrlCreateMenuItem("", $hGUI.MenuMod.Menu)
+	$hGUI.MenuMod.Delete = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
+	$hGUI.MenuMod.OpenFolder = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
+	$hGUI.MenuMod.EditMod = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
+	$hGUI.MenuMod.PackMod = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
+	If $MM_GAME_NO_DIR Then GUICtrlSetState($hGUI.MenuMod.Menu, $GUI_DISABLE)
+
 	$hGUI.PluginsList.List = GUICtrlCreateTreeView(0, 0, Default, Default, BitOR($TVS_FULLROWSELECT, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
 
 	$hGUI.ModList.Up = GUICtrlCreateButton("", 0, 0, 90, 25)
@@ -200,16 +226,23 @@ Func SD_GUI_Create()
 	$hGUI.Info.Desc = _GUICtrlSysLink_Create($MM_UI_MAIN, "-", 0, 0, 0, 0)
 
 	$hGUI.Screen.Control = GUICtrlCreatePic("", 0, 0)
-	$hGUI.Screen.Back = GUICtrlCreateButton("Back", 0, 0, 90, 25)
-	$hGUI.Screen.Forward = GUICtrlCreateButton("Forward", 0, 0, 90, 25)
+	GUICtrlSetCursor($hGUI.Screen.Control, 0)
+	$hGUI.Screen.Open = GUICtrlCreateButton("", 0, 0, 25, 25, $BS_ICON)
+	$hGUI.Screen.Back = GUICtrlCreateButton("", 0, 0, 25, 25, $BS_ICON)
+	$hGUI.Screen.Forward = GUICtrlCreateButton("", 0, 0, 25, 25, $BS_ICON)
+	GUICtrlSetImage($hGUI.Screen.Open, @ScriptDir & "\icons\folder-open.ico")
+	GUICtrlSetImage($hGUI.Screen.Back, @ScriptDir & "\icons\arrow-left.ico")
+	GUICtrlSetImage($hGUI.Screen.Forward, @ScriptDir & "\icons\arrow-right.ico")
 	GUICtrlSetState($hGUI.Screen.Control, $GUI_HIDE)
-	GUICtrlSetState($hGUI.Screen.Back, $GUI_HIDE)
-	GUICtrlSetState($hGUI.Screen.Forward, $GUI_HIDE)
+	GUICtrlSetState($hGUI.Screen.Open, $GUI_HIDE + $GUI_DISABLE)
+	GUICtrlSetState($hGUI.Screen.Back, $GUI_HIDE + $GUI_DISABLE)
+	GUICtrlSetState($hGUI.Screen.Forward, $GUI_HIDE + $GUI_DISABLE)
 
 	$hDummyF5 = GUICtrlCreateDummy()
 	$hDummyLinks = GUICtrlCreateDummy()
+	$hDummyCategories = GUICtrlCreateDummy()
 
-	Local $AccelKeys[1][2] = [["{F5}", $hDummyF5]]
+	Local $AccelKeys[2][2] = [["{F5}", $hDummyF5], ["{F8}", $hDummyCategories]]
 	GUISetAccelerators($AccelKeys)
 
 	SD_GUI_Mod_Controls_Disable()
@@ -220,39 +253,34 @@ Func SD_GUI_Create()
 	WinMove($MM_UI_MAIN, '', (@DesktopWidth - $MM_WINDOW_WIDTH) / 2, (@DesktopHeight - $MM_WINDOW_HEIGHT) / 2, $MM_WINDOW_WIDTH, $MM_WINDOW_HEIGHT)
 	If $MM_WINDOW_MAXIMIZED Then WinSetState($MM_UI_MAIN, '', @SW_MAXIMIZE)
 
-	GUISetState(@SW_SHOW)
 	AutoItSetOption("GUICoordMode", $iOptionGUICoordMode)
 EndFunc   ;==>SD_GUI_Create
 
 Func SD_GUI_UpdateScreen(Const $iIndex)
-	GUISetState(@SW_LOCK)
-	If $hScreenBitmap Or $hScreenImage Then
-		_WinAPI_DeleteObject($hScreenBitmap)
-        _GDIPlus_ImageDispose($hScreenImage)
-		$hScreenImage = 0
-		$hScreenBitmap = 0
-		$iScreenWidth = 0
-		$iScreenHeight = 0
-	EndIf
+	$iScreenWidth = 0
+	$iScreenHeight = 0
 
 	$iScreenIndex = $iIndex
 	$sScreenPath = $iIndex > 0 ? $aScreens[$iIndex] : ""
 	GUICtrlSetState($hGUI.Screen.Back, $iIndex <= 1 ? $GUI_DISABLE : $GUI_ENABLE)
 	GUICtrlSetState($hGUI.Screen.Forward, $iIndex >= $aScreens[0] ? $GUI_DISABLE : $GUI_ENABLE)
 	GUICtrlSetState($hGUI.Screen.Control, $iIndex = 0 ? $GUI_DISABLE : $GUI_ENABLE)
+	GUICtrlSetState($hGUI.Screen.Open, $iIndex = 0 ? $GUI_DISABLE : $GUI_ENABLE)
+
+	If $MM_SUBVIEW_CURRENT <> $MM_SUBVIEW_SCREENS Then Return
+
 	If $iIndex <> 0 Then
-		$hScreenImage = _GDIPlus_ImageLoadFromFile($sScreenPath)
-		$hScreenBitmap = _GDIPlus_BitmapCreateHBITMAPFromBitmap($hScreenImage)
+		Local $hScreenImage = _GDIPlus_ImageLoadFromFile($sScreenPath)
+		Local $hScreenBitmap = _GDIPlus_BitmapCreateHBITMAPFromBitmap($hScreenImage)
 		$iScreenWidth = _GDIPlus_ImageGetWidth($hScreenImage)
 		$iScreenHeight = _GDIPlus_ImageGetHeight($hScreenImage)
 		_WinAPI_DeleteObject(GUICtrlSendMsg($hGUI.Screen.Control, $STM_SETIMAGE, $IMAGE_BITMAP, $hScreenBitmap))
+		_GDIPlus_ImageDispose($hScreenImage)
+		_WinAPI_DeleteObject($hScreenBitmap)
 		GUICtrlSetPos($hGUI.Screen.Control, 0, 0, 0, 0)
-		GUICtrlSetData($hGUI.Screen.Back, Lng_GetF("info_group.screens.back", $iScreenIndex - 1))
-		GUICtrlSetData($hGUI.Screen.Forward, Lng_GetF("info_group.screens.forward", $aScreens[0] - $iScreenIndex))
 	EndIf
 
-	SD_GUI_MainWindowResize()
-	GUISetState(@SW_UNLOCK)
+	SD_GUI_MainWindowResize(True)
 EndFunc
 
 Func SD_GUI_UpdateScreenByPath(Const $sPath)
@@ -262,6 +290,9 @@ Func SD_GUI_UpdateScreenByPath(Const $sPath)
 	SD_GUI_UpdateScreen($aScreens[0] > 0 ? 1 : 0)
 EndFunc
 
+Func SD_GUI_OpenScreenFolder()
+	Utils_OpenFolder($MM_LIST_DIR_PATH & "\" & Mod_Get("id") & "\Screens\", $sScreenPath)
+EndFunc
 
 Func SD_GUI_NextScreen()
 	If $iScreenIndex < $aScreens[0] Then SD_GUI_UpdateScreen($iScreenIndex + 1)
@@ -293,9 +324,11 @@ Func SD_GUI_BigScreen()
 	EndIf
 EndFunc
 
-Func SD_GUI_MainWindowResize()
+Func SD_GUI_MainWindowResize(Const $bForce = False)
 	Local $iTimer = TimerInit()
 	Local $aSize = WinGetClientSize($MM_UI_MAIN)
+	If Not $bForce And $aSize[0] == $MM_WINDOW_CLIENT_WIDTH And $aSize[1] == $MM_WINDOW_CLIENT_HEIGHT Then Return
+
 	$MM_WINDOW_CLIENT_WIDTH = $aSize[0]
 	$MM_WINDOW_CLIENT_HEIGHT = $aSize[1]
 
@@ -323,8 +356,9 @@ Func SD_GUI_MainWindowResize()
 	ElseIf $MM_SUBVIEW_CURRENT = $MM_SUBVIEW_SCREENS Then
 		Local $iLeft = ($MM_VIEW_CURRENT = $MM_VIEW_BIG_SCREEN) ? $iItemSpacing : ($iListLength + $iItemSpacing + 2)
 		Local $iTop = ($MM_VIEW_CURRENT = $MM_VIEW_BIG_SCREEN) ? $iItemSpacing : (3 * $iItemSpacing + 17)
-		GUICtrlSetPos($hGUI.Screen.Back, $iLeft, $iTop, $iButtonWidth, 25)
-		GUICtrlSetPos($hGUI.Screen.Forward, $MM_WINDOW_CLIENT_WIDTH - $iButtonWidth - $iItemSpacing, $iTop, $iButtonWidth, 25)
+		GUICtrlSetPos($hGUI.Screen.Open, $iLeft, $iTop, 25, 25)
+		GUICtrlSetPos($hGUI.Screen.Back, $MM_WINDOW_CLIENT_WIDTH - 50 - 2 * $iItemSpacing, $iTop, 25, 25)
+		GUICtrlSetPos($hGUI.Screen.Forward, $MM_WINDOW_CLIENT_WIDTH - 25 - $iItemSpacing, $iTop, 25, 25)
 		Local Const $iMaxWidth = ($MM_VIEW_CURRENT = $MM_VIEW_BIG_SCREEN) ? $MM_WINDOW_CLIENT_WIDTH : ($MM_WINDOW_CLIENT_WIDTH - $iListLength - 2 * $iItemSpacing - 2)
 		Local Const $iMaxHeight =  ($MM_VIEW_CURRENT = $MM_VIEW_BIG_SCREEN) ? ($MM_WINDOW_CLIENT_HEIGHT - 25 - $iItemSpacing) : ($MM_WINDOW_CLIENT_HEIGHT - (5 * $iItemSpacing + 17 + 25))
 		Local $iWidth = _Min($iMaxWidth, $iScreenWidth)
@@ -372,28 +406,68 @@ Func SD_GUI_Events_Register()
 	GUICtrlSetOnEvent($hGUI.ModList.Up, "SD_GUI_Mod_Move_Up")
 	GUICtrlSetOnEvent($hGUI.ModList.Down, "SD_GUI_Mod_Move_Down")
 	GUICtrlSetOnEvent($hGUI.ModList.ChangeState, "SD_GUI_Mod_EnableDisable")
-	GUICtrlSetOnEvent($hGUI.MenuMore.Compatibility, "SD_GUI_Mod_Compatibility")
+	GUICtrlSetOnEvent($hGUI.MenuSettings.Compatibility, "SD_GUI_Mod_Compatibility")
+	GUICtrlSetOnEvent($hGUI.MenuSettings.Settings, "SD_GUI_ChangeSettings")
 	GUICtrlSetOnEvent($hGUI.MenuMod.Plugins, "SD_GUI_Manage_Plugins")
 	GUICtrlSetOnEvent($hGUI.MenuMod.OpenHomepage, "SD_GUI_Mod_Website")
 	GUICtrlSetOnEvent($hGUI.MenuMod.Delete, "SD_GUI_Mod_Delete")
 	GUICtrlSetOnEvent($hGUI.MenuGame.Launch, "UI_GameExeLaunch")
 	GUICtrlSetOnEvent($hGUI.MenuGame.Change, "SD_GUI_GameExeChange")
-	GUICtrlSetOnEvent($hGUI.MenuMore.Add, "SD_GUI_Mod_Add")
+	GUICtrlSetOnEvent($hGUI.MenuSettings.Add, "SD_GUI_Mod_Add")
 	GUICtrlSetOnEvent($hGUI.MenuMod.OpenFolder, "SD_GUI_Mod_OpenFolder")
-	GUICtrlSetOnEvent($hGUI.MenuMore.ChangeModDir, "SD_GUI_ChangeGameDir")
+	GUICtrlSetOnEvent($hGUI.MenuMod.EditMod, "SD_GUI_Mod_EditMod")
+	GUICtrlSetOnEvent($hGUI.MenuMod.PackMod, "SD_GUI_Mod_PackMod")
+	GUICtrlSetOnEvent($hGUI.MenuSettings.ChangeModDir, "SD_GUI_ChangeGameDir")
 
 	GUICtrlSetOnEvent($hGUI.PluginsList.Back, "SD_GUI_Plugins_Close")
-	GUICtrlSetOnEvent($hGUI.MenuHelp.CheckForUpdates, "SD_GUI_CheckForUpdates")
+	GUICtrlSetOnEvent($hGUI.MenuHelp.CheckForUpdates, "Update_CheckNewPorgram")
 
 	GUICtrlSetOnEvent($hGUI.Info.TabControl, "SD_GUI_TabChanged")
 
+	GUICtrlSetOnEvent($hGUI.Screen.Open, "SD_GUI_OpenScreenFolder")
 	GUICtrlSetOnEvent($hGUI.Screen.Back, "SD_GUI_PrevScreen")
 	GUICtrlSetOnEvent($hGUI.Screen.Forward, "SD_GUI_NextScreen")
 	GUICtrlSetOnEvent($hGUI.Screen.Control, "SD_GUI_BigScreen")
 
 	GUICtrlSetOnEvent($hDummyF5, "SD_GUI_Update")
 	GUICtrlSetOnEvent($hDummyLinks, "SD_GUI_Mod_Website")
+	GUICtrlSetOnEvent($hDummyCategories, "SD_GUI_ModCategoriesUpdate")
 EndFunc   ;==>SD_GUI_Events_Register
+
+Func SD_GUI_ChangeSettings()
+	UI_Settings()
+EndFunc
+
+
+Func SD_GUI_ModCategoriesUpdate()
+	Local $sFiles = FileOpenDialog("", "", "(*.*)", $FD_FILEMUSTEXIST + $FD_MULTISELECT, "", $MM_UI_MAIN)
+	If @error Then Return
+
+	Local $aFiles = StringSplit($sFiles, "|")
+	If $aFiles[0] = 1 Then
+		ReDim $aFiles[3]
+		$aFiles[2] = StringRight($aFiles[1], StringLen($aFiles[1]) - StringInStr($aFiles[1], "\", 0, -1))
+		$aFiles[1] = StringLeft($aFiles[1], StringLen($aFiles[1]) - StringLen($aFiles[2]) - 1)
+		$aFiles[0] += 1
+	EndIf
+
+	For $i = 2 To $aFiles[0]
+		Local $aPattern = StringRegExp($aFiles[$i], "^\[(.*?)\]\s(.*)$", $STR_REGEXPARRAYMATCH)
+		If @error Or Not IsArray($aPattern) Or UBound($aPattern) < 2 Then ContinueLoop
+
+		Local $sCategory = $aPattern[0]
+		Local $sName = $aPattern[1]
+
+		If StringIsUpper($sCategory) Then
+			$sCategory = StringLeft($sCategory, 1) & StringLower(StringTrimLeft($sCategory, 1))
+		Else
+			$sCategory = StringUpper($sCategory)
+		EndIf
+
+		FileMove($aFiles[1] & "\" & $aFiles[$i], $aFiles[1] & "\" & StringFormat("_temp_[%s] %s" , $sCategory, $sName))
+		FileMove($aFiles[1] & "\" & StringFormat("_temp_[%s] %s" , $sCategory, $sName), $aFiles[1] & "\" & StringFormat("[%s] %s" , $sCategory, $sName))
+	Next
+EndFunc
 
 Func SD_GUI_SetLng()
 	GUICtrlSetData($hGUI.MenuLanguage, Lng_Get("lang.language"))
@@ -407,15 +481,20 @@ Func SD_GUI_SetLng()
 	GUICtrlSetData($hGUI.MenuMod.Plugins, Lng_Get("mod_list.plugins"))
 	GUICtrlSetData($hGUI.MenuMod.OpenHomepage, Lng_Get("mod_list.homepage"))
 	GUICtrlSetData($hGUI.MenuMod.OpenFolder, Lng_Get("mod_list.open_dir"))
+	GUICtrlSetData($hGUI.MenuMod.EditMod, Lng_Get("mod_list.edit_mod"))
+	GUICtrlSetData($hGUI.MenuMod.PackMod, Lng_Get("mod_list.pack_mod"))
 
 	GUICtrlSetData($hGUI.MenuGame.Menu, Lng_Get("game.caption"))
 	GUICtrlSetData($hGUI.MenuGame.Launch, Lng_GetF("game.launch", $MM_GAME_EXE))
 	GUICtrlSetData($hGUI.MenuGame.Change, Lng_Get("game.change"))
 
-	GUICtrlSetData($hGUI.MenuMore.Menu, Lng_Get("mod_list.more"))
-	GUICtrlSetData($hGUI.MenuMore.Compatibility, Lng_Get("mod_list.compatibility"))
-	GUICtrlSetData($hGUI.MenuMore.Add, Lng_Get("mod_list.add_new"))
-	GUICtrlSetData($hGUI.MenuMore.ChangeModDir, Lng_Get("settings.game_dir.change"))
+	GUICtrlSetData($hGUI.MenuSettings.Compatibility, Lng_Get("mod_list.compatibility"))
+	GUICtrlSetData($hGUI.MenuSettings.Add, Lng_Get("mod_list.add_new"))
+	GUICtrlSetData($hGUI.MenuSettings.ChangeModDir, Lng_Get("settings.game_dir.change"))
+
+	GUICtrlSetData($hGUI.MenuSettings.Menu, Lng_Get("settings.menu.caption"))
+	GUICtrlSetData($hGUI.MenuSettings.Settings, Lng_Get("settings.menu.settings"))
+
 
 	GUICtrlSetData($hGUI.MenuHelp.CheckForUpdates, Lng_Get("update.caption"))
 
@@ -426,8 +505,6 @@ Func SD_GUI_SetLng()
 	GUICtrlSetData($hGUI.Info.TabInfo, Lng_Get("info_group.info.caption"))
 	GUICtrlSetData($hGUI.Info.TabScreens, Lng_Get("info_group.screens.caption"))
 
-	GUICtrlSetData($hGUI.Screen.Back, Lng_GetF("info_group.screens.back", $iScreenIndex - 1))
-	GUICtrlSetData($hGUI.Screen.Forward, Lng_GetF("info_group.screens.forward", $aScreens[0] - $iScreenIndex))
 	_GUICtrlSysLink_SetText($hGUI.Info.Desc, SD_FormatDescription())
 EndFunc   ;==>SD_GUI_SetLng
 
@@ -435,16 +512,30 @@ Func SD_GUI_Mod_Compatibility()
 	MsgBox(4096, "", $MM_COMPATIBILITY_MESSAGE, Default, $MM_UI_MAIN)
 EndFunc   ;==>SD_GUI_Mod_Compatibility
 
-Func SD_GUI_CheckForUpdates()
-	Update_CheckNewPorgram(Settings_Get("Portable"), $MM_UI_MAIN)
-EndFunc   ;==>SD_GUI_CheckForUpdates
-
 Func SD_GUI_Mod_OpenFolder()
-	Local $iModIndex1 = TreeViewGetSelectedIndex()
-	If $iModIndex1 = -1 Then Return -1 ; never
-	Local $sPath = '"' & $MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iModIndex1][$MOD_ID] & '"'
+	Local $iModIndex = TreeViewGetSelectedIndex()
+	If $iModIndex = -1 Then Return -1 ; never
+	Local $sPath = '"' & $MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iModIndex][$MOD_ID] & '"'
 	ShellExecute($sPath)
 EndFunc   ;==>SD_GUI_Mod_OpenFolder
+
+Func SD_GUI_Mod_EditMod()
+	Local $iModIndex = TreeViewGetSelectedIndex()
+	If $iModIndex = -1 Then Return -1 ; never
+	If ModEdit_Editor($iModIndex, $MM_UI_MAIN) Then SD_GUI_Update()
+EndFunc
+
+Func SD_GUI_Mod_PackMod()
+	Local $iModIndex = TreeViewGetSelectedIndex()
+	If $iModIndex = -1 Then Return -1 ; never
+
+	Local $sSavePath = FileSaveDialog("", "", "(*.*)", $FD_PATHMUSTEXIST + $FD_PROMPTOVERWRITE, Mod_Get("caption\formatted") & ".exe", $MM_UI_MAIN)
+	If Not @error Then
+		Mod_CreatePackage($iModIndex, $sSavePath)
+		If $bPackModHint Then MsgBox($MB_ICONINFORMATION, "", Lng_Get("mod_list.pack_mod_hint"))
+		$bPackModHint = False
+	EndIf
+EndFunc
 
 Func SD_GUI_Manage_Plugins()
 	Local $iTreeViewIndex = TreeViewGetSelectedIndex()
@@ -606,8 +697,12 @@ EndFunc   ;==>SD_GUI_LoadSize
 Func SD_GUI_Close()
 	SD_GUI_SaveSize()
 	Settings_Save()
+	$aScreens = ArrayEmpty()
+	SD_GUI_UpdateScreen(0)
 	_GDIPlus_Shutdown()
-	Exit
+	$bMainUICycle = False
+	GUIDelete($MM_UI_MAIN)
+	If $bExit Then Exit
 EndFunc   ;==>SD_GUI_Close
 
 Func SD_GUI_Mod_Website()
@@ -634,10 +729,11 @@ Func SD_GUI_Mod_Move_Down()
 EndFunc   ;==>SD_GUI_Mod_Move_Down
 
 Func SD_GUI_Mod_Swap($iModIndex1, $iModIndex2)
+	_TraceStart("UI: Swap")
 	Mod_ListSwap($iModIndex1, $iModIndex2)
 	TreeViewSwap($iModIndex1, $iModIndex2)
 	TreeViewTryFollow($sFollowMod)
-;~ 	ControlFocus($MM_UI_MAIN, "", @GUI_CtrlId)
+	_TraceEnd()
 EndFunc   ;==>SD_GUI_Mod_Swap
 
 Func SD_GUI_Mod_Delete()
@@ -646,6 +742,7 @@ Func SD_GUI_Mod_Delete()
 	Local $iAnswer = MsgBox($MB_YESNO + $MB_ICONQUESTION + $MB_DEFBUTTON2 + $MB_TASKMODAL, "", StringFormat(Lng_Get("mod_list.delete_confirm"), Mod_Get("caption", $iModIndex)), Default, $MM_UI_MAIN)
 	If $iAnswer = $IDNO Then Return
 
+	SD_GUI_UpdateScreen(0)
 	Mod_Delete($iModIndex)
 	TreeViewMain()
 	If $MM_LIST_CONTENT[0][0] < $iModIndex Then
@@ -711,8 +808,10 @@ Func SD_GUI_ChangeGameDir()
 		GUICtrlSetData($hGUI.ModList.Group, Lng_GetF("mod_list.caption", $MM_GAME_DIR))
 		GUICtrlSetData($hGUI.MenuGame.Launch, Lng_GetF("game.launch", $MM_GAME_EXE))
 		GUICtrlSetState($hGUI.MenuGame.Menu, $GUI_ENABLE)
-		GUICtrlSetState($hGUI.MenuMore.Add, $GUI_ENABLE)
+		GUICtrlSetState($hGUI.MenuSettings.Add, $GUI_ENABLE)
 		GUICtrlSetState($hGUI.MenuGame.Launch, $MM_GAME_EXE = "" ? $GUI_DISABLE : $GUI_ENABLE)
+		$aScreens = ArrayEmpty()
+		SD_GUI_UpdateScreen(0)
 		SD_GUI_Update()
 	EndIf
 EndFunc   ;==>SD_GUI_ChangeGameDir
@@ -778,6 +877,8 @@ Func SD_GUI_Mod_Controls_Disable()
 	GUICtrlSetState($hGUI.MenuMod.Plugins, $GUI_DISABLE)
 	GUICtrlSetState($hGUI.MenuMod.OpenHomepage, $GUI_DISABLE)
 	GUICtrlSetState($hGUI.MenuMod.OpenFolder, $GUI_DISABLE)
+	GUICtrlSetState($hGUI.MenuMod.EditMod, $GUI_DISABLE)
+	GUICtrlSetState($hGUI.MenuMod.PackMod, $GUI_DISABLE)
 	GUICtrlSetState($hGUI.MenuMod.Menu, $GUI_DISABLE)
 	GUICtrlSetData($hGUI.Info.Edit, Lng_Get("info_group.no_info"))
 	_GUICtrlSysLink_SetText($hGUI.Info.Desc, "")
@@ -794,10 +895,13 @@ Func SD_GUI_List_SelectionChanged()
 EndFunc   ;==>SD_GUI_List_SelectionChanged
 
 Func SD_GUI_Mod_SelectionChanged()
+	_TraceStart("UI: Mod Selected")
 	Local $iSelected = TreeViewGetSelectedIndex()
 
 	If $iSelected = -1 Then
 		SD_GUI_Mod_Controls_Disable()
+		$aScreens[0] = 0
+		SD_GUI_UpdateScreen(0)
 	Else
 		Local $iModIndex = $iSelected
 		$MM_SELECTED_MOD = $iModIndex
@@ -853,10 +957,14 @@ Func SD_GUI_Mod_SelectionChanged()
 		If Not $MM_LIST_CONTENT[$iModIndex][$MOD_IS_EXIST] Then
 			GUICtrlSetState($hGUI.MenuMod.Delete, $GUI_DISABLE)
 			GUICtrlSetState($hGUI.MenuMod.OpenFolder, $GUI_DISABLE)
+			GUICtrlSetState($hGUI.MenuMod.EditMod, $GUI_DISABLE)
+			GUICtrlSetState($hGUI.MenuMod.PackMod, $GUI_DISABLE)
 			GUICtrlSetState($hGUI.MenuMod.Menu, $GUI_DISABLE)
 		Else
 			GUICtrlSetState($hGUI.MenuMod.Delete, $GUI_ENABLE)
 			GUICtrlSetState($hGUI.MenuMod.OpenFolder, $GUI_ENABLE)
+			GUICtrlSetState($hGUI.MenuMod.EditMod, $GUI_ENABLE)
+			GUICtrlSetState($hGUI.MenuMod.PackMod, $GUI_ENABLE)
 			GUICtrlSetState($hGUI.MenuMod.Menu, $GUI_ENABLE)
 		EndIf
 
@@ -865,6 +973,7 @@ Func SD_GUI_Mod_SelectionChanged()
 		$aScreens = Mod_ScreenListLoad($MM_LIST_CONTENT[$iModIndex][$MOD_ID])
 		SD_GUI_UpdateScreenByPath($sScreenPath)
 	EndIf
+	_TraceEnd()
 EndFunc   ;==>SD_GUI_Mod_SelectionChanged
 
 Func SD_GUI_Plugin_SelectionChanged()
@@ -887,47 +996,82 @@ EndFunc   ;==>SD_GUI_Plugin_SelectionChanged
 Func TreeViewFill()
 	_GUICtrlTreeView_BeginUpdate($hGUI.ModList.List)
 
-	Local $bCurrentGroupEnabled = True
-
-	GUICtrlSetState($hGUI.MenuMore.Compatibility, $GUI_DISABLE)
+	GUICtrlSetState($hGUI.MenuSettings.Compatibility, $GUI_DISABLE)
 
 	Local $iCurrentGroup = -1
 	$aModListGroups[0][0] = 0
 
+	Local $aGroupEnabledList[1], $aGroupDisabledList[1]
+	Local $bEnabled, $iPriority, $sCategory, $vGroup, $bFound, $sCaption
+
+	For $i = 1 To $MM_LIST_CONTENT[0][0]
+		$bEnabled = $MM_LIST_CONTENT[$i][$MOD_IS_ENABLED]
+		$iPriority = Mod_Get("priority", $i)
+		$sCategory = Mod_Get("category", $i)
+		$vGroup = $bEnabled ? $iPriority : $sCategory
+
+		$bFound = False
+
+		If $bEnabled Then
+			For $j = 1 To $aGroupEnabledList[0]
+				If $aGroupEnabledList[$j] = $vGroup Then
+					$bFound = True
+					ExitLoop
+				EndIf
+			Next
+		Else
+			For $j = 1 To $aGroupDisabledList[0]
+				If $aGroupDisabledList[$j] = $vGroup Then
+					$bFound = True
+					ExitLoop
+				EndIf
+			Next
+		EndIf
+
+		If Not $bFound Then
+			If $bEnabled Then
+				$aGroupEnabledList[0] += 1
+				ReDim $aGroupEnabledList[$aGroupEnabledList[0] + 1]
+				$aGroupEnabledList[$aGroupEnabledList[0]] = $vGroup
+			Else
+				$aGroupDisabledList[0] += 1
+				ReDim $aGroupDisabledList[$aGroupDisabledList[0] + 1]
+				$aGroupDisabledList[$aGroupDisabledList[0]] = $vGroup
+			EndIf
+		EndIf
+	Next
+
+	For $i = 1 To $aGroupEnabledList[0]
+		TreeViewAddGroup(True, $aGroupEnabledList[$i])
+	Next
+
+	Local $aCategories = MapKeys(Lng_Get("category"))
+	_ArraySort($aGroupDisabledList, Default, 1)
+	For $i = 0 To UBound($aCategories) - 1
+		_ArraySearch($aGroupDisabledList, $aCategories[$i], 1)
+		If Not @error Then TreeViewAddGroup(False, $aCategories[$i])
+	Next
+
+	Local $bAddEmpty = False
+	For $i = 1 To $aGroupDisabledList[0]
+		If $aGroupDisabledList[$i] = "" Then
+			$bAddEmpty = True
+		Else
+			_ArraySearch($aCategories, $aGroupDisabledList[$i])
+			If @error Then TreeViewAddGroup(False, $aGroupDisabledList[$i])
+		EndIf
+	Next
+
+	If $bAddEmpty Then TreeViewAddGroup(False, "")
+
 	For $iCount = 1 To $MM_LIST_CONTENT[0][0]
-		Local $bEnabled = $MM_LIST_CONTENT[$iCount][$MOD_IS_ENABLED]
-		Local $iPriority = Mod_Get("priority", $iCount)
-		Local $sCaption = Mod_Get("caption", $iCount) ? Mod_Get("caption", $iCount) : $MM_LIST_CONTENT[$iCount][$MOD_ID]
+		$bEnabled = $MM_LIST_CONTENT[$iCount][$MOD_IS_ENABLED]
+		$iPriority = Mod_Get("priority", $iCount)
+		$sCategory = Mod_Get("category", $iCount)
+		$sCaption = $bEnabled ? Mod_Get("caption\formatted\caps", $iCount) : Mod_Get("caption", $iCount)
 		$sCaption = $MM_LIST_CONTENT[$iCount][$MOD_IS_EXIST] ? $sCaption : Lng_GetF("mod_list.missing", $sCaption)
 
-		$iCurrentGroup = $aModListGroups[0][0]
-		Local $bCreateNewGroup = $iCurrentGroup < 1
-
-		If Not $bCreateNewGroup And $bEnabled And $iPriority <> Mod_Get("priority", $iCount - 1) Then $bCreateNewGroup = True
-		If $bCurrentGroupEnabled And Not $bEnabled Then $bCreateNewGroup = True
-
-		If $bCreateNewGroup Then
-			Local $sText = $bEnabled ? Lng_Get("mod_list.group.enabled") : Lng_Get("mod_list.group.disabled")
-			If $bEnabled And $iPriority <> 0 Then $sText = StringFormat(Lng_Get("mod_list.group.enabled_with_priority"), $iPriority)
-
-			$aModListGroups[0][0] += 1
-			$iCurrentGroup = $aModListGroups[0][0]
-			ReDim $aModListGroups[$iCurrentGroup + 1][3]
-
-			$aModListGroups[$iCurrentGroup][0] = GUICtrlCreateTreeViewItem($sText, $hGUI.ModList.List)
-			GUICtrlSetColor($aModListGroups[$iCurrentGroup][0], 0x0000C0)
-
-			If $bEnabled Then
-				_GUICtrlTreeView_SetIcon($hGUI.ModList.List, $aModListGroups[$iCurrentGroup][0], @ScriptDir & "\icons\folder-green.ico", 0, 6)
-			Else
-				_GUICtrlTreeView_SetIcon($hGUI.ModList.List, $aModListGroups[$iCurrentGroup][0], @ScriptDir & "\icons\folder-red.ico", 0, 6)
-			EndIf
-
-			$aModListGroups[$iCurrentGroup][1] = $bEnabled
-			$aModListGroups[$iCurrentGroup][2] = $iPriority
-
-			$bCurrentGroupEnabled = $bEnabled
-		EndIf
+		$iCurrentGroup = TreeViewFindCategory($bEnabled, $bEnabled ? $iPriority : $sCategory)
 
 		$MM_LIST_CONTENT[$iCount][$MOD_PARENT_ID] = $iCurrentGroup
 		$MM_LIST_CONTENT[$iCount][$MOD_ITEM_ID] = GUICtrlCreateTreeViewItem($sCaption, $aModListGroups[$MM_LIST_CONTENT[$iCount][$MOD_PARENT_ID]][0])
@@ -946,6 +1090,36 @@ Func TreeViewFill()
 	TreeViewColor()
 	_GUICtrlTreeView_EndUpdate($hGUI.ModList.List)
 EndFunc   ;==>TreeViewFill
+
+Func TreeViewAddGroup(Const $bEnabled, Const $vItem)
+	Local $sText = StringUpper($bEnabled ? Lng_Get("mod_list.group.enabled") : Lng_Get("mod_list.group.disabled"))
+	If $bEnabled And $vItem <> 0 Then $sText = StringFormat(Lng_Get("mod_list.group.enabled_with_priority"), $vItem)
+	If Not $bEnabled And $vItem <> "" Then $sText = Lng_GetF("mod_list.group.disabled_group", StringUpper(Lng_GetCategory($vItem)))
+
+	$aModListGroups[0][0] += 1
+	ReDim $aModListGroups[$aModListGroups[0][0] + 1][3]
+
+	$aModListGroups[$aModListGroups[0][0]][0] = GUICtrlCreateTreeViewItem($sText, $hGUI.ModList.List)
+	GUICtrlSetColor($aModListGroups[$aModListGroups[0][0]][0], 0x0000C0)
+
+	If $bEnabled Then
+		_GUICtrlTreeView_SetIcon($hGUI.ModList.List, $aModListGroups[$aModListGroups[0][0]][0], @ScriptDir & "\icons\folder-green.ico", 0, 6)
+	Else
+		_GUICtrlTreeView_SetIcon($hGUI.ModList.List, $aModListGroups[$aModListGroups[0][0]][0], @ScriptDir & "\icons\folder-red.ico", 0, 6)
+	EndIf
+
+	$aModListGroups[$aModListGroups[0][0]][1] = $bEnabled
+	$aModListGroups[$aModListGroups[0][0]][2] = $vItem
+EndFunc
+
+
+Func TreeViewFindCategory(Const $bEnabled, Const $vData)
+	For $i = 1 To $aModListGroups[0][0]
+		If $bEnabled = $aModListGroups[$i][1] And $aModListGroups[$i][2] = $vData Then Return $i
+	Next
+
+	Return -1
+EndFunc
 
 Func TreeViewColor()
 	$MM_COMPATIBILITY_MESSAGE = ""
@@ -975,7 +1149,7 @@ Func TreeViewColor()
 
 	If $MM_COMPATIBILITY_MESSAGE <> "" Then
 		$MM_COMPATIBILITY_MESSAGE &= @CRLF & Lng_Get("compatibility.part2")
-		GUICtrlSetState($hGUI.MenuMore.Compatibility, $GUI_ENABLE)
+		GUICtrlSetState($hGUI.MenuSettings.Compatibility, $GUI_ENABLE)
 	EndIf
 EndFunc   ;==>TreeViewColor
 
@@ -1094,6 +1268,13 @@ Func WM_NOTIFY($hwnd, $iMsg, $iwParam, $ilParam)
 					$bEnableDisable = True
 				Case $TVN_SELCHANGEDA, $TVN_SELCHANGEDW
 					$bSelectionChanged = True
+				Case $NM_RCLICK
+                    Local $tPoint = _WinAPI_GetMousePos(True, $hWndFrom), $tHitTest
+                    $tHitTest = _GUICtrlTreeView_HitTestEx($hWndFrom, DllStructGetData($tPoint, 1), DllStructGetData($tPoint, 2))
+                    If BitAND(DllStructGetData($tHitTest, "Flags"), BitOR($TVHT_ONITEM, $TVHT_ONITEMRIGHT)) Then
+                        _GUICtrlTreeView_SelectItem($hWndFrom, DllStructGetData($tHitTest, 'Item'))
+						SD_GUI_List_SelectionChanged()
+                    EndIf
 			EndSwitch
 		Case $hGUI.Info.Desc
 			Local $tNMLINK = DllStructCreate($tagNMLINK, $ilParam)
@@ -1123,14 +1304,14 @@ Func SD_SwitchView(Const $iNewView = $MM_VIEW_MODS)
 
 	$MM_VIEW_PREV = $MM_VIEW_CURRENT
 	$MM_VIEW_CURRENT = $iNewView
-	SD_GUI_MainWindowResize()
+	SD_GUI_MainWindowResize(True)
 
 	GUICtrlSetState($hGUI.ModList.Group, $MM_VIEW_CURRENT = $MM_VIEW_MODS ? $GUI_SHOW : $GUI_HIDE)
 	GUICtrlSetState($hGUI.ModList.List, $MM_VIEW_CURRENT = $MM_VIEW_MODS ? $GUI_SHOW : $GUI_HIDE)
 	GUICtrlSetState($hGUI.ModList.Up, $MM_VIEW_CURRENT = $MM_VIEW_MODS ? $GUI_SHOW : $GUI_HIDE)
 	GUICtrlSetState($hGUI.ModList.Down, $MM_VIEW_CURRENT = $MM_VIEW_MODS ? $GUI_SHOW : $GUI_HIDE)
 	GUICtrlSetState($hGUI.ModList.ChangeState, $MM_VIEW_CURRENT = $MM_VIEW_MODS ? $GUI_SHOW : $GUI_HIDE)
-	If Not $MM_SETTINGS_PORTABLE Then GUICtrlSetState($hGUI.MenuMore.ChangeModDir, $MM_VIEW_CURRENT = $MM_VIEW_MODS ? $GUI_ENABLE : $GUI_DISABLE)
+	If Not $MM_PORTABLE Then GUICtrlSetState($hGUI.MenuSettings.ChangeModDir, $MM_VIEW_CURRENT = $MM_VIEW_MODS ? $GUI_ENABLE : $GUI_DISABLE)
 
 	GUICtrlSetState($hGUI.PluginsList.Group, $MM_VIEW_CURRENT = $MM_VIEW_PLUGINS ? $GUI_SHOW : $GUI_HIDE)
 	GUICtrlSetState($hGUI.PluginsList.List, $MM_VIEW_CURRENT = $MM_VIEW_PLUGINS ? $GUI_SHOW : $GUI_HIDE)
@@ -1149,7 +1330,7 @@ EndFunc   ;==>SD_SwitchView
 Func SD_SwitchSubView(Const $iNewView = $MM_SUBVIEW_DESC)
 	$MM_SUBVIEW_PREV = $MM_SUBVIEW_CURRENT
 	$MM_SUBVIEW_CURRENT = $iNewView
-	SD_GUI_MainWindowResize()
+	SD_GUI_MainWindowResize(True)
 
 	GUICtrlSetState($hGUI.Info.Edit, $MM_SUBVIEW_CURRENT = $MM_SUBVIEW_DESC ? $GUI_SHOW : $GUI_HIDE)
 
@@ -1160,8 +1341,10 @@ Func SD_SwitchSubView(Const $iNewView = $MM_SUBVIEW_DESC)
 	EndIf
 
 	GUICtrlSetState($hGUI.Screen.Control, $MM_SUBVIEW_CURRENT = $MM_SUBVIEW_SCREENS ? $GUI_SHOW : $GUI_HIDE)
+	GUICtrlSetState($hGUI.Screen.Open, $MM_SUBVIEW_CURRENT = $MM_SUBVIEW_SCREENS ? $GUI_SHOW : $GUI_HIDE)
 	GUICtrlSetState($hGUI.Screen.Back, $MM_SUBVIEW_CURRENT = $MM_SUBVIEW_SCREENS ? $GUI_SHOW : $GUI_HIDE)
 	GUICtrlSetState($hGUI.Screen.Forward, $MM_SUBVIEW_CURRENT = $MM_SUBVIEW_SCREENS ? $GUI_SHOW : $GUI_HIDE)
+	If $MM_SUBVIEW_CURRENT = $MM_SUBVIEW_SCREENS Then SD_GUI_UpdateScreenByPath($sScreenPath)
 EndFunc
 
 Func SD_FormatDescription()
@@ -1173,7 +1356,8 @@ Func SD_FormatDescription()
 		$sText = Lng_GetF("info_group.info.mod_caption_s", Mod_Get("caption"))
 	EndIf
 
-	If Mod_Get("version\mod") <> "0.0" Then	$sText &= @CRLF & Lng_GetF("info_group.info.version", Mod_Get("version\mod"))
+	If Mod_Get("category") <> "" Then $sText &= @CRLF & Lng_GetF("info_group.info.category", Lng_GetCategory(Mod_Get("category")))
+	If Mod_Get("mod_version") <> "0.0" Then	$sText &= @CRLF & Lng_GetF("info_group.info.version", Mod_Get("mod_version"))
 	If Mod_Get("author") <> "" Then	$sText &= @CRLF & Lng_GetF("info_group.info.author", Mod_Get("author"))
 	If Mod_Get("homepage") <> "" Then	$sText &= @CRLF & Lng_GetF("info_group.info.link", Mod_Get("homepage"))
 
