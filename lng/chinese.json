@@ -2,7 +2,7 @@
 	"lang" :
 	{
 		"code" : "Cn_Simp",
-		"name" : "简体中文",
+		"name" : "简体中文 (old, unsupported)",
 		"author" : "kswdiy",
 		"language" : "Language"
 	},
@@ -10,7 +10,6 @@
 	{
 		"mod" : "Mod",
 		"caption" : "MOD的加载顺序列表 (在最前顶部加载就越优先)",
-		"no_game_dir" : "no game dir - select from \"More actions\"",
 		"up" : "上 移",
 		"down" : "下 移",
 		"enable" : "激 活",
@@ -30,47 +29,20 @@
 		"delete_confirm" : "确定删除下面这个MOD吗? \n\n%s\n\n(这个MOD将被删除存放到回收站)",
 		"add_new" : "添加Mod",
 		"compatibility" : "兼容性",
-		"open_dir" : "打开MOD目录"
-	},
-	"game" : {
-		"caption" : "Game",
-		"launch" : "Launch (%s)",
-		"change" : "Change",
+		"open_dir" : "打开MOD目录",
 	},
 	"plugins_list" :
 	{
 		"caption" : "插件 (%s)",
-		"global" : "Global",
-		"before_wog" : "BeforeWoG",
-		"after_wog" : "AfterWoG",
-		"back" : "Back",
-		"default" : "Default"
 	},
 	"info_group" :
 	{
-		"desc" : "Descripton",
-		"screens" : 
-		{
-			"caption" : "Screenshots",
-			"back" : "Back (%s)",
-			"forward" : "Forward (%s)"
-		},
 		"no_info" : "无任何信息",
-		"info" :
-		{
-			"caption" : "Information",
-			"mod_caption" : "Mod %s (%s)",
-			"mod_caption_s" : "Mod %s",
-			"version" : "Version: %s",
-			"author" : "Author(s): %s",
-			"link" : "Visit mod <A HREF=\"homepage\">homepage</A>"
-		}
 	},
 	"compatibility" :
 	{
 		"part1" : "Mod %s 与如下Mod不兼容:",
 		"part2" : "禁用这些Mod以减少不必要出现的Bug :)",
-		"launch_anyway" : "Launch anyway?"
 	},
 	"add_new" :
 	{
@@ -93,36 +65,5 @@
 		"exit" : "退出",
 		"version_installed" : "Mod 已安装 (版本: %s)",
 		"install_package" : "安装封包版本: %s"
-	},
-	"settings" :
-	{
-		"game_dir" :
-		{
-			"change" : "Change game directory",
-			"caption" : "Select game directory"
-		},
-		"game_exe" :
-		{
-			"show_all" : "Show all"
-		}
-	},
-	"update" :
-	{
-		"caption" : "Check for program updates",
-		"current_version" : "Installed version: %s",
-		"available_versions" : "Available to download:",
-		"wait" : "wait...",
-		"select_from_list" : "select from list...",
-		"check_path" : "Check path:",
-		"update_group" : "Selected update",
-		"download_and_install" : "Download update and install automatically",
-		"only_download" : "Only download",
-		"change_dir" : "Change",
-		"select_dir" : "Select directory",
-		"start" : "Start",
-		"close" : "Close",
-		"cant_check" : "Can't check program update. Open link in browser?",
-		"cant_download" : "Can't download program update. Open link in browser?",
-		"info_invalid" : "invalid format...",
 	}
 }
