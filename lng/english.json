@@ -115,6 +115,7 @@
 			"label" : "Update program:",
 			"day" : "Every day",
 			"week" : "Every week",
+			"month" : "Every month",
 			"never" : "Never",
 			"auto" : "Install updates automatically"
 		}

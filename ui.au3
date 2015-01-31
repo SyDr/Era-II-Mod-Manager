@@ -35,7 +35,8 @@ Func UI_Settings()
 	GUICtrlCreateGroup(Lng_Get("settings.auto_update.group"), $iItemSpacing, $iItemSpacing, $aSize[0] - 2 * $iItemSpacing, $aSize[1] - 3 * $iItemSpacing - 25)
 	Local $hLabelAuto = GUICtrlCreateLabel(Lng_Get("settings.auto_update.label"), 2 * $iItemSpacing, 5 * $iItemSpacing, Default, 17, $SS_CENTERIMAGE)
 	Local $hComboAuto = GUICtrlCreateCombo("", GUICtrlGetPos($hLabelAuto).NextX, 5 * $iItemSpacing, $aSize[0] - GUICtrlGetPos($hLabelAuto).NextX - 2 * $iItemSpacing, 25, $CBS_DROPDOWNLIST)
-	GUICtrlSetData($hComboAuto, Lng_Get("settings.auto_update.day") & "|" & Lng_Get("settings.auto_update.week") & "|" & Lng_Get("settings.auto_update.never"), UI_IntervalToItem(Settings_Get("update_interval")))
+	GUICtrlSetData($hComboAuto, Lng_Get("settings.auto_update.day") & "|" & Lng_Get("settings.auto_update.week") & "|" & Lng_Get("settings.auto_update.month") & "|" & Lng_Get("settings.auto_update.never"), _
+		UI_IntervalToItem(Settings_Get("update_interval")))
 
 	Local $hCheckboxAuto = GUICtrlCreateCheckbox(Lng_Get("settings.auto_update.auto"), 6 * $iItemSpacing, GUICtrlGetPos($hLabelAuto).NextY + 2 * $iItemSpacing, Default, 17)
 	GUICtrlSetState($hCheckboxAuto, Settings_Get("update_auto") ? $GUI_CHECKED : $GUI_UNCHECKED)
@@ -74,6 +75,8 @@ Func UI_IntervalToItem(Const $iInterval)
 			Return Lng_Get("settings.auto_update.day")
 		Case 7
 			Return Lng_Get("settings.auto_update.week")
+		Case 28
+			Return Lng_Get("settings.auto_update.month")
 		Case Else
 			Return Lng_Get("settings.auto_update.never")
 	EndSwitch
@@ -85,6 +88,8 @@ Func UI_ItemToInterval(Const $sItem)
 			Return 1
 		Case Lng_Get("settings.auto_update.week")
 			Return 7
+		Case Lng_Get("settings.auto_update.month")
+			Return 28
 		Case Else
 			Return 0
 	EndSwitch

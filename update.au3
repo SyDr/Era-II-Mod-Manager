@@ -70,7 +70,7 @@ Func Update_CheckNewPorgram()
 				Else
 					$hGUI.Info.Valid = False
 					$iAnswer = MsgBox($MB_YESNO + $MB_ICONQUESTION + $MB_TASKMODAL, "", Lng_Get("update.cant_check"), Default, $hGUI.Form)
-					If $iAnswer = $IDYES Then Utils_LaunchInBrowser($MM_UPDATE_URL & "/ramm.html")
+					If $iAnswer = $IDYES Then Utils_LaunchInBrowser($MM_UPDATE_URL & "/mm.html")
 				EndIf
 				__Update_GUIUpdateInfoView($hGUI)
 				__Update_GUIUpdateAccessibility($hGUI)
@@ -80,7 +80,7 @@ Func Update_CheckNewPorgram()
 		If $hGUI.Info.Download Then
 			$hGUI.Info.Download = False
 			$hGUI.Info.Location = _TempFile()
-			$hGUI.Info.Handle = InetGet($MM_UPDATE_URL & "/ramm.json", $hGUI.Info.Location, $INET_FORCERELOAD, $INET_DOWNLOADBACKGROUND)
+			$hGUI.Info.Handle = InetGet($MM_UPDATE_URL & "/mm.json", $hGUI.Info.Location, $INET_FORCERELOAD, $INET_DOWNLOADBACKGROUND)
 			$hGUI.Info.InProgress = True
 			$hGUI.Info.Valid = False
 			__Update_GUIUpdateInfoView($hGUI)
@@ -118,7 +118,7 @@ Func Update_CheckNewPorgram()
 		If $hGUI.Setup.Download Then
 			$hGUI.Setup.Download = False
 			Local $sType = $MM_PORTABLE ? "portable" : "setup"
-			Local $sFile = $hGUI.Info.Parsed["items"][$hGUI.Setup.Version][$sType]
+			Local $sFile = $hGUI.Info.Parsed[$hGUI.Setup.Version][$sType]
 
 			$hGUI.Setup.Location = __Update_GetSaveToFile(GUICtrlRead($hGUI.InputSaveTo), $sFile, Not $hGUI.Setup.OnlyDownloadSetup)
 			$hGUI.Setup.Handle = InetGet($hGUI.Info.Parsed["base_path"] & $sFile, $hGUI.Setup.Location, Default, $INET_DOWNLOADBACKGROUND)
@@ -208,7 +208,7 @@ Func Update_AutoInit()
 	If Update_UpdateNeeded() Then
 		_TracePoint("Update: download info")
 		$MM_UPDATE[0] = 1
-		$MM_UPDATE[1] = InetGet($MM_UPDATE_URL & "/ramm.json", $MM_DATA_DIRECTORY & "\update\setup.json", $INET_FORCERELOAD, $INET_DOWNLOADBACKGROUND)
+		$MM_UPDATE[1] = InetGet($MM_UPDATE_URL & "/mm.json", $MM_DATA_DIRECTORY & "\update\setup.json", $INET_FORCERELOAD, $INET_DOWNLOADBACKGROUND)
 	EndIf
 EndFunc
 
@@ -244,7 +244,7 @@ Func Update_AutoCycle()
 
 		If Not __Update_InfoFileValidate($hParsedInfo) Then
 			$MM_UPDATE[0] = 0
-		ElseIf $hParsedInfo["last"] = $MM_VERSION_NUMBER Then
+		ElseIf $hParsedInfo[$MM_VERSION_SUBTYPE]["version"] = $MM_VERSION_NUMBER Then
 			_TracePoint("Update: same version")
 			$MM_UPDATE[0] = 0
 			Settings_Set("update_last_check", _NowCalc())
@@ -252,7 +252,7 @@ Func Update_AutoCycle()
 		ElseIf Settings_Get("update_auto") Then
 			_TracePoint("Update: new version")
 			$MM_UPDATE[0] = 2
-			$MM_UPDATE[1] = InetGet($MM_UPDATE_URL & $hParsedInfo["items"][$hParsedInfo["last"]]["setup"], $MM_DATA_DIRECTORY & "\update\setup.exe", $INET_FORCERELOAD, $INET_DOWNLOADBACKGROUND)
+			$MM_UPDATE[1] = InetGet($MM_UPDATE_URL & $hParsedInfo[$MM_VERSION_SUBTYPE]["setup"], $MM_DATA_DIRECTORY & "\update\setup.exe", $INET_FORCERELOAD, $INET_DOWNLOADBACKGROUND)
 		Else
 			$MM_UPDATE[0] = 3
 		EndIf
@@ -272,15 +272,7 @@ Func Update_AutoCycle()
 EndFunc
 
 Func __Update_SetupSelectionChanged(ByRef $hGUI, Const $sNewVersion)
-	$hGUI.Setup.Version = ""
-	Local $aKeys = MapKeys($hGUI.Info.Parsed["items"])
-
-	For $i = 0 To UBound($aKeys) - 1
-		If $sNewVersion = $aKeys[$i] & ($hGUI.Info.Parsed["items"][$aKeys[$i]]["type"] <> "release" ? "." & $hGUI.Info.Parsed["items"][$aKeys[$i]]["type"] : "") Then
-			$hGUI.Setup.Version = $aKeys[$i]
-			Return
-		EndIf
-	Next
+	$hGUI.Setup.Version = StringInStr($sNewVersion, "beta") ? "beta" : "release"
 EndFunc
 
 Func __Update_GUIUpdateAccessibility(ByRef $hGUI)
@@ -300,8 +292,8 @@ Func __Update_GUIUpdateInfoView(ByRef $hGUI, Const $bOnlyCancelButton = False)
 		ElseIf Not $hGUI.Info.Valid Then
 			GUICtrlSetData($hGUI.ComboAvaVersion, "|" & Lng_Get("update.info_invalid"), Lng_Get("update.info_invalid"))
 		Else
-			GUICtrlSetData($hGUI.ComboAvaVersion, "|" & _ArrayToString($hGUI.Info.ParsedKeys), _
-				$hGUI.Info.Parsed["last"] & ($hGUI.Info.Parsed["items"][$hGUI.Info.Parsed["last"]]["type"] <> "release" ? "." & $hGUI.Info.Parsed["items"][$hGUI.Info.Parsed["last"]]["type"] : ""))
+			GUICtrlSetData($hGUI.ComboAvaVersion, "|" & $hGUI.Info.ParsedKeys, _
+				$hGUI.Info.Parsed[$MM_VERSION_SUBTYPE]["version"] & ($MM_VERSION_SUBTYPE = "beta" ? ".beta" : ""))
 			__Update_SetupSelectionChanged($hGUI, GUICtrlRead($hGUI.ComboAvaVersion))
 		EndIf
 	EndIf
@@ -335,11 +327,7 @@ Func __Update_InfoFileProcess(ByRef $hGUI, Const $sFile)
 	$hGUI.Setup.Version = ""
 
 	If $hGUI.Info.Valid Then
-		Local $aKeys = MapKeys($hGUI.Info.Parsed["items"])
-		For $i = 0 To UBound($aKeys) - 1
-			$aKeys[$i] &= $hGUI.Info.Parsed["items"][$aKeys[$i]]["type"] <> "release" ? "." & $hGUI.Info.Parsed["items"][$aKeys[$i]]["type"] : ""
-		Next
-		$hGUI.Info.ParsedKeys = $aKeys
+		$hGUI.Info.ParsedKeys = $hGUI.Info.Parsed["release"]["version"] & "|" & $hGUI.Info.Parsed["beta"]["version"] & ".beta"
 	EndIf
 EndFunc
 
@@ -347,14 +335,13 @@ Func __Update_InfoFileValidate($Map)
 	If Not IsMap($Map) Then Return False
 	If Not MapExists($Map, "info_version") Or Not IsString($Map["info_version"]) Then Return False
 	If Not MapExists($Map, "base_path") Or Not IsString($Map["base_path"]) Then Return False
-	If Not MapExists($Map, "last") Or Not IsString($Map["last"]) Then Return False
-	If Not IsMap($Map["items"]) Then Return False
-	Local $aKeys = MapKeys($Map["items"])
-	For $i = 0 To UBound($aKeys) - 1
-		If Not IsMap($Map["items"][$aKeys[$i]]) Then Return False
-		If Not MapExists($Map["items"][$aKeys[$i]], "type") Or Not IsString($Map["items"][$aKeys[$i]]["type"]) Then Return False
-		If Not MapExists($Map["items"][$aKeys[$i]], "setup") Or Not IsString($Map["items"][$aKeys[$i]]["setup"]) Then Return False
-		If Not MapExists($Map["items"][$aKeys[$i]], "portable") Or Not IsString($Map["items"][$aKeys[$i]]["portable"]) Then Return False
+
+	Local $sSetupTypes = ["release", "beta"]
+	For $sItem In $sSetupTypes
+		If Not MapExists($Map, $sItem) Or Not IsMap($Map[$sItem]) Then Return False
+		If Not MapExists($Map[$sItem], "version") Or Not IsString($Map[$sItem]["version"]) Then Return False
+		If Not MapExists($Map[$sItem], "setup") Or Not IsString($Map[$sItem]["setup"]) Then Return False
+		If Not MapExists($Map[$sItem], "portable") Or Not IsString($Map[$sItem]["portable"]) Then Return False
 	Next
 
 	Return True

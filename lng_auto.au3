@@ -92,6 +92,7 @@ If Not MapExists($MM_LNG_CACHE["settings"]["auto_update"], "group") Or Not IsStr
 If Not MapExists($MM_LNG_CACHE["settings"]["auto_update"], "label") Or Not IsString($MM_LNG_CACHE["settings"]["auto_update"]["label"]) Then $MM_LNG_CACHE["settings"]["auto_update"]["label"] = "Update program:"
 If Not MapExists($MM_LNG_CACHE["settings"]["auto_update"], "day") Or Not IsString($MM_LNG_CACHE["settings"]["auto_update"]["day"]) Then $MM_LNG_CACHE["settings"]["auto_update"]["day"] = "Every day"
 If Not MapExists($MM_LNG_CACHE["settings"]["auto_update"], "week") Or Not IsString($MM_LNG_CACHE["settings"]["auto_update"]["week"]) Then $MM_LNG_CACHE["settings"]["auto_update"]["week"] = "Every week"
+If Not MapExists($MM_LNG_CACHE["settings"]["auto_update"], "month") Or Not IsString($MM_LNG_CACHE["settings"]["auto_update"]["month"]) Then $MM_LNG_CACHE["settings"]["auto_update"]["month"] = "Every month"
 If Not MapExists($MM_LNG_CACHE["settings"]["auto_update"], "never") Or Not IsString($MM_LNG_CACHE["settings"]["auto_update"]["never"]) Then $MM_LNG_CACHE["settings"]["auto_update"]["never"] = "Never"
 If Not MapExists($MM_LNG_CACHE["settings"]["auto_update"], "auto") Or Not IsString($MM_LNG_CACHE["settings"]["auto_update"]["auto"]) Then $MM_LNG_CACHE["settings"]["auto_update"]["auto"] = "Install updates automatically"
 If Not MapExists($MM_LNG_CACHE, "update") Or Not IsMap($MM_LNG_CACHE["update"]) Then $MM_LNG_CACHE["update"] = MapEmpty()
