@@ -8,6 +8,9 @@
 #include "utils.au3"
 
 Global $MM_SELECTED_MOD = -1
+Global $MM_LIST_MAP ; a list with mapped data
+Global $MM_LIST_FILE_CONTENT ; folder_mods.au3
+Global $MM_LIST_CONTENT[1][$MOD_TOTAL] ; a loaded list of mods
 
 Func Mod_ListLoad()
 	_TraceStart("ModList: Load")
@@ -17,16 +20,14 @@ Func Mod_ListLoad()
 	$MM_LIST_CONTENT[0][0] = 0
 	$MM_LIST_MAP = MapEmpty()
 
-    $MM_LIST_CONTENT[0][$MOD_IS_ENABLED] = "$MOD_IS_ENABLED"
-    $MM_LIST_CONTENT[0][$MOD_IS_EXIST] = "$MOD_IS_EXIST"
-    $MM_LIST_CONTENT[0][$MOD_CAPTION] = "$MOD_CAPTION"
-    $MM_LIST_CONTENT[0][$MOD_ITEM_ID] = "$MOD_ITEM_ID"
-    $MM_LIST_CONTENT[0][$MOD_PARENT_ID] = "$MOD_PARENT_ID"
-    $MM_LIST_CONTENT[0][$MOD_DESCRIPTION_CACHE] = "$MOD_DESCRIPTION_CACHE"
-    $MM_LIST_CONTENT[0][$MOD_PLUGIN_CACHE] = "$MOD_PLUGIN_CACHE"
+	$MM_LIST_CONTENT[0][$MOD_IS_ENABLED] = "$MOD_IS_ENABLED"
+	$MM_LIST_CONTENT[0][$MOD_IS_EXIST] = "$MOD_IS_EXIST"
+	$MM_LIST_CONTENT[0][$MOD_CAPTION] = "$MOD_CAPTION"
+	$MM_LIST_CONTENT[0][$MOD_ITEM_ID] = "$MOD_ITEM_ID"
+	$MM_LIST_CONTENT[0][$MOD_PARENT_ID] = "$MOD_PARENT_ID"
 
 	$MM_LIST_FILE_CONTENT = FileRead($MM_LIST_FILE_PATH)
-    _FileReadToArray($MM_LIST_FILE_PATH, $aModList_File)
+	_FileReadToArray($MM_LIST_FILE_PATH, $aModList_File)
 	_ArrayReverse($aModList_File, 1)
 	If Not IsArray($aModList_File) Then Dim $aModList_File[1] = [0]
 
