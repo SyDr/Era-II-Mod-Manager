@@ -27,9 +27,6 @@ Global $MM_LNG_LIST[1][$MM_LNG_TOTAL] ; filename, lang code, lang full name
 
 Global $MM_VIEW_CURRENT, $MM_SUBVIEW_CURRENT, $MM_VIEW_PREV, $MM_SUBVIEW_PREV
 
-Global $MM_LIST_FILE_CONTENT ; folder_mods.au3
-Global $MM_LIST_CONTENT[1][$MOD_TOTAL] ; a loaded list of mods
-Global $MM_LIST_MAP ; a list with mapped data
 Global $MM_LIST_CANT_WORK = False
 
 Global $MM_PLUGINS_CONTENT[1][$PLUGIN_TOTAL] ; a loaded list of plugins
