@@ -440,33 +440,24 @@ EndFunc
 
 
 Func SD_GUI_ModCategoriesUpdate()
-	Local $sFiles = FileOpenDialog("", "", "(*.*)", $FD_FILEMUSTEXIST + $FD_MULTISELECT, "", $MM_UI_MAIN)
+	Local $iAnswer = MsgBox(4096 + 4, "", "Do you want to process all mods?" & @CRLF & "(Yes - all mods, No - only enabled)", 0, $MM_UI_MAIN)
+	Local $sFolder = FileSelectFolder("", "", 1 + 2, "", $MM_UI_MAIN)
 	If @error Then Return
 
-	Local $aFiles = StringSplit($sFiles, "|")
-	If $aFiles[0] = 1 Then
-		ReDim $aFiles[3]
-		$aFiles[2] = StringRight($aFiles[1], StringLen($aFiles[1]) - StringInStr($aFiles[1], "\", 0, -1))
-		$aFiles[1] = StringLeft($aFiles[1], StringLen($aFiles[1]) - StringLen($aFiles[2]) - 1)
-		$aFiles[0] += 1
-	EndIf
-
-	For $i = 2 To $aFiles[0]
-		Local $aPattern = StringRegExp($aFiles[$i], "^\[(.*?)\]\s(.*)$", $STR_REGEXPARRAYMATCH)
-		If @error Or Not IsArray($aPattern) Or UBound($aPattern) < 2 Then ContinueLoop
-
-		Local $sCategory = $aPattern[0]
-		Local $sName = $aPattern[1]
-
-		If StringIsUpper($sCategory) Then
-			$sCategory = StringLeft($sCategory, 1) & StringLower(StringTrimLeft($sCategory, 1))
-		Else
-			$sCategory = StringUpper($sCategory)
-		EndIf
-
-		FileMove($aFiles[1] & "\" & $aFiles[$i], $aFiles[1] & "\" & StringFormat("_temp_[%s] %s" , $sCategory, $sName))
-		FileMove($aFiles[1] & "\" & StringFormat("_temp_[%s] %s" , $sCategory, $sName), $aFiles[1] & "\" & StringFormat("[%s] %s" , $sCategory, $sName))
+	ProgressOn("Please wait...", "Mod packing", "", -1, -1, 2 + 16)
+	Local $iTotalMods = 0
+	For $i = 1 To $MM_LIST_CONTENT[0][0]
+		If $iAnswer = $IDYES Or $MM_LIST_CONTENT[$i][$MOD_IS_ENABLED] Then $iTotalMods += 1
 	Next
+
+	For $i = 1 To $MM_LIST_CONTENT[0][0]
+		If $iAnswer = $IDYES Or $MM_LIST_CONTENT[$i][$MOD_IS_ENABLED] Then
+			Local $iProcess = Mod_CreatePackage($i, $sFolder & "\" & Mod_Get("caption\formatted", $i) & ".exe")
+			ProcessWaitClose($iProcess)
+		EndIf
+		ProgressSet($i/$iTotalMods*100, StringFormat("%i from %i done", $i, $iTotalMods))
+	Next
+	ProgressOff()
 EndFunc
 
 Func SD_GUI_SetLng()

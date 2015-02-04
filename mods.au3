@@ -239,8 +239,9 @@ Func Mod_CreatePackage(Const $iModIndex, Const $sSavePath)
 	SFX_FileClose($hFile)
 
 	Local $sCommand = StringFormat('%s a %s "Mods\%s" -sfx7z.sfx', '"' & $s7zTempDir & '\7z\7z.exe"', '"' & $sSavePath & '"', Mod_Get("id", $iModIndex))
-	Run($sCommand, $MM_GAME_DIR, @SW_MINIMIZE)
+	Local $iPid = Run($sCommand, $MM_GAME_DIR, @SW_MINIMIZE)
 	_WinAPI_ShellChangeNotify($SHCNE_ASSOCCHANGED, $SHCNF_FLUSH)
+	Return $iPid
 EndFunc
 
 Func Mod_IsCompatible(Const $iModIndex1, Const $iModIndex2)
