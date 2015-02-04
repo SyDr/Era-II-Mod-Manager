@@ -272,7 +272,7 @@ Func Update_AutoCycle()
 EndFunc
 
 Func __Update_SetupSelectionChanged(ByRef $hGUI, Const $sNewVersion)
-	$hGUI.Setup.Version = StringInStr($sNewVersion, "beta") ? "beta" : "release"
+	$hGUI.Setup.Version = StringTrimRight(StringMid($sNewVersion, StringInStr($sNewVersion, "(")), 1)
 EndFunc
 
 Func __Update_GUIUpdateAccessibility(ByRef $hGUI)
@@ -293,7 +293,7 @@ Func __Update_GUIUpdateInfoView(ByRef $hGUI, Const $bOnlyCancelButton = False)
 			GUICtrlSetData($hGUI.ComboAvaVersion, "|" & Lng_Get("update.info_invalid"), Lng_Get("update.info_invalid"))
 		Else
 			GUICtrlSetData($hGUI.ComboAvaVersion, "|" & $hGUI.Info.ParsedKeys, _
-				$hGUI.Info.Parsed[$MM_VERSION_SUBTYPE]["version"] & ($MM_VERSION_SUBTYPE = "beta" ? ".beta" : ""))
+				$hGUI.Info.Parsed[$MM_VERSION_SUBTYPE]["version"] & " (" & $MM_VERSION_SUBTYPE & ")")
 			__Update_SetupSelectionChanged($hGUI, GUICtrlRead($hGUI.ComboAvaVersion))
 		EndIf
 	EndIf
@@ -327,7 +327,7 @@ Func __Update_InfoFileProcess(ByRef $hGUI, Const $sFile)
 	$hGUI.Setup.Version = ""
 
 	If $hGUI.Info.Valid Then
-		$hGUI.Info.ParsedKeys = $hGUI.Info.Parsed["release"]["version"] & "|" & $hGUI.Info.Parsed["beta"]["version"] & ".beta"
+		$hGUI.Info.ParsedKeys = $hGUI.Info.Parsed["release"]["version"] & " (release)|" & $hGUI.Info.Parsed["beta"]["version"] & " (beta)"
 	EndIf
 EndFunc
 
