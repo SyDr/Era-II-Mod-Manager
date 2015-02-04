@@ -272,7 +272,7 @@ Func Update_AutoCycle()
 EndFunc
 
 Func __Update_SetupSelectionChanged(ByRef $hGUI, Const $sNewVersion)
-	$hGUI.Setup.Version = StringTrimRight(StringMid($sNewVersion, StringInStr($sNewVersion, "(")), 1)
+	$hGUI.Setup.Version = StringTrimRight(StringMid($sNewVersion, StringInStr($sNewVersion, "(") + 1), 1)
 EndFunc
 
 Func __Update_GUIUpdateAccessibility(ByRef $hGUI)

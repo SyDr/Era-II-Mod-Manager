@@ -14,17 +14,19 @@ _FTP_FileDelete($hConnection, "MM_" & $MM_VERSION & ".exe")
 _FTP_FileDelete($hConnection, "MM_" & $MM_VERSION & ".zip")
 _FTP_ProgressUpload($hConnection, @ScriptDir & "\Publish\MM_" & $MM_VERSION & ".exe", "MM_" & $MM_VERSION & ".exe")
 _FTP_ProgressUpload($hConnection, @ScriptDir & "\Publish\MM_" & $MM_VERSION & ".zip", "MM_" & $MM_VERSION & ".zip")
+_FTP_DirSetCurrent($hConnection, "../")
 
-;~ _FTP_FileDelete($hConnection, "MM_Latest.exe")
-;~ _FTP_FileDelete($hConnection, "MM_Latest.zip")
-;~ _FTP_ProgressUpload($hConnection, @ScriptDir & "\Publish\MM_" & $MM_VERSION & ".exe", "MM_latest.exe")
-;~ _FTP_ProgressUpload($hConnection, @ScriptDir & "\Publish\MM_" & $MM_VERSION & ".zip", "MM_latest.zip")
-;~ _FTP_DirSetCurrent($hConnection, "../")
+If $MM_VERSION_SUBTYPE = "relase" Then
+	_FTP_FileDelete($hConnection, "MM_Latest.exe")
+	_FTP_FileDelete($hConnection, "MM_Latest.zip")
+	_FTP_ProgressUpload($hConnection, @ScriptDir & "\Publish\MM_" & $MM_VERSION & ".exe", "MM_Latest.exe")
+	_FTP_ProgressUpload($hConnection, @ScriptDir & "\Publish\MM_" & $MM_VERSION & ".zip", "MM_Latest.zip")
+EndIf
 
 Global $mVersion = Jsmn_Decode(FileRead(@ScriptDir & "\update_ftp.json"))
 $mVersion[$MM_VERSION_SUBTYPE]["version"] = $MM_VERSION_NUMBER
-$mVersion[$MM_VERSION_SUBTYPE]["setup"] = "/" & $MM_VERSION_SUBTYPE & "/RAMM_" & $MM_VERSION & ".exe"
-$mVersion[$MM_VERSION_SUBTYPE]["portable"] = "/" & $MM_VERSION_SUBTYPE & "/RAMM_" & $MM_VERSION & ".zip"
+$mVersion[$MM_VERSION_SUBTYPE]["setup"] = "/" & $MM_VERSION_SUBTYPE & "/MM_" & $MM_VERSION & ".exe"
+$mVersion[$MM_VERSION_SUBTYPE]["portable"] = "/" & $MM_VERSION_SUBTYPE & "/MM_" & $MM_VERSION & ".zip"
 
 FileDelete(@ScriptDir & "\update_ftp.json")
 FileWriteLine(@ScriptDir & "\update_ftp.json", Jsmn_Encode($mVersion, $JSMN_PRETTY_PRINT + $JSMN_UNESCAPED_UNICODE + $JSMN_UNESCAPED_SLASHES))

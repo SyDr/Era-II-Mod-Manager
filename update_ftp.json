@@ -12,7 +12,7 @@
 	},
 	"beta": {
 		"version": "0.92.0.0",
-		"setup": "/beta/RAMM_0.92.0.0.beta.exe",
-		"portable": "/beta/RAMM_0.92.0.0.beta.zip"
+		"setup": "/beta/MM_0.92.0.0.beta.exe",
+		"portable": "/beta/MM_0.92.0.0.beta.zip"
 	}
 }
