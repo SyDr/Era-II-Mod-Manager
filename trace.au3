@@ -14,7 +14,7 @@ Func _TracePoint(Const $sToPrint = StringFormat("Called from %i line", @ScriptLi
 
 	Local $iEndTime = Int(TimerDiff($__T_POINT))
 	$__T_POINT = TimerInit()
-	_TracePrint(StringFormat("%s\t%s msec later", $sToPrint, $iEndTime))
+	_TracePrint(StringFormat("%s\t%s msec later (%s memory)", $sToPrint, $iEndTime, ProcessGetStats()[0]/1024))
 	Return $__T_POINT
 EndFunc
 
@@ -33,6 +33,6 @@ Func _TraceEnd()
 	Local $iEndTime = Int(TimerDiff($_TRACE[$_TRACE[0][0]][1]))
 
 	_TracePoint($_TRACE[$_TRACE[0][0]][0] & " (<-)")
-	_TracePrint(StringFormat("%s\t%s msec total", $_TRACE[$_TRACE[0][0]][0] & " (==)", $iEndTime))
+	_TracePrint(StringFormat("%s\t%s msec total (%s memory)", $_TRACE[$_TRACE[0][0]][0] & " (==)", $iEndTime, ProcessGetStats()[0]/1024))
 	$_TRACE[0][0] -= 1
 EndFunc

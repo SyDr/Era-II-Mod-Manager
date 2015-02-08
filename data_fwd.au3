@@ -32,7 +32,6 @@ Global $MM_LIST_CANT_WORK = False
 Global $MM_PLUGINS_CONTENT[1][$PLUGIN_TOTAL] ; a loaded list of plugins
 Global $MM_PLUGINS_PART_PRESENT[3] ; state if a plugins from some group exist
 
-Global $MM_LIST_COMPATIBILITY[]
 Global $MM_COMPATIBILITY_MESSAGE = ""
 
 Global $MM_UI_MAIN
