@@ -5,7 +5,7 @@
 #ce
 
 Global Const $MM_PORTABLE = False
-Global Const $MM_VERSION_NUMBER = "0.92.0.0"
+Global Const $MM_VERSION_NUMBER = "0.92.1.0"
 
 Global Const $MM_VERSION_SUBTYPE = "beta"
 Global Const $MM_VERSION_NAME = "Der Wassermann"
