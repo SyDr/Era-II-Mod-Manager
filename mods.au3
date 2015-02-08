@@ -8,8 +8,8 @@
 #include "utils.au3"
 
 Global $MM_SELECTED_MOD = -1
-Global $MM_LIST_MAP ; a list with mapped data
-Global $MM_LIST_FILE_CONTENT ; folder_mods.au3
+Global $MM_LIST_MAP = MapEmpty() ; a list with mapped data
+Global $MM_LIST_FILE_CONTENT
 Global $MM_LIST_CONTENT[1][$MOD_TOTAL] ; a loaded list of mods
 
 Func Mod_ListLoad()
@@ -18,7 +18,6 @@ Func Mod_ListLoad()
 
 	ReDim $MM_LIST_CONTENT[1][$MOD_TOTAL]
 	$MM_LIST_CONTENT[0][0] = 0
-	$MM_LIST_MAP = MapEmpty()
 
 	$MM_LIST_CONTENT[0][$MOD_IS_ENABLED] = "$MOD_IS_ENABLED"
 	$MM_LIST_CONTENT[0][$MOD_IS_EXIST] = "$MOD_IS_EXIST"
@@ -59,12 +58,18 @@ Func Mod_ListLoad()
 	_TraceEnd()
 EndFunc   ;==>Mod_ListLoad
 
+Func Mod_CacheClear()
+	$MM_LIST_MAP = MapEmpty()
+EndFunc
+
 Func __Mod_LoadInfo(Const $iIndex, Const ByRef $sId, Const $bIsEnabled)
 	$MM_LIST_CONTENT[$iIndex][$MOD_ID] = $sId
 	$MM_LIST_CONTENT[$iIndex][$MOD_IS_ENABLED] = $bIsEnabled
 	$MM_LIST_CONTENT[$iIndex][$MOD_IS_EXIST] = FileExists($MM_LIST_DIR_PATH & "\" & $sId & "\") ? True : False
-	$MM_LIST_MAP[$sId] = Jsmn_Decode(FileRead($MM_LIST_DIR_PATH & "\" & $sId & "\mod.json"))
-	__Mod_Validate($MM_LIST_MAP[$sId], $MM_LIST_DIR_PATH & "\" & $sId)
+	If Not MapExists($MM_LIST_MAP, $sID) Then
+		$MM_LIST_MAP[$sId] = Jsmn_Decode(FileRead($MM_LIST_DIR_PATH & "\" & $sId & "\mod.json"))
+		__Mod_Validate($MM_LIST_MAP[$sId], $MM_LIST_DIR_PATH & "\" & $sId)
+	EndIf
 	$MM_LIST_CONTENT[$iIndex][$MOD_CAPTION] = Mod_Get("caption", $iIndex)
 EndFunc
 
@@ -91,7 +96,7 @@ Func __Mod_Validate(ByRef $Map, Const $sDir)
 	If Not MapExists($Map, "homepage") Or Not IsString($Map["homepage"])  Then $Map["homepage"] = ""
 	If Not MapExists($Map, "icon") Or Not IsMap($Map["icon"]) Then $Map["icon"] = MapEmpty()
 	If Not MapExists($Map["icon"], "file") Or Not IsString($Map["icon"]["file"]) Then $Map["icon"]["file"] = ""
-	If Not MapExists($Map["icon"], "index") Then $Map["icon"]["index"] = 0
+	If Not MapExists($Map["icon"], "index") Or $Map["icon"]["file"] = "" Then $Map["icon"]["index"] = 0
 	$Map["icon"]["index"] = Int($Map["icon"]["index"])
 	If Not MapExists($Map, "priority") Then $Map["priority"] = 0
 	$Map["priority"] = Int($Map["priority"])
@@ -173,19 +178,22 @@ Func Mod_Get(Const $sPath, $iModIndex = -1)
 		$vReturn = $MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iModIndex][$MOD_ID] & "\"
 	ElseIf $sPath = "info_file" Then
 		$vReturn = $MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iModIndex][$MOD_ID] & "\mod.json"
+	ElseIf $sPath = "icon_path" Then
+		Local $sIconPath = Mod_Get("icon\file", $iModIndex)
+		$vReturn = $sIconPath ? ($MM_LIST_DIR_PATH & "\" & $sModId & "\" & $sIconPath) : (@ScriptDir & "\icons\folder-grey.ico")
 	ElseIf $sPath = "caption" Then
-		$vReturn = ($MM_LIST_MAP[$sModId])["caption"][$MM_LANGUAGE_CODE]
-		If $vReturn = "" Then $vReturn = ($MM_LIST_MAP[$sModId])["caption"]["en_US"]
+		$vReturn = $MM_LIST_MAP[$sModId]["caption"][$MM_LANGUAGE_CODE]
+		If $vReturn = "" Then $vReturn = $MM_LIST_MAP[$sModId]["caption"]["en_US"]
 		If $vReturn = "" Then $vReturn = $MM_LIST_CONTENT[$iModIndex][$MOD_ID]
 	ElseIf $aParts[1] = "caption" And $aParts[2] = "formatted" Then
 		$vReturn = Mod_Get("caption", $iModIndex)
-		Local $sCategory = ($MM_LIST_MAP[$sModId])["category"]
+		Local $sCategory = $MM_LIST_MAP[$sModId]["category"]
 		If $sCategory <> "" Then $vReturn = StringFormat("[%s] %s", ($aParts[0] > 2 And $aParts[3] = "caps") ? StringUpper(Lng_GetCategory($sCategory)) : Lng_GetCategory($sCategory), $vReturn)
 	ElseIf $aParts[1] = "description" Then
-		$vReturn = ($MM_LIST_MAP[$sModId])["description"][$aParts[2]][$MM_LANGUAGE_CODE]
-		If $vReturn = "" Then $vReturn = ($MM_LIST_MAP[$sModId])["description"][$aParts[2]]["en_US"]
+		$vReturn = $MM_LIST_MAP[$sModId]["description"][$aParts[2]][$MM_LANGUAGE_CODE]
+		If $vReturn = "" Then $vReturn = $MM_LIST_MAP[$sModId]["description"][$aParts[2]]["en_US"]
 		If $vReturn = "" Then $vReturn = Lng_Get("info_group.no_info")
-	ElseIf $aParts[1] = "plugins" And Not MapExists(($MM_LIST_MAP[$sModId])["plugins"], $aParts[2]) Then
+	ElseIf $aParts[1] = "plugins" And Not MapExists($MM_LIST_MAP[$sModId]["plugins"], $aParts[2]) Then
 		Switch $aParts[3]
 			Case "caption"
 				$vReturn = $aParts[2]
@@ -197,21 +205,25 @@ Func Mod_Get(Const $sPath, $iModIndex = -1)
 				$vReturn = False
 		EndSwitch
 	ElseIf $aParts[1] = "plugins" And $aParts[3] = "caption" Then
-		$vReturn = ($MM_LIST_MAP[$sModId])["plugins"][$aParts[2]]["caption"][$MM_LANGUAGE_CODE]
-		If $vReturn = "" Then $vReturn = ($MM_LIST_MAP[$sModId])["plugins"][$aParts[2]]["caption"]["en_US"]
+		$vReturn = $MM_LIST_MAP[$sModId]["plugins"][$aParts[2]]["caption"][$MM_LANGUAGE_CODE]
+		If $vReturn = "" Then $vReturn = $MM_LIST_MAP[$sModId]["plugins"][$aParts[2]]["caption"]["en_US"]
 		If $vReturn = "" Then $vReturn = $aParts[2]
 	ElseIf $aParts[1] = "plugins" And $aParts[3] = "description" Then
-		$vReturn = ($MM_LIST_MAP[$sModId])["plugins"][$aParts[2]]["description"][$MM_LANGUAGE_CODE]
-		If $vReturn = "" Then $vReturn = ($MM_LIST_MAP[$sModId])["plugins"][$aParts[2]]["description"]["en_US"]
+		$vReturn = $MM_LIST_MAP[$sModId]["plugins"][$aParts[2]]["description"][$MM_LANGUAGE_CODE]
+		If $vReturn = "" Then $vReturn = $MM_LIST_MAP[$sModId]["plugins"][$aParts[2]]["description"]["en_US"]
 		If $vReturn = "" Then $vReturn = Lng_Get("info_group.no_info")
+	Elseif $sPath = "compatibility\class" Then
+		$vReturn = $MM_LIST_MAP[$sModId]["compatibility"]["class"]
+	ElseIf $aParts[1] = "compatibility" And $aParts[2] = "entries" Then
+		$vReturn = MapExists($MM_LIST_MAP[$sModId]["compatibility"]["entries"], $aParts[3]) ? ($MM_LIST_MAP[$sModId]["compatibility"]["entries"][$aParts[3]] ? 1 : -1) : 0
 	Else
 		Switch $aParts[0]
 			Case 1
-				$vReturn = ($MM_LIST_MAP[$sModId])[$aParts[1]]
+				$vReturn = $MM_LIST_MAP[$sModId][$aParts[1]]
 			Case 2
-				$vReturn = ($MM_LIST_MAP[$sModId])[$aParts[1]][$aParts[2]]
+				$vReturn = $MM_LIST_MAP[$sModId][$aParts[1]][$aParts[2]]
 			Case 3
-				$vReturn = ($MM_LIST_MAP[$sModId])[$aParts[1]][$aParts[2]][$aParts[3]]
+				$vReturn = $MM_LIST_MAP[$sModId][$aParts[1]][$aParts[2]][$aParts[3]]
 		EndSwitch
 	EndIf
 
@@ -245,7 +257,30 @@ Func Mod_CreatePackage(Const $iModIndex, Const $sSavePath)
 EndFunc
 
 Func Mod_IsCompatible(Const $iModIndex1, Const $iModIndex2)
-	Return $MM_LIST_COMPATIBILITY[Mod_Get("id", $iModIndex1)][Mod_Get("id", $iModIndex2)]
+	If Not $MM_LIST_CONTENT[$iModIndex1][$MOD_IS_ENABLED] Or Not $MM_LIST_CONTENT[$iModIndex2][$MOD_IS_ENABLED] Then
+		Return True
+	Else
+		Local $i1To2 = Mod_Get("compatibility\entries\" & $MM_LIST_CONTENT[$iModIndex2][$MOD_ID], $iModIndex1)
+		Local $i2To1 = Mod_Get("compatibility\entries\" & $MM_LIST_CONTENT[$iModIndex1][$MOD_ID], $iModIndex2)
+
+		If $i1To2 > 0 Then
+			Return True
+		ElseIf $i1To2 < 0 Then
+			Return False
+		ElseIf $i2To1 > 0 Then
+			Return True
+		ElseIf $i2To1 < 0 Then
+			Return False
+		Else
+			Local $sType1 = Mod_Get("compatibility\class", $iModIndex1)
+			Local $sType2 = Mod_Get("compatibility\class", $iModIndex2)
+			If ($sType1 = "none" And ($sType2 = "none" Or $sType2 = "default")) Or ($sType2 = "none" And ($sType1 = "none" Or $sType1 = "default")) Then
+				Return False
+			Else
+				Return True
+			EndIf
+		EndIf
+	EndIf
 EndFunc
 
 Func Mod_ListIsActual()
@@ -285,42 +320,6 @@ Func Mod_ReEnable($sModID)
 	EndIf
 EndFunc   ;==>Mod_ReEnable
 
-Func Mod_CompatibilityMapLoad()
-	Local $sModID1, $sModID2
-
-	For $iCount = 1 To $MM_LIST_CONTENT[0][0]
-		$sModID1 = $MM_LIST_CONTENT[$iCount][$MOD_ID]
-		If IsKeyword($MM_LIST_COMPATIBILITY[$sModID1]) = $KEYWORD_NULL Then $MM_LIST_COMPATIBILITY[$sModID1] = MapEmpty()
-
-		For $jCount = 1 To $MM_LIST_CONTENT[0][0]
-			$sModID2 = $MM_LIST_CONTENT[$jCount][$MOD_ID]
-            If IsKeyword($MM_LIST_COMPATIBILITY[$sModID2]) = $KEYWORD_NULL Then $MM_LIST_COMPATIBILITY[$sModID2] = MapEmpty()
-
-			If Not $MM_LIST_CONTENT[$iCount][$MOD_IS_ENABLED] Or Not $MM_LIST_CONTENT[$jCount][$MOD_IS_ENABLED] Then
-				$MM_LIST_COMPATIBILITY[$sModID1][$sModID2] = True
-			Else
-				Local $sType1 = Mod_Get("compatibility\class", $iCount)
-				Local $sType2 = Mod_Get("compatibility\class", $jCount)
-				Local $i1To2 = Mod_Get("compatibility\entries" & Mod_Get("id", $jCount), $iCount)
-				Local $i2To1 = Mod_Get("compatibility\entries" & Mod_Get("id", $iCount), $jCount)
-				If $i1To2 > 0 Then
-					$MM_LIST_COMPATIBILITY[$sModID1][$sModID2] = True
-				ElseIf $i1To2 < 0 Then
-					$MM_LIST_COMPATIBILITY[$sModID1][$sModID2] = False
-				ElseIf $i2To1 > 0 Then
-					$MM_LIST_COMPATIBILITY[$sModID1][$sModID2] = True
-				ElseIf $i2To1 < 0 Then
-					$MM_LIST_COMPATIBILITY[$sModID1][$sModID2] = False
-				ElseIf ($sType1 = "none" And ($sType2 = "none" Or $sType2 = "default")) Or ($sType2 = "none" And ($sType1 = "none" Or $sType1 = "default")) Then
-					$MM_LIST_COMPATIBILITY[$sModID1][$sModID2] = False
-				Else
-					$MM_LIST_COMPATIBILITY[$sModID1][$sModID2] = True
-				EndIf
-			EndIf
-		Next
-	Next
-EndFunc   ;==>Mod_CompatibilityMapLoad
-
 Func Mod_ListSave()
 	If Not FileDelete($MM_LIST_FILE_PATH) And FileExists($MM_LIST_FILE_PATH) Then
 		$MM_LIST_CANT_WORK = True
@@ -352,6 +351,7 @@ Func Mod_ListSwap($iModIndex1, $iModIndex2, $sUpdate = True)
 EndFunc   ;==>Mod_ListSwap
 
 Func Mod_Disable($iModIndex)
+	_TracePoint(StringFormat("Mod disable: %s", $MM_LIST_CONTENT[$iModIndex][$MOD_ID]))
 	If Not $MM_LIST_CONTENT[$iModIndex][$MOD_IS_ENABLED] Then Return
 	$MM_LIST_CONTENT[$iModIndex][$MOD_IS_ENABLED] = False
 
@@ -364,6 +364,7 @@ Func Mod_Delete($iModIndex)
 EndFunc   ;==>Mod_Delete
 
 Func Mod_Enable($iModIndex)
+	_TracePoint(StringFormat("Mod enable: %s", $MM_LIST_CONTENT[$iModIndex][$MOD_ID]))
 	If $MM_LIST_CONTENT[$iModIndex][$MOD_IS_ENABLED] Then Return
 	$MM_LIST_CONTENT[$iModIndex][$MOD_IS_ENABLED] = True
 

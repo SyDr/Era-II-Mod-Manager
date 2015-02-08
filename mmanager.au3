@@ -808,6 +808,7 @@ Func SD_GUI_ChangeGameDir()
 EndFunc   ;==>SD_GUI_ChangeGameDir
 
 Func SD_GUI_Update()
+	Mod_CacheClear()
 	GUISwitch($MM_UI_MAIN)
 	TreeViewMain()
 	If $MM_VIEW_CURRENT = $MM_VIEW_MODS Then TreeViewTryFollow($sFollowMod)
@@ -815,12 +816,6 @@ EndFunc   ;==>SD_GUI_Update
 
 Func TreeViewMain()
 	Mod_ListLoad()
-	Mod_CompatibilityMapLoad()
-
-	_GUICtrlTreeView_BeginUpdate($hGUI.ModList.List)
-	_GUICtrlTreeView_DeleteAll($hGUI.ModList.List)
-	_GUICtrlTreeView_EndUpdate($hGUI.ModList.List)
-
 	TreeViewFill()
 EndFunc   ;==>TreeViewMain
 
@@ -986,6 +981,7 @@ EndFunc   ;==>SD_GUI_Plugin_SelectionChanged
 
 Func TreeViewFill()
 	_GUICtrlTreeView_BeginUpdate($hGUI.ModList.List)
+	_GUICtrlTreeView_DeleteAll($hGUI.ModList.List)
 
 	GUICtrlSetState($hGUI.MenuSettings.Compatibility, $GUI_DISABLE)
 
@@ -1067,11 +1063,7 @@ Func TreeViewFill()
 		$MM_LIST_CONTENT[$iCount][$MOD_PARENT_ID] = $iCurrentGroup
 		$MM_LIST_CONTENT[$iCount][$MOD_ITEM_ID] = GUICtrlCreateTreeViewItem($sCaption, $aModListGroups[$MM_LIST_CONTENT[$iCount][$MOD_PARENT_ID]][0])
 
-		If Mod_Get("icon\file", $iCount) <> "" And FileExists($MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iCount][$MOD_ID] & "\" & Mod_Get("icon\file", $iCount)) Then
-			_GUICtrlTreeView_SetIcon($hGUI.ModList.List, $MM_LIST_CONTENT[$iCount][$MOD_ITEM_ID], $MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iCount][0] & "\" & Mod_Get("icon\file", $iCount), Mod_Get("icon\index", $iCount), 6)
-		Else
-			_GUICtrlTreeView_SetIcon($hGUI.ModList.List, $MM_LIST_CONTENT[$iCount][$MOD_ITEM_ID], @ScriptDir & "\icons\folder-grey.ico", 0, 6)
-		EndIf
+		_GUICtrlTreeView_SetIcon($hGUI.ModList.List, $MM_LIST_CONTENT[$iCount][$MOD_ITEM_ID], Mod_Get("icon_path", $iCount), Mod_Get("icon\index", $iCount), 6)
 	Next
 
 	For $iCount = 1 To $aModListGroups[0][0]
@@ -1093,11 +1085,7 @@ Func TreeViewAddGroup(Const $bEnabled, Const $vItem)
 	$aModListGroups[$aModListGroups[0][0]][0] = GUICtrlCreateTreeViewItem($sText, $hGUI.ModList.List)
 	GUICtrlSetColor($aModListGroups[$aModListGroups[0][0]][0], 0x0000C0)
 
-	If $bEnabled Then
-		_GUICtrlTreeView_SetIcon($hGUI.ModList.List, $aModListGroups[$aModListGroups[0][0]][0], @ScriptDir & "\icons\folder-green.ico", 0, 6)
-	Else
-		_GUICtrlTreeView_SetIcon($hGUI.ModList.List, $aModListGroups[$aModListGroups[0][0]][0], @ScriptDir & "\icons\folder-red.ico", 0, 6)
-	EndIf
+	_GUICtrlTreeView_SetIcon($hGUI.ModList.List, $aModListGroups[$aModListGroups[0][0]][0], @ScriptDir & "\icons\" & ($bEnabled ? "folder-green.ico" : "folder-red.ico"), 0, 6)
 
 	$aModListGroups[$aModListGroups[0][0]][1] = $bEnabled
 	$aModListGroups[$aModListGroups[0][0]][2] = $vItem
@@ -1341,8 +1329,8 @@ EndFunc
 Func SD_FormatDescription()
 	If $MM_SELECTED_MOD < 0 Then Return ""
 	Local $sText
-	If Mod_Get("id") <> Mod_Get("caption") Then
-		$sText = Lng_GetF("info_group.info.mod_caption", Mod_Get("caption"), Mod_Get("id"))
+	If $MM_LIST_CONTENT[$MM_SELECTED_MOD][$MOD_ID] <> Mod_Get("caption") Then
+		$sText = Lng_GetF("info_group.info.mod_caption", Mod_Get("caption"), $MM_LIST_CONTENT[$MM_SELECTED_MOD][$MOD_ID])
 	Else
 		$sText = Lng_GetF("info_group.info.mod_caption_s", Mod_Get("caption"))
 	EndIf
