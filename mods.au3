@@ -66,7 +66,7 @@ Func __Mod_LoadInfo(Const $iIndex, Const ByRef $sId, Const $bIsEnabled)
 	$MM_LIST_CONTENT[$iIndex][$MOD_ID] = $sId
 	$MM_LIST_CONTENT[$iIndex][$MOD_IS_ENABLED] = $bIsEnabled
 	$MM_LIST_CONTENT[$iIndex][$MOD_IS_EXIST] = FileExists($MM_LIST_DIR_PATH & "\" & $sId & "\") ? True : False
-	If Not MapExists($MM_LIST_MAP, $sID) Then
+	If $MM_LIST_CONTENT[$iIndex][$MOD_IS_EXIST] And Not MapExists($MM_LIST_MAP, $sID) Then
 		$MM_LIST_MAP[$sId] = Jsmn_Decode(FileRead($MM_LIST_DIR_PATH & "\" & $sId & "\mod.json"))
 		__Mod_Validate($MM_LIST_MAP[$sId], $MM_LIST_DIR_PATH & "\" & $sId)
 	EndIf
@@ -337,6 +337,36 @@ Func Mod_ListSave()
 	EndIf
 EndFunc   ;==>Mod_ListSave
 
+Func Mod_ListLoadFromMemory(Const $aModList, Const $bOnlyCheck = False)
+	Local $aAnswer[1] = [0]
+	For $i = $aModList[0][0] To 1 Step -1
+		If Not $aModList[$i][$LIST_IS_OPTIONAL] And Not MapExists($MM_LIST_MAP, $aModList[$i][$LIST_MOD_ID]) Then
+			_ArrayAdd($aAnswer, $aModList[$i][$LIST_MOD_ID])
+			$aAnswer[0][0] += 1
+		EndIf
+	Next
+
+	If Not $bOnlyCheck Then
+		Mod_DisableAll()
+		Mod_ListLoad()
+
+		For $i = $aModList[0][0] To 1 Step -1
+			If MapExists($MM_LIST_MAP, $aModList[$i][$LIST_MOD_ID]) Then Mod_Enable(Mod_GetIndexByID($aModList[$i][$LIST_MOD_ID]), True, False)
+		Next
+		Mod_ListSave()
+	EndIf
+
+	Return $aAnswer
+EndFunc
+
+Func Mod_GetIndexByID($sModID)
+	For $iCount = 1 To $MM_LIST_CONTENT[0][0]
+		If $MM_LIST_CONTENT[$iCount][0] = $sModID Then Return $iCount
+	Next
+
+	Return -1
+EndFunc   ;==>Mod_GetIndexByID
+
 Func Mod_ListSwap($iModIndex1, $iModIndex2, $sUpdate = True)
 	Local $vTemp
 
@@ -350,30 +380,38 @@ Func Mod_ListSwap($iModIndex1, $iModIndex2, $sUpdate = True)
 	If $sUpdate Then Mod_ListSave()
 EndFunc   ;==>Mod_ListSwap
 
-Func Mod_Disable($iModIndex)
+Func Mod_Disable($iModIndex, $sUpdate = True)
 	_TracePoint(StringFormat("Mod disable: %s", $MM_LIST_CONTENT[$iModIndex][$MOD_ID]))
 	If Not $MM_LIST_CONTENT[$iModIndex][$MOD_IS_ENABLED] Then Return
 	$MM_LIST_CONTENT[$iModIndex][$MOD_IS_ENABLED] = False
 
-	Mod_ListSave()
+	If $sUpdate Then Mod_ListSave()
 EndFunc   ;==>Mod_Disable
+
+Func Mod_DisableAll()
+	For $i = 1 To $MM_LIST_CONTENT[0][0]
+		Mod_Disable($i, False)
+	Next
+
+	Mod_ListSave()
+EndFunc
 
 Func Mod_Delete($iModIndex)
 	FileRecycle($MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iModIndex][0])
 	Mod_Disable($iModIndex)
 EndFunc   ;==>Mod_Delete
 
-Func Mod_Enable($iModIndex)
+Func Mod_Enable($iModIndex, $bIgnorePrioirity = False, $bUpdate = True)
 	_TracePoint(StringFormat("Mod enable: %s", $MM_LIST_CONTENT[$iModIndex][$MOD_ID]))
 	If $MM_LIST_CONTENT[$iModIndex][$MOD_IS_ENABLED] Then Return
 	$MM_LIST_CONTENT[$iModIndex][$MOD_IS_ENABLED] = True
 
 	For $iIndex = $iModIndex To 2 Step -1
-		If $MM_LIST_CONTENT[$iIndex - 1][$MOD_IS_ENABLED] And Mod_Get("priority", $iIndex - 1) > Mod_Get("priority", $iIndex) Then ExitLoop
+		If Not $bIgnorePrioirity And $MM_LIST_CONTENT[$iIndex - 1][$MOD_IS_ENABLED] And Mod_Get("priority", $iIndex - 1) > Mod_Get("priority", $iIndex) Then ExitLoop
 		Mod_ListSwap($iIndex, $iIndex - 1, False)
 	Next
 
-	Mod_ListSave()
+	If $bUpdate Then Mod_ListSave()
 EndFunc   ;==>Mod_Enable
 
 Func Mod_ModIsInstalled($sModName)
@@ -400,10 +438,3 @@ Func Mod_GetVersion($sModName)
 	Return IniRead($MM_LIST_DIR_PATH & "\" & $sModName & "\mod_info.ini", "info", "Version", "0.0")
 EndFunc   ;==>Mod_GetVersion
 
-Func Mod_GetIndexByID($sModID)
-	For $iCount = 1 To $MM_LIST_CONTENT[0][0]
-		If $MM_LIST_CONTENT[$iCount][0] = $sModID Then Return $iCount
-	Next
-
-	Return -1
-EndFunc   ;==>Mod_GetIndexByID
