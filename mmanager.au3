@@ -102,28 +102,10 @@ Func UI_Main()
 EndFunc
 
 Func MainLoop()
-	Local $bGUINeedUpdate = False
-
 	While $bMainUICycle
-		Sleep(10)
-		If Not $bGUINeedUpdate And Not WinActive($MM_UI_MAIN) Then
-			$bGUINeedUpdate = True
-		EndIf
-
-		If $bGUINeedUpdate And WinActive($MM_UI_MAIN) Then
-			$bGUINeedUpdate = False
-			If Not Mod_ListIsActual() Then SD_GUI_Update()
-		EndIf
-
-		If $bEnableDisable Then
-			$bEnableDisable = False
-			SD_GUI_List_ChangeState()
-		EndIf
-
-		If $bSelectionChanged Then
-			$bSelectionChanged = False
-			SD_GUI_List_SelectionChanged()
-		EndIf
+		Sleep(20)
+		SD_UI_AutoUpdate()
+		SD_UI_ModStateChange()
 
 		If $MM_LIST_CANT_WORK Then
 			$MM_LIST_CANT_WORK = False
@@ -135,6 +117,31 @@ Func MainLoop()
 		Update_AutoCycle()
 	WEnd
 EndFunc   ;==>MainLoop
+
+Func SD_UI_AutoUpdate()
+	Local Static $bGUINeedUpdate = False
+
+	If Not $bGUINeedUpdate And Not WinActive($MM_UI_MAIN) Then
+		$bGUINeedUpdate = True
+	EndIf
+
+	If $bGUINeedUpdate And WinActive($MM_UI_MAIN) Then
+		$bGUINeedUpdate = False
+		If Not Mod_ListIsActual() Then SD_GUI_Update()
+	EndIf
+EndFunc
+
+Func SD_UI_ModStateChange()
+	If $bEnableDisable Then
+		$bEnableDisable = False
+		SD_GUI_List_ChangeState()
+	EndIf
+
+	If $bSelectionChanged Then
+		$bSelectionChanged = False
+		SD_GUI_List_SelectionChanged()
+	EndIf
+EndFunc
 
 Func SD_GUI_Language_Change()
 	Local $iIndex = -1
