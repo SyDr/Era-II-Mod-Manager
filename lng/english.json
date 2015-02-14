@@ -36,6 +36,10 @@
 		"pack_mod" : "Create self-extracting package",
 		"pack_mod_hint" : "Package will be created in background. You can continue to use MM or even close it. \n\nClose 7z console window to cancel package creation (you need then to delete created file). When 7z window disaapear - it safe to use created file."
 	},
+	"scenarios" : {
+		"caption" : "Scenarios",
+		"manage" : "Manage",
+	},
 	"game" : {
 		"caption" : "Game",
 		"launch" : "Launch (%s)",

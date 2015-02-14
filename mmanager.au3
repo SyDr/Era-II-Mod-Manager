@@ -37,6 +37,7 @@ If Not @Compiled Then Global $__DEBUG
 
 #Region Variables
 Global $hGUI[]
+$hGUI.MenuScn = MapEmpty()
 $hGUI.MenuMod = MapEmpty()
 $hGUI.MenuGame = MapEmpty()
 $hGUI.MenuSettings = MapEmpty()
@@ -165,6 +166,9 @@ Func SD_GUI_Create()
 	$MM_WINDOW_MIN_WIDTH_FULL = WinGetPos($MM_UI_MAIN)[2]
 	$MM_WINDOW_MIN_HEIGHT_FULL = WinGetPos($MM_UI_MAIN)[3]
 	GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
+
+	$hGUI.MenuScn.Menu = GUICtrlCreateMenu("-")
+	$hGUI.MenuScn.Manage = GUICtrlCreateMenuItem("-", $hGUI.MenuScn.Menu)
 
 	$hGUI.MenuGame.Menu = GUICtrlCreateMenu("-")
 	$hGUI.MenuGame.Launch = GUICtrlCreateMenuItem("-", $hGUI.MenuGame.Menu)
@@ -474,6 +478,9 @@ Func SD_GUI_SetLng()
 	GUICtrlSetData($hGUI.MenuMod.OpenFolder, Lng_Get("mod_list.open_dir"))
 	GUICtrlSetData($hGUI.MenuMod.EditMod, Lng_Get("mod_list.edit_mod"))
 	GUICtrlSetData($hGUI.MenuMod.PackMod, Lng_Get("mod_list.pack_mod"))
+
+	GUICtrlSetData($hGUI.MenuScn.Menu, Lng_Get("scenarios.caption"))
+	GUICtrlSetData($hGUI.MenuScn.Manage, Lng_Get("scenarios.manage"))
 
 	GUICtrlSetData($hGUI.MenuGame.Menu, Lng_Get("game.caption"))
 	GUICtrlSetData($hGUI.MenuGame.Launch, Lng_GetF("game.launch", $MM_GAME_EXE))

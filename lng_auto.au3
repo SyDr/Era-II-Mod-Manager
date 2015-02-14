@@ -31,6 +31,9 @@ If Not MapExists($MM_LNG_CACHE["mod_list"], "open_dir") Or Not IsString($MM_LNG_
 If Not MapExists($MM_LNG_CACHE["mod_list"], "edit_mod") Or Not IsString($MM_LNG_CACHE["mod_list"]["edit_mod"]) Then $MM_LNG_CACHE["mod_list"]["edit_mod"] = "Edit mod data"
 If Not MapExists($MM_LNG_CACHE["mod_list"], "pack_mod") Or Not IsString($MM_LNG_CACHE["mod_list"]["pack_mod"]) Then $MM_LNG_CACHE["mod_list"]["pack_mod"] = "Create self-extracting package"
 If Not MapExists($MM_LNG_CACHE["mod_list"], "pack_mod_hint") Or Not IsString($MM_LNG_CACHE["mod_list"]["pack_mod_hint"]) Then $MM_LNG_CACHE["mod_list"]["pack_mod_hint"] = "Package will be created in background. You can continue to use MM or even close it. \n\nClose 7z console window to cancel package creation (you need then to delete created file). When 7z window disaapear - it safe to use created file."
+If Not MapExists($MM_LNG_CACHE, "scenarios") Or Not IsMap($MM_LNG_CACHE["scenarios"]) Then $MM_LNG_CACHE["scenarios"] = MapEmpty()
+If Not MapExists($MM_LNG_CACHE["scenarios"], "caption") Or Not IsString($MM_LNG_CACHE["scenarios"]["caption"]) Then $MM_LNG_CACHE["scenarios"]["caption"] = "Scenarios"
+If Not MapExists($MM_LNG_CACHE["scenarios"], "manage") Or Not IsString($MM_LNG_CACHE["scenarios"]["manage"]) Then $MM_LNG_CACHE["scenarios"]["manage"] = "Manage"
 If Not MapExists($MM_LNG_CACHE, "game") Or Not IsMap($MM_LNG_CACHE["game"]) Then $MM_LNG_CACHE["game"] = MapEmpty()
 If Not MapExists($MM_LNG_CACHE["game"], "caption") Or Not IsString($MM_LNG_CACHE["game"]["caption"]) Then $MM_LNG_CACHE["game"]["caption"] = "Game"
 If Not MapExists($MM_LNG_CACHE["game"], "launch") Or Not IsString($MM_LNG_CACHE["game"]["launch"]) Then $MM_LNG_CACHE["game"]["launch"] = "Launch (%s)"
