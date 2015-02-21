@@ -174,39 +174,16 @@ Func SD_GUI_Create()
 	$MM_WINDOW_MIN_HEIGHT_FULL = WinGetPos($MM_UI_MAIN)[3]
 	GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
 
-	$hGUI.MenuScn.Menu = GUICtrlCreateMenu("-")
-	$hGUI.MenuScn.Manage = GUICtrlCreateMenuItem("-", $hGUI.MenuScn.Menu)
+	SD_GUI_MenuCreate()
 
-	$hGUI.MenuGame.Menu = GUICtrlCreateMenu("-")
-	$hGUI.MenuGame.Launch = GUICtrlCreateMenuItem("-", $hGUI.MenuGame.Menu)
-	GUICtrlSetState($hGUI.MenuGame.Launch, $MM_GAME_EXE = "" ? $GUI_DISABLE : $GUI_ENABLE)
-	GUICtrlCreateMenuItem("", $hGUI.MenuGame.Menu)
-	$hGUI.MenuGame.Change = GUICtrlCreateMenuItem("-", $hGUI.MenuGame.Menu)
-;~ 	If $MM_GAME_NO_DIR Then GUICtrlSetState($hGUI.MenuGame.Menu, $GUI_DISABLE)
-
-	$hGUI.MenuSettings.Menu = GUICtrlCreateMenu("-")
-	$hGUI.MenuSettings.Add = GUICtrlCreateMenuItem("-", $hGUI.MenuSettings.Menu)
-	$hGUI.MenuSettings.Compatibility = GUICtrlCreateMenuItem("-", $hGUI.MenuSettings.Menu)
-	$hGUI.MenuSettings.ChangeModDir = GUICtrlCreateMenuItem("-", $hGUI.MenuSettings.Menu)
-	If $MM_GAME_NO_DIR Then GUICtrlSetState($hGUI.MenuSettings.Add, $GUI_DISABLE)
-	If $MM_PORTABLE Then GUICtrlSetState($hGUI.MenuSettings.ChangeModDir, $GUI_DISABLE)
-	GUICtrlCreateMenuItem("", $hGUI.MenuSettings.Menu)
-
-	$hGUI.MenuSettings.Settings = GUICtrlCreateMenuItem("-", $hGUI.MenuSettings.Menu)
-	$hGUI.MenuLanguage = GUICtrlCreateMenu("-", $hGUI.MenuSettings.Menu)
-	For $iCount = 1 To $MM_LNG_LIST[0][0]
-		$MM_LNG_LIST[$iCount][$MM_LNG_MENU_ID] = GUICtrlCreateMenuItem($MM_LNG_LIST[$iCount][$MM_LNG_NAME], $hGUI.MenuLanguage, Default, 1)
-		If $MM_LNG_LIST[$iCount][$MM_LNG_FILE] = $MM_SETTINGS_LANGUAGE Then GUICtrlSetState($MM_LNG_LIST[$iCount][$MM_LNG_MENU_ID], $GUI_CHECKED)
-	Next
-
-	$hGUI.MenuHelp.Menu = GUICtrlCreateMenu("?")
-	$hGUI.MenuHelp.CheckForUpdates = GUICtrlCreateMenuItem("-", $hGUI.MenuHelp.Menu)
-
+	; mod list
 	$hGUI.ModList.Group = GUICtrlCreateGroup("-", 0, 0)
-	$hGUI.PluginsList.Group = GUICtrlCreateGroup("-", 0, 0)
-
 	$hGUI.ModList.List = GUICtrlCreateTreeView(0, 0, Default, Default, BitOR($TVS_FULLROWSELECT, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
+	$hGUI.ModList.Up = GUICtrlCreateButton("", 0, 0, 90, 25)
+	$hGUI.ModList.Down = GUICtrlCreateButton("", 0, 0, 90, 25)
+	$hGUI.ModList.ChangeState = GUICtrlCreateButton("", 0, 0, 90, 25)
 
+	; mod list context menu
 	$hGUI.MenuMod.Menu = GUICtrlCreateContextMenu($hGUI.ModList.List)
 	$hGUI.MenuMod.Plugins = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
 	$hGUI.MenuMod.OpenHomepage = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
@@ -217,16 +194,12 @@ Func SD_GUI_Create()
 	$hGUI.MenuMod.PackMod = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
 	If $MM_GAME_NO_DIR Then GUICtrlSetState($hGUI.MenuMod.Menu, $GUI_DISABLE)
 
+	; plugins list
+	$hGUI.PluginsList.Group = GUICtrlCreateGroup("-", 0, 0)
 	$hGUI.PluginsList.List = GUICtrlCreateTreeView(0, 0, Default, Default, BitOR($TVS_FULLROWSELECT, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
-
-	$hGUI.ModList.Up = GUICtrlCreateButton("", 0, 0, 90, 25)
 	$hGUI.PluginsList.Back = GUICtrlCreateButton("", 0, 0, 90, 25)
-	$hGUI.ModList.Down = GUICtrlCreateButton("", 0, 0, 90, 25)
-	$hGUI.ModList.ChangeState = GUICtrlCreateButton("", 0, 0, 90, 25)
-	GUICtrlSetState($hGUI.PluginsList.Group, $GUI_HIDE)
-	GUICtrlSetState($hGUI.PluginsList.List, $GUI_HIDE)
-	GUICtrlSetState($hGUI.PluginsList.Back, $GUI_HIDE)
 
+	; info tabs
 	$hGUI.Info.TabControl = GUICtrlCreateTab(0, 0, Default, Default, BitOR($TCS_FLATBUTTONS, $TCS_BUTTONS, $TCS_FOCUSNEVER))
 	$hGUI.Info.TabDesc = GUICtrlCreateTabItem("-")
 	$hGUI.Info.TabInfo = GUICtrlCreateTabItem("-")
@@ -245,6 +218,7 @@ Func SD_GUI_Create()
 	GUICtrlSetImage($hGUI.Screen.Back, @ScriptDir & "\icons\arrow-left.ico")
 	GUICtrlSetImage($hGUI.Screen.Forward, @ScriptDir & "\icons\arrow-right.ico")
 
+	; other
 	$hDummyF5 = GUICtrlCreateDummy()
 	$hDummyLinks = GUICtrlCreateDummy()
 	$hDummyCategories = GUICtrlCreateDummy()
@@ -262,6 +236,36 @@ Func SD_GUI_Create()
 
 	AutoItSetOption("GUICoordMode", $iOptionGUICoordMode)
 EndFunc   ;==>SD_GUI_Create
+
+Func SD_GUI_MenuCreate()
+	$hGUI.MenuScn.Menu = GUICtrlCreateMenu("-")
+	$hGUI.MenuScn.Manage = GUICtrlCreateMenuItem("-", $hGUI.MenuScn.Menu)
+
+	$hGUI.MenuGame.Menu = GUICtrlCreateMenu("-")
+	$hGUI.MenuGame.Launch = GUICtrlCreateMenuItem("-", $hGUI.MenuGame.Menu)
+	GUICtrlSetState($hGUI.MenuGame.Launch, $MM_GAME_EXE = "" ? $GUI_DISABLE : $GUI_ENABLE)
+	GUICtrlCreateMenuItem("", $hGUI.MenuGame.Menu)
+	$hGUI.MenuGame.Change = GUICtrlCreateMenuItem("-", $hGUI.MenuGame.Menu)
+	If $MM_GAME_NO_DIR Then GUICtrlSetState($hGUI.MenuGame.Menu, $GUI_DISABLE)
+
+	$hGUI.MenuSettings.Menu = GUICtrlCreateMenu("-")
+	$hGUI.MenuSettings.Add = GUICtrlCreateMenuItem("-", $hGUI.MenuSettings.Menu)
+	$hGUI.MenuSettings.Compatibility = GUICtrlCreateMenuItem("-", $hGUI.MenuSettings.Menu)
+	$hGUI.MenuSettings.ChangeModDir = GUICtrlCreateMenuItem("-", $hGUI.MenuSettings.Menu)
+	If $MM_GAME_NO_DIR Then GUICtrlSetState($hGUI.MenuSettings.Add, $GUI_DISABLE)
+	If $MM_PORTABLE Then GUICtrlSetState($hGUI.MenuSettings.ChangeModDir, $GUI_DISABLE)
+	GUICtrlCreateMenuItem("", $hGUI.MenuSettings.Menu)
+
+	$hGUI.MenuSettings.Settings = GUICtrlCreateMenuItem("-", $hGUI.MenuSettings.Menu)
+	$hGUI.MenuLanguage = GUICtrlCreateMenu("-", $hGUI.MenuSettings.Menu)
+	For $iCount = 1 To $MM_LNG_LIST[0][0]
+		$MM_LNG_LIST[$iCount][$MM_LNG_MENU_ID] = GUICtrlCreateMenuItem($MM_LNG_LIST[$iCount][$MM_LNG_NAME], $hGUI.MenuLanguage, Default, 1)
+		If $MM_LNG_LIST[$iCount][$MM_LNG_FILE] = $MM_SETTINGS_LANGUAGE Then GUICtrlSetState($MM_LNG_LIST[$iCount][$MM_LNG_MENU_ID], $GUI_CHECKED)
+	Next
+
+	$hGUI.MenuHelp.Menu = GUICtrlCreateMenu("?")
+	$hGUI.MenuHelp.CheckForUpdates = GUICtrlCreateMenuItem("-", $hGUI.MenuHelp.Menu)
+EndFunc
 
 Func SD_GUI_UpdateScreen(Const $iIndex)
 	$iScreenWidth = 0
