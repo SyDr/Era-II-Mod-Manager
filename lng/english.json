@@ -39,6 +39,9 @@
 	"scenarios" : {
 		"caption" : "Scenarios",
 		"manage" : "Manage",
+		"save" : "Save",
+		"load" : "Load",
+		"delete" : "Delete"
 	},
 	"game" : {
 		"caption" : "Game",
