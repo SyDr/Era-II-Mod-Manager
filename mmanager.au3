@@ -10,7 +10,7 @@ this allows easy overwrite #AutoIt3Wrapper_Res_Fileversion via simple IniWrite
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseUpx=y
 #AutoIt3Wrapper_Res_Description=A mod manager for Era II
-#AutoIt3Wrapper_Res_Fileversion=0.92.1.0
+#AutoIt3Wrapper_Res_Fileversion=0.92.2.0
 #AutoIt3Wrapper_Res_LegalCopyright=Aliaksei SyDr Karalenka
 #AutoIt3Wrapper_Res_requestedExecutionLevel=asInvoker
 #AutoIt3Wrapper_AU3Check_Parameters=-d -w 1 -w 2 -w 3 -w 4 -w 5 -w 6 -w 7
@@ -44,6 +44,7 @@ $hGUI.MenuSettings = MapEmpty()
 $hGUI.MenuHelp = MapEmpty()
 $hGUI.ModList = MapEmpty()
 $hGUI.PluginsList = MapEmpty()
+$hGUI.ScnList = MapEmpty()
 $hGUI.Info = MapEmpty()
 $hGUI.WindowResizeInProgress = False
 $hGUI.WindowResizeLags = False
@@ -197,7 +198,6 @@ Func SD_GUI_Create()
 	; plugins list
 	$hGUI.PluginsList.Group = GUICtrlCreateGroup("-", 0, 0)
 	$hGUI.PluginsList.List = GUICtrlCreateTreeView(0, 0, Default, Default, BitOR($TVS_FULLROWSELECT, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
-	$hGUI.PluginsList.Back = GUICtrlCreateButton("", 0, 0, 90, 25)
 
 	; info tabs
 	$hGUI.Info.TabControl = GUICtrlCreateTab(0, 0, Default, Default, BitOR($TCS_FLATBUTTONS, $TCS_BUTTONS, $TCS_FOCUSNEVER))
@@ -218,7 +218,59 @@ Func SD_GUI_Create()
 	GUICtrlSetImage($hGUI.Screen.Back, @ScriptDir & "\icons\arrow-left.ico")
 	GUICtrlSetImage($hGUI.Screen.Forward, @ScriptDir & "\icons\arrow-right.ico")
 
+	; sceanrio controls
+	$hGUI.ScnList.Group = GUICtrlCreateGroup("-", 0, 0)
+	$hGUI.ScnList.List = GUICtrlCreateListView("1|Name", 2, 2, Default, Default, BitOR($LVS_NOCOLUMNHEADER, $LVS_SINGLESEL, $LVS_SHOWSELALWAYS), BitOR($LVS_EX_FULLROWSELECT, 0))
+	$hGUI.ScnList.Load = GUICtrlCreateButton("", 0, 0, 90, 25)
+	$hGUI.ScnList.Save = GUICtrlCreateButton("", 0, 0, 90, 25)
+	$hGUI.ScnList.Delete = GUICtrlCreateButton("", 0, 0, 90, 25)
+;~ 	$hGUI.ScnList.PList = GUICtrlCreateListView("|", 2, 2, Default, Default, BitOR($LVS_NOCOLUMNHEADER, $LVS_SINGLESEL, $LVS_SHOWSELALWAYS), BitOR($LVS_EX_FULLROWSELECT, $LVS_EX_GRIDLINES))
+
+	; temporary code to fill values
+	_GUICtrlListView_EnableGroupView($hGUI.ScnList.List, True)
+	_GUICtrlListView_InsertGroup($hGUI.ScnList.List, -1, 1, "Special")
+	_GUICtrlListView_InsertGroup($hGUI.ScnList.List, -1, 2, "Recent")
+	_GUICtrlListView_InsertGroup($hGUI.ScnList.List, -1, 3, "All")
+
+    Local $iIndex = _GUICtrlListView_AddItem($hGUI.ScnList.List, "")
+	_GUICtrlListView_SetItemGroupID($hGUI.ScnList.List, $iIndex, 1)
+    _GUICtrlListView_AddSubItem($hGUI.ScnList.List, $iIndex, "New", 1)
+
+    $iIndex = _GUICtrlListView_AddItem($hGUI.ScnList.List, "")
+	_GUICtrlListView_SetItemGroupID($hGUI.ScnList.List, $iIndex, 1)
+    _GUICtrlListView_AddSubItem($hGUI.ScnList.List, $iIndex, "Auto 1", 1)
+
+	$iIndex = _GUICtrlListView_AddItem($hGUI.ScnList.List, "")
+	_GUICtrlListView_SetItemGroupID($hGUI.ScnList.List, $iIndex, 1)
+    _GUICtrlListView_AddSubItem($hGUI.ScnList.List, $iIndex, "Auto 2", 1)
+
+	$iIndex = _GUICtrlListView_AddItem($hGUI.ScnList.List, "")
+	_GUICtrlListView_SetItemGroupID($hGUI.ScnList.List, $iIndex, 2)
+    _GUICtrlListView_AddSubItem($hGUI.ScnList.List, $iIndex, "Mega Scn", 1)
+
+    $iIndex = _GUICtrlListView_AddItem($hGUI.ScnList.List, "")
+	_GUICtrlListView_SetItemGroupID($hGUI.ScnList.List, $iIndex, 2)
+    _GUICtrlListView_AddSubItem($hGUI.ScnList.List, $iIndex, "Clean WoG", 1)
+
+	$iIndex = _GUICtrlListView_AddItem($hGUI.ScnList.List, "")
+	_GUICtrlListView_SetItemGroupID($hGUI.ScnList.List, $iIndex, 2)
+    _GUICtrlListView_AddSubItem($hGUI.ScnList.List, $iIndex, "Yay!", 1)
+
+	$iIndex = _GUICtrlListView_AddItem($hGUI.ScnList.List, "")
+	_GUICtrlListView_SetItemGroupID($hGUI.ScnList.List, $iIndex, 3)
+    _GUICtrlListView_AddSubItem($hGUI.ScnList.List, $iIndex, "Mega Scn", 1)
+
+    $iIndex = _GUICtrlListView_AddItem($hGUI.ScnList.List, "")
+	_GUICtrlListView_SetItemGroupID($hGUI.ScnList.List, $iIndex, 3)
+    _GUICtrlListView_AddSubItem($hGUI.ScnList.List, $iIndex, "Clean WoG", 1)
+
+	$iIndex = _GUICtrlListView_AddItem($hGUI.ScnList.List, "")
+	_GUICtrlListView_SetItemGroupID($hGUI.ScnList.List, $iIndex, 3)
+    _GUICtrlListView_AddSubItem($hGUI.ScnList.List, $iIndex, "Yay!", 1)
+
 	; other
+	$hGUI.Back = GUICtrlCreateButton("", 0, 0, 90, 25)
+
 	$hDummyF5 = GUICtrlCreateDummy()
 	$hDummyLinks = GUICtrlCreateDummy()
 	$hDummyCategories = GUICtrlCreateDummy()
@@ -355,7 +407,17 @@ Func SD_GUI_MainWindowResize(Const $bForce = False)
 	ElseIf $MM_VIEW_CURRENT = $MM_VIEW_PLUGINS Then
 		GUICtrlSetPos($hGUI.PluginsList.Group, $iItemSpacing, 0, $iListLength, $MM_WINDOW_CLIENT_HEIGHT - $iItemSpacing)
 		GUICtrlSetPos($hGUI.PluginsList.List, 2 * $iItemSpacing, 17, $iListLength - 3 * $iItemSpacing - $iButtonWidth, $MM_WINDOW_CLIENT_HEIGHT - 6 * $iItemSpacing)
-		GUICtrlSetPos($hGUI.PluginsList.Back, $iButtonLeft, 16, $iButtonWidth, 25)
+	ElseIf $MM_VIEW_CURRENT = $MM_VIEW_SCN Then
+		GUICtrlSetPos($hGUI.ScnList.Group, $iItemSpacing, 0, $iListLength, $MM_WINDOW_CLIENT_HEIGHT - $iItemSpacing)
+		GUICtrlSetPos($hGUI.ScnList.List, 2 * $iItemSpacing, 17, $iListLength - 3 * $iItemSpacing - $iButtonWidth, $MM_WINDOW_CLIENT_HEIGHT - 6 * $iItemSpacing)
+		_GUICtrlListView_SetColumnWidth($hGUI.ScnList.List, 1, $LVSCW_AUTOSIZE_USEHEADER)
+		GUICtrlSetPos($hGUI.ScnList.Load, $iButtonLeft, 16, $iButtonWidth, 25)
+		GUICtrlSetPos($hGUI.ScnList.Save, $iButtonLeft, 16 + 25 + $iItemSpacing, $iButtonWidth, 25)
+		GUICtrlSetPos($hGUI.ScnList.Delete, $iButtonLeft, 16 + 50 + 2 * $iItemSpacing, $iButtonWidth, 25)
+	EndIf
+
+	If $MM_VIEW_CURRENT = $MM_VIEW_PLUGINS Or $MM_VIEW_CURRENT = $MM_VIEW_SCN Then
+		GUICtrlSetPos($hGUI.Back, $iButtonLeft, $MM_WINDOW_CLIENT_HEIGHT - $iItemSpacing * 2 - 25 + 2, $iButtonWidth, 25)
 	EndIf
 
 	GUICtrlSetPos($hGUI.Info.TabControl, $iListLength + $iItemSpacing, 2 * $iItemSpacing - 2, $MM_WINDOW_CLIENT_WIDTH - $iListLength - 3 * $iItemSpacing, 19)
@@ -417,6 +479,7 @@ Func SD_GUI_Events_Register()
 	GUICtrlSetOnEvent($hGUI.ModList.Up, "SD_GUI_Mod_Move_Up")
 	GUICtrlSetOnEvent($hGUI.ModList.Down, "SD_GUI_Mod_Move_Down")
 	GUICtrlSetOnEvent($hGUI.ModList.ChangeState, "SD_GUI_Mod_EnableDisable")
+	GUICtrlSetOnEvent($hGUI.MenuScn.Manage, "SD_GUI_ScenarioManage")
 	GUICtrlSetOnEvent($hGUI.MenuSettings.Compatibility, "SD_GUI_Mod_Compatibility")
 	GUICtrlSetOnEvent($hGUI.MenuSettings.Settings, "SD_GUI_ChangeSettings")
 	GUICtrlSetOnEvent($hGUI.MenuMod.Plugins, "SD_GUI_Manage_Plugins")
@@ -430,7 +493,7 @@ Func SD_GUI_Events_Register()
 	GUICtrlSetOnEvent($hGUI.MenuMod.PackMod, "SD_GUI_Mod_PackMod")
 	GUICtrlSetOnEvent($hGUI.MenuSettings.ChangeModDir, "SD_GUI_ChangeGameDir")
 
-	GUICtrlSetOnEvent($hGUI.PluginsList.Back, "SD_GUI_Plugins_Close")
+	GUICtrlSetOnEvent($hGUI.Back, "SD_GUI_BackToMainView")
 	GUICtrlSetOnEvent($hGUI.MenuHelp.CheckForUpdates, "Update_CheckNewPorgram")
 
 	GUICtrlSetOnEvent($hGUI.Info.TabControl, "SD_GUI_TabChanged")
@@ -488,6 +551,10 @@ Func SD_GUI_SetLng()
 
 	GUICtrlSetData($hGUI.MenuScn.Menu, Lng_Get("scenarios.caption"))
 	GUICtrlSetData($hGUI.MenuScn.Manage, Lng_Get("scenarios.manage"))
+	GUICtrlSetData($hGUI.ScnList.Group, Lng_Get("scenarios.caption"))
+	GUICtrlSetData($hGUI.ScnList.Save, Lng_Get("scenarios.save"))
+	GUICtrlSetData($hGUI.ScnList.Load, Lng_Get("scenarios.load"))
+	GUICtrlSetData($hGUI.ScnList.Delete, Lng_Get("scenarios.delete"))
 
 	GUICtrlSetData($hGUI.MenuGame.Menu, Lng_Get("game.caption"))
 	GUICtrlSetData($hGUI.MenuGame.Launch, Lng_GetF("game.launch", $MM_GAME_EXE))
@@ -504,7 +571,7 @@ Func SD_GUI_SetLng()
 	GUICtrlSetData($hGUI.MenuHelp.CheckForUpdates, Lng_Get("update.caption"))
 
 	GUICtrlSetData($hGUI.PluginsList.Group, Lng_GetF("plugins_list.caption", $MM_LIST_CONTENT[0][0] > 0 ? $MM_LIST_CONTENT[1][$MOD_ID] : ""))
-	GUICtrlSetData($hGUI.PluginsList.Back, Lng_Get("plugins_list.back"))
+	GUICtrlSetData($hGUI.Back, Lng_Get("plugins_list.back"))
 
 	GUICtrlSetData($hGUI.Info.TabDesc, Lng_Get("info_group.desc"))
 	GUICtrlSetData($hGUI.Info.TabInfo, Lng_Get("info_group.info.caption"))
@@ -550,9 +617,10 @@ Func SD_GUI_Manage_Plugins()
 	SD_SwitchView($MM_VIEW_PLUGINS)
 EndFunc   ;==>SD_GUI_Manage_Plugins
 
-Func SD_GUI_Plugins_Close()
+Func SD_GUI_BackToMainView()
 	SD_SwitchView($MM_VIEW_MODS)
-EndFunc   ;==>SD_GUI_Plugins_Close
+	If $MM_SUBVIEW_CURRENT = $MM_SUBVIEW_BLANK Then SD_SwitchSubView($MM_SUBVIEW_PREV)
+EndFunc   ;==>SD_GUI_BackToMainView
 
 Func SD_GUI_GameExeChange()
 	Local $sNewExe = UI_SelectGameExe()
@@ -761,7 +829,6 @@ Func SD_GUI_Mod_Delete()
 EndFunc   ;==>SD_GUI_Mod_Delete
 
 Func SD_GUI_Mod_EnableDisable()
-
 	Local $iModIndex = TreeViewGetSelectedIndex()
 	If $iModIndex < 1 Then Return
 
@@ -781,6 +848,11 @@ Func SD_GUI_Mod_EnableDisable()
 		TreeViewTryFollow($sFollowMod)
 	EndIf
 EndFunc   ;==>SD_GUI_Mod_EnableDisable
+
+Func SD_GUI_ScenarioManage()
+	SD_SwitchView($MM_VIEW_SCN)
+	SD_SwitchSubView($MM_SUBVIEW_BLANK)
+EndFunc
 
 Func SD_GUI_Plugin_ChangeState()
 	Local $hSelected = _GUICtrlTreeView_GetSelection($hGUI.PluginsList.List)
@@ -1269,6 +1341,11 @@ Func WM_NOTIFY($hwnd, $iMsg, $iwParam, $ilParam)
 						SD_GUI_List_SelectionChanged()
                     EndIf
 			EndSwitch
+		Case GUICtrlGetHandle($hGUI.ScnList.List)
+			Switch $iCode
+				Case $LVN_BEGINDRAG
+					Return 0
+			EndSwitch
 		Case $hGUI.Info.Desc
 			Local $tNMLINK = DllStructCreate($tagNMLINK, $ilParam)
 			Local $ID = DllStructGetData($tNMLINK, "Code")
@@ -1308,7 +1385,15 @@ Func SD_SwitchView(Const $iNewView = $MM_VIEW_MODS)
 
 	GUICtrlSetState($hGUI.PluginsList.Group, $MM_VIEW_CURRENT = $MM_VIEW_PLUGINS ? $GUI_SHOW : $GUI_HIDE)
 	GUICtrlSetState($hGUI.PluginsList.List, $MM_VIEW_CURRENT = $MM_VIEW_PLUGINS ? $GUI_SHOW : $GUI_HIDE)
-	GUICtrlSetState($hGUI.PluginsList.Back, $MM_VIEW_CURRENT = $MM_VIEW_PLUGINS ? $GUI_SHOW : $GUI_HIDE)
+
+	GUICtrlSetState($hGUI.MenuScn.Manage, $MM_VIEW_CURRENT = $MM_VIEW_SCN ? $GUI_DISABLE : $GUI_ENABLE)
+	GUICtrlSetState($hGUI.ScnList.Group, $MM_VIEW_CURRENT = $MM_VIEW_SCN ? $GUI_SHOW : $GUI_HIDE)
+	GUICtrlSetState($hGUI.ScnList.List, $MM_VIEW_CURRENT = $MM_VIEW_SCN ? $GUI_SHOW : $GUI_HIDE)
+	GUICtrlSetState($hGUI.ScnList.Load, $MM_VIEW_CURRENT = $MM_VIEW_SCN ? $GUI_SHOW : $GUI_HIDE)
+	GUICtrlSetState($hGUI.ScnList.Save, $MM_VIEW_CURRENT = $MM_VIEW_SCN ? $GUI_SHOW : $GUI_HIDE)
+	GUICtrlSetState($hGUI.ScnList.Delete, $MM_VIEW_CURRENT = $MM_VIEW_SCN ? $GUI_SHOW : $GUI_HIDE)
+
+	GUICtrlSetState($hGUI.Back, $MM_VIEW_CURRENT = $MM_VIEW_PLUGINS Or $MM_VIEW_CURRENT = $MM_VIEW_SCN ? $GUI_SHOW : $GUI_HIDE)
 
 	If $MM_VIEW_CURRENT = $MM_VIEW_MODS Then
 		TreeViewTryFollow($sFollowMod)
@@ -1317,7 +1402,7 @@ Func SD_SwitchView(Const $iNewView = $MM_VIEW_MODS)
 		TreeViewTryFollow("")
 	EndIf
 
-	GUICtrlSetState($hGUI.Info.TabControl, $MM_VIEW_CURRENT = $MM_VIEW_BIG_SCREEN ? $GUI_HIDE : $GUI_SHOW)
+	GUICtrlSetState($hGUI.Info.TabControl, $MM_VIEW_CURRENT = $MM_VIEW_BIG_SCREEN Or $MM_VIEW_CURRENT = $MM_VIEW_SCN ? $GUI_HIDE : $GUI_SHOW)
 EndFunc   ;==>SD_SwitchView
 
 Func SD_SwitchSubView(Const $iNewView = $MM_SUBVIEW_DESC)
