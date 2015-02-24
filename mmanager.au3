@@ -224,6 +224,10 @@ Func SD_GUI_Create()
 	$hGUI.ScnList.Load = GUICtrlCreateButton("", 0, 0, 90, 25)
 	$hGUI.ScnList.Save = GUICtrlCreateButton("", 0, 0, 90, 25)
 	$hGUI.ScnList.Delete = GUICtrlCreateButton("", 0, 0, 90, 25)
+	GUICtrlSetState($hGUI.ScnList.Load, $GUI_DISABLE)
+	GUICtrlSetState($hGUI.ScnList.Save, $GUI_DISABLE)
+	GUICtrlSetState($hGUI.ScnList.Delete, $GUI_DISABLE)
+
 ;~ 	$hGUI.ScnList.PList = GUICtrlCreateListView("|", 2, 2, Default, Default, BitOR($LVS_NOCOLUMNHEADER, $LVS_SINGLESEL, $LVS_SHOWSELALWAYS), BitOR($LVS_EX_FULLROWSELECT, $LVS_EX_GRIDLINES))
 
 	; temporary code to fill values
@@ -1345,6 +1349,10 @@ Func WM_NOTIFY($hwnd, $iMsg, $iwParam, $ilParam)
 			Switch $iCode
 				Case $LVN_BEGINDRAG
 					Return 0
+				Case $LVN_ITEMCHANGED
+					GUICtrlSetState($hGUI.ScnList.Load, _GUICtrlListView_GetSelectedCount($hGUI.ScnList.List) ? $GUI_ENABLE : $GUI_DISABLE)
+					GUICtrlSetState($hGUI.ScnList.Save, _GUICtrlListView_GetSelectedCount($hGUI.ScnList.List) ? $GUI_ENABLE : $GUI_DISABLE)
+					GUICtrlSetState($hGUI.ScnList.Delete, _GUICtrlListView_GetSelectedCount($hGUI.ScnList.List) ? $GUI_ENABLE : $GUI_DISABLE)
 			EndSwitch
 		Case $hGUI.Info.Desc
 			Local $tNMLINK = DllStructCreate($tagNMLINK, $ilParam)
