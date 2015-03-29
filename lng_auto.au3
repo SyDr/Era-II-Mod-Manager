@@ -32,11 +32,14 @@ If Not MapExists($MM_LNG_CACHE["mod_list"], "edit_mod") Or Not IsString($MM_LNG_
 If Not MapExists($MM_LNG_CACHE["mod_list"], "pack_mod") Or Not IsString($MM_LNG_CACHE["mod_list"]["pack_mod"]) Then $MM_LNG_CACHE["mod_list"]["pack_mod"] = "Create self-extracting package"
 If Not MapExists($MM_LNG_CACHE["mod_list"], "pack_mod_hint") Or Not IsString($MM_LNG_CACHE["mod_list"]["pack_mod_hint"]) Then $MM_LNG_CACHE["mod_list"]["pack_mod_hint"] = "Package will be created in background. You can continue to use MM or even close it. \n\nClose 7z console window to cancel package creation (you need then to delete created file). When 7z window disaapear - it safe to use created file."
 If Not MapExists($MM_LNG_CACHE, "scenarios") Or Not IsMap($MM_LNG_CACHE["scenarios"]) Then $MM_LNG_CACHE["scenarios"] = MapEmpty()
-If Not MapExists($MM_LNG_CACHE["scenarios"], "caption") Or Not IsString($MM_LNG_CACHE["scenarios"]["caption"]) Then $MM_LNG_CACHE["scenarios"]["caption"] = "Scenarios"
+If Not MapExists($MM_LNG_CACHE["scenarios"], "caption") Or Not IsString($MM_LNG_CACHE["scenarios"]["caption"]) Then $MM_LNG_CACHE["scenarios"]["caption"] = "Presets"
 If Not MapExists($MM_LNG_CACHE["scenarios"], "manage") Or Not IsString($MM_LNG_CACHE["scenarios"]["manage"]) Then $MM_LNG_CACHE["scenarios"]["manage"] = "Manage"
 If Not MapExists($MM_LNG_CACHE["scenarios"], "save") Or Not IsString($MM_LNG_CACHE["scenarios"]["save"]) Then $MM_LNG_CACHE["scenarios"]["save"] = "Save"
 If Not MapExists($MM_LNG_CACHE["scenarios"], "load") Or Not IsString($MM_LNG_CACHE["scenarios"]["load"]) Then $MM_LNG_CACHE["scenarios"]["load"] = "Load"
 If Not MapExists($MM_LNG_CACHE["scenarios"], "delete") Or Not IsString($MM_LNG_CACHE["scenarios"]["delete"]) Then $MM_LNG_CACHE["scenarios"]["delete"] = "Delete"
+If Not MapExists($MM_LNG_CACHE["scenarios"], "special") Or Not IsString($MM_LNG_CACHE["scenarios"]["special"]) Then $MM_LNG_CACHE["scenarios"]["special"] = "Special"
+If Not MapExists($MM_LNG_CACHE["scenarios"], "new") Or Not IsString($MM_LNG_CACHE["scenarios"]["new"]) Then $MM_LNG_CACHE["scenarios"]["new"] = "New (Copy)"
+If Not MapExists($MM_LNG_CACHE["scenarios"], "all") Or Not IsString($MM_LNG_CACHE["scenarios"]["all"]) Then $MM_LNG_CACHE["scenarios"]["all"] = "All"
 If Not MapExists($MM_LNG_CACHE, "game") Or Not IsMap($MM_LNG_CACHE["game"]) Then $MM_LNG_CACHE["game"] = MapEmpty()
 If Not MapExists($MM_LNG_CACHE["game"], "caption") Or Not IsString($MM_LNG_CACHE["game"]["caption"]) Then $MM_LNG_CACHE["game"]["caption"] = "Game"
 If Not MapExists($MM_LNG_CACHE["game"], "launch") Or Not IsString($MM_LNG_CACHE["game"]["launch"]) Then $MM_LNG_CACHE["game"]["launch"] = "Launch (%s)"

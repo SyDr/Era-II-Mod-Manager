@@ -9,6 +9,7 @@
 Global $MM_SETTINGS_CACHE, $MM_SETTINGS_INIT = False
 
 Func Settings_Save()
+	If Not $MM_SETTINGS_INIT Then __Settings_Init()
 	FileDelete($MM_SETTINGS_PATH)
 	FileWrite($MM_SETTINGS_PATH, Jsmn_Encode($MM_SETTINGS_CACHE, $JSMN_PRETTY_PRINT + $JSMN_UNESCAPED_UNICODE))
 EndFunc
