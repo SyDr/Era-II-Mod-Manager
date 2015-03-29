@@ -24,6 +24,7 @@ this allows easy overwrite #AutoIt3Wrapper_Res_Fileversion via simple IniWrite
 #include "lng.au3"
 #include "packed_mods.au3"
 #include "plugins.au3"
+#include "presets.au3"
 #include "settings.au3"
 #include "startup.au3"
 #include "update.au3"
@@ -92,6 +93,7 @@ Func UI_Main()
 	_GDIPlus_Startup()
 	If Not $MM_PORTABLE And Not Settings_Get("path") Then UI_SelectGameDir()
 	SD_GUI_LoadSize()
+	Scn_ListLoad()
 	SD_GUI_Create()
 	TreeViewMain()
 	TreeViewTryFollow($MM_LIST_CONTENT[0][0] > 0 ? $MM_LIST_CONTENT[1][$MOD_ID] : "")
@@ -228,49 +230,19 @@ Func SD_GUI_Create()
 	GUICtrlSetState($hGUI.ScnList.Save, $GUI_DISABLE)
 	GUICtrlSetState($hGUI.ScnList.Delete, $GUI_DISABLE)
 
-;~ 	$hGUI.ScnList.PList = GUICtrlCreateListView("|", 2, 2, Default, Default, BitOR($LVS_NOCOLUMNHEADER, $LVS_SINGLESEL, $LVS_SHOWSELALWAYS), BitOR($LVS_EX_FULLROWSELECT, $LVS_EX_GRIDLINES))
-
-	; temporary code to fill values
 	_GUICtrlListView_EnableGroupView($hGUI.ScnList.List, True)
 	_GUICtrlListView_InsertGroup($hGUI.ScnList.List, -1, 1, "Special")
-	_GUICtrlListView_InsertGroup($hGUI.ScnList.List, -1, 2, "Recent")
 	_GUICtrlListView_InsertGroup($hGUI.ScnList.List, -1, 3, "All")
 
     Local $iIndex = _GUICtrlListView_AddItem($hGUI.ScnList.List, "")
 	_GUICtrlListView_SetItemGroupID($hGUI.ScnList.List, $iIndex, 1)
     _GUICtrlListView_AddSubItem($hGUI.ScnList.List, $iIndex, "New", 1)
 
-    $iIndex = _GUICtrlListView_AddItem($hGUI.ScnList.List, "")
-	_GUICtrlListView_SetItemGroupID($hGUI.ScnList.List, $iIndex, 1)
-    _GUICtrlListView_AddSubItem($hGUI.ScnList.List, $iIndex, "Auto 1", 1)
-
-	$iIndex = _GUICtrlListView_AddItem($hGUI.ScnList.List, "")
-	_GUICtrlListView_SetItemGroupID($hGUI.ScnList.List, $iIndex, 1)
-    _GUICtrlListView_AddSubItem($hGUI.ScnList.List, $iIndex, "Auto 2", 1)
-
-	$iIndex = _GUICtrlListView_AddItem($hGUI.ScnList.List, "")
-	_GUICtrlListView_SetItemGroupID($hGUI.ScnList.List, $iIndex, 2)
-    _GUICtrlListView_AddSubItem($hGUI.ScnList.List, $iIndex, "Mega Scn", 1)
-
-    $iIndex = _GUICtrlListView_AddItem($hGUI.ScnList.List, "")
-	_GUICtrlListView_SetItemGroupID($hGUI.ScnList.List, $iIndex, 2)
-    _GUICtrlListView_AddSubItem($hGUI.ScnList.List, $iIndex, "Clean WoG", 1)
-
-	$iIndex = _GUICtrlListView_AddItem($hGUI.ScnList.List, "")
-	_GUICtrlListView_SetItemGroupID($hGUI.ScnList.List, $iIndex, 2)
-    _GUICtrlListView_AddSubItem($hGUI.ScnList.List, $iIndex, "Yay!", 1)
-
-	$iIndex = _GUICtrlListView_AddItem($hGUI.ScnList.List, "")
-	_GUICtrlListView_SetItemGroupID($hGUI.ScnList.List, $iIndex, 3)
-    _GUICtrlListView_AddSubItem($hGUI.ScnList.List, $iIndex, "Mega Scn", 1)
-
-    $iIndex = _GUICtrlListView_AddItem($hGUI.ScnList.List, "")
-	_GUICtrlListView_SetItemGroupID($hGUI.ScnList.List, $iIndex, 3)
-    _GUICtrlListView_AddSubItem($hGUI.ScnList.List, $iIndex, "Clean WoG", 1)
-
-	$iIndex = _GUICtrlListView_AddItem($hGUI.ScnList.List, "")
-	_GUICtrlListView_SetItemGroupID($hGUI.ScnList.List, $iIndex, 3)
-    _GUICtrlListView_AddSubItem($hGUI.ScnList.List, $iIndex, "Yay!", 1)
+	For $i = 1 To $MM_SCN_LIST[0]
+		$iIndex = _GUICtrlListView_AddItem($hGUI.ScnList.List, "")
+		_GUICtrlListView_SetItemGroupID($hGUI.ScnList.List, $iIndex, 3)
+		_GUICtrlListView_AddSubItem($hGUI.ScnList.List, $iIndex, $MM_SCN_LIST[$i], 1)
+	Next
 
 	; other
 	$hGUI.Back = GUICtrlCreateButton("", 0, 0, 90, 25)
@@ -580,6 +552,10 @@ Func SD_GUI_SetLng()
 	GUICtrlSetData($hGUI.Info.TabDesc, Lng_Get("info_group.desc"))
 	GUICtrlSetData($hGUI.Info.TabInfo, Lng_Get("info_group.info.caption"))
 	GUICtrlSetData($hGUI.Info.TabScreens, Lng_Get("info_group.screens.caption"))
+
+	_GUICtrlListView_SetGroupInfo($hGUI.ScnList.List, 1, Lng_Get("scenarios.special"))
+	_GUICtrlListView_SetGroupInfo($hGUI.ScnList.List, 3, Lng_Get("scenarios.all"))
+	_GUICtrlListView_SetItemText($hGUI.ScnList.List, 0, Lng_Get("scenarios.new"), 1)
 
 	_GUICtrlSysLink_SetText($hGUI.Info.Desc, SD_FormatDescription())
 EndFunc   ;==>SD_GUI_SetLng
@@ -1350,9 +1326,16 @@ Func WM_NOTIFY($hwnd, $iMsg, $iwParam, $ilParam)
 				Case $LVN_BEGINDRAG
 					Return 0
 				Case $LVN_ITEMCHANGED
-					GUICtrlSetState($hGUI.ScnList.Load, _GUICtrlListView_GetSelectedCount($hGUI.ScnList.List) ? $GUI_ENABLE : $GUI_DISABLE)
-					GUICtrlSetState($hGUI.ScnList.Save, _GUICtrlListView_GetSelectedCount($hGUI.ScnList.List) ? $GUI_ENABLE : $GUI_DISABLE)
-					GUICtrlSetState($hGUI.ScnList.Delete, _GUICtrlListView_GetSelectedCount($hGUI.ScnList.List) ? $GUI_ENABLE : $GUI_DISABLE)
+					If Not _GUICtrlListView_GetSelectedCount($hGUI.ScnList.List) Then
+						GUICtrlSetState($hGUI.ScnList.Load, $GUI_DISABLE)
+						GUICtrlSetState($hGUI.ScnList.Save, $GUI_DISABLE)
+						GUICtrlSetState($hGUI.ScnList.Delete, $GUI_DISABLE)
+					Else
+						GUICtrlSetState($hGUI.ScnList.Save, $GUI_ENABLE)
+						Local $aSelected = _GUICtrlListView_GetSelectedIndices($hGUI.ScnList.List, True)
+						GUICtrlSetState($hGUI.ScnList.Load, $aSelected[0] >= 1 And $aSelected[1] == 0 ? $GUI_DISABLE : $GUI_ENABLE)
+						GUICtrlSetState($hGUI.ScnList.Delete, $aSelected[0] >= 1 And $aSelected[1] == 0 ? $GUI_DISABLE : $GUI_ENABLE)
+					EndIf
 			EndSwitch
 		Case $hGUI.Info.Desc
 			Local $tNMLINK = DllStructCreate($tagNMLINK, $ilParam)

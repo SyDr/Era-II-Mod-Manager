@@ -37,11 +37,14 @@
 		"pack_mod_hint" : "Package will be created in background. You can continue to use MM or even close it. \n\nClose 7z console window to cancel package creation (you need then to delete created file). When 7z window disaapear - it safe to use created file."
 	},
 	"scenarios" : {
-		"caption" : "Scenarios",
+		"caption" : "Presets",
 		"manage" : "Manage",
 		"save" : "Save",
 		"load" : "Load",
-		"delete" : "Delete"
+		"delete" : "Delete",
+		"special" : "Special",
+		"new" : "New (Copy)",
+		"all" : "All"
 	},
 	"game" : {
 		"caption" : "Game",
