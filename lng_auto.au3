@@ -40,6 +40,7 @@ If Not MapExists($MM_LNG_CACHE["scenarios"], "delete") Or Not IsString($MM_LNG_C
 If Not MapExists($MM_LNG_CACHE["scenarios"], "special") Or Not IsString($MM_LNG_CACHE["scenarios"]["special"]) Then $MM_LNG_CACHE["scenarios"]["special"] = "Special"
 If Not MapExists($MM_LNG_CACHE["scenarios"], "new") Or Not IsString($MM_LNG_CACHE["scenarios"]["new"]) Then $MM_LNG_CACHE["scenarios"]["new"] = "New (Copy)"
 If Not MapExists($MM_LNG_CACHE["scenarios"], "all") Or Not IsString($MM_LNG_CACHE["scenarios"]["all"]) Then $MM_LNG_CACHE["scenarios"]["all"] = "All"
+If Not MapExists($MM_LNG_CACHE["scenarios"], "delete_confirm") Or Not IsString($MM_LNG_CACHE["scenarios"]["delete_confirm"]) Then $MM_LNG_CACHE["scenarios"]["delete_confirm"] = "Do you really want to delete this preset? \n%s\n\n(The preset file will be moved to recycle bin, if it's possible))"
 If Not MapExists($MM_LNG_CACHE, "game") Or Not IsMap($MM_LNG_CACHE["game"]) Then $MM_LNG_CACHE["game"] = MapEmpty()
 If Not MapExists($MM_LNG_CACHE["game"], "caption") Or Not IsString($MM_LNG_CACHE["game"]["caption"]) Then $MM_LNG_CACHE["game"]["caption"] = "Game"
 If Not MapExists($MM_LNG_CACHE["game"], "launch") Or Not IsString($MM_LNG_CACHE["game"]["launch"]) Then $MM_LNG_CACHE["game"]["launch"] = "Launch (%s)"
