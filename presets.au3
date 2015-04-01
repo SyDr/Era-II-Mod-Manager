@@ -22,3 +22,8 @@ Func Scn_ListLoad()
 
 	$MM_SCN_LIST = $aScnList
 EndFunc
+
+Func Scn_Delete(Const $iItemIndex)
+	If $iItemIndex < 1 Or $iItemIndex > $MM_SCN_LIST[0] Then Return
+	FileRecycle($MM_SCN_DIRECTORY & "\" & $MM_SCN_LIST[$iItemIndex] & ".json")
+EndFunc

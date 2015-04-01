@@ -93,7 +93,6 @@ Func UI_Main()
 	_GDIPlus_Startup()
 	If Not $MM_PORTABLE And Not Settings_Get("path") Then UI_SelectGameDir()
 	SD_GUI_LoadSize()
-	Scn_ListLoad()
 	SD_GUI_Create()
 	TreeViewMain()
 	TreeViewTryFollow($MM_LIST_CONTENT[0][0] > 0 ? $MM_LIST_CONTENT[1][$MOD_ID] : "")
@@ -230,19 +229,7 @@ Func SD_GUI_Create()
 	GUICtrlSetState($hGUI.ScnList.Save, $GUI_DISABLE)
 	GUICtrlSetState($hGUI.ScnList.Delete, $GUI_DISABLE)
 
-	_GUICtrlListView_EnableGroupView($hGUI.ScnList.List, True)
-	_GUICtrlListView_InsertGroup($hGUI.ScnList.List, -1, 1, "Special")
-	_GUICtrlListView_InsertGroup($hGUI.ScnList.List, -1, 3, "All")
-
-    Local $iIndex = _GUICtrlListView_AddItem($hGUI.ScnList.List, "")
-	_GUICtrlListView_SetItemGroupID($hGUI.ScnList.List, $iIndex, 1)
-    _GUICtrlListView_AddSubItem($hGUI.ScnList.List, $iIndex, "New", 1)
-
-	For $i = 1 To $MM_SCN_LIST[0]
-		$iIndex = _GUICtrlListView_AddItem($hGUI.ScnList.List, "")
-		_GUICtrlListView_SetItemGroupID($hGUI.ScnList.List, $iIndex, 3)
-		_GUICtrlListView_AddSubItem($hGUI.ScnList.List, $iIndex, $MM_SCN_LIST[$i], 1)
-	Next
+	SD_UI_ScnLoadItems()
 
 	; other
 	$hGUI.Back = GUICtrlCreateButton("", 0, 0, 90, 25)
@@ -471,6 +458,7 @@ Func SD_GUI_Events_Register()
 
 	GUICtrlSetOnEvent($hGUI.Back, "SD_GUI_BackToMainView")
 	GUICtrlSetOnEvent($hGUI.MenuHelp.CheckForUpdates, "Update_CheckNewPorgram")
+	GUICtrlSetOnEvent($hGUI.ScnList.Delete, "SD_UI_ScnDelete")
 
 	GUICtrlSetOnEvent($hGUI.Info.TabControl, "SD_GUI_TabChanged")
 
@@ -484,10 +472,41 @@ Func SD_GUI_Events_Register()
 	GUICtrlSetOnEvent($hDummyCategories, "SD_GUI_ModCategoriesUpdate")
 EndFunc   ;==>SD_GUI_Events_Register
 
+Func SD_UI_ScnLoadItems()
+	Scn_ListLoad()
+	_GUICtrlListView_BeginUpdate($hGUI.ScnList.List)
+	_GUICtrlListView_DeleteAllItems($hGUI.ScnList.List)
+	_GUICtrlListView_EnableGroupView($hGUI.ScnList.List, True)
+	_GUICtrlListView_InsertGroup($hGUI.ScnList.List, -1, 1, Lng_Get("scenarios.special"))
+	_GUICtrlListView_InsertGroup($hGUI.ScnList.List, -1, 3, Lng_Get("scenarios.all"))
+
+    Local $iIndex = _GUICtrlListView_AddItem($hGUI.ScnList.List, "")
+	_GUICtrlListView_SetItemGroupID($hGUI.ScnList.List, $iIndex, 1)
+    _GUICtrlListView_AddSubItem($hGUI.ScnList.List, $iIndex,  Lng_Get("scenarios.new"), 1)
+
+	For $i = 1 To $MM_SCN_LIST[0]
+		$iIndex = _GUICtrlListView_AddItem($hGUI.ScnList.List, "")
+		_GUICtrlListView_SetItemGroupID($hGUI.ScnList.List, $iIndex, 3)
+		_GUICtrlListView_AddSubItem($hGUI.ScnList.List, $iIndex, $MM_SCN_LIST[$i], 1)
+	Next
+
+	_GUICtrlListView_EndUpdate($hGUI.ScnList.List)
+EndFunc
+
+Func SD_UI_ScnDelete()
+	Local $iItemIndex = _GUICtrlListView_GetSelectedIndices($hGUI.ScnList.List)
+	If $iItemIndex < 0 Then Return
+
+	Local $iAnswer = MsgBox($MB_YESNO + $MB_ICONQUESTION + $MB_DEFBUTTON2 + $MB_TASKMODAL, "", StringFormat(Lng_Get("scenarios.delete_confirm"), $MM_SCN_LIST[$iItemIndex]), Default, $MM_UI_MAIN)
+	If $iAnswer = $IDNO Then Return
+
+	Scn_Delete($iItemIndex)
+	SD_UI_ScnLoadItems()
+EndFunc
+
 Func SD_GUI_ChangeSettings()
 	UI_Settings()
 EndFunc
-
 
 Func SD_GUI_ModCategoriesUpdate()
 	Local $iAnswer = MsgBox(4096 + 4, "", "Do you want to process all mods?" & @CRLF & "(Yes - all mods, No - only enabled)", 0, $MM_UI_MAIN)
@@ -1384,7 +1403,7 @@ Func SD_SwitchView(Const $iNewView = $MM_VIEW_MODS)
 	GUICtrlSetState($hGUI.ScnList.Save, $MM_VIEW_CURRENT = $MM_VIEW_SCN ? $GUI_SHOW : $GUI_HIDE)
 	GUICtrlSetState($hGUI.ScnList.Delete, $MM_VIEW_CURRENT = $MM_VIEW_SCN ? $GUI_SHOW : $GUI_HIDE)
 
-	GUICtrlSetState($hGUI.Back, $MM_VIEW_CURRENT = $MM_VIEW_PLUGINS Or $MM_VIEW_CURRENT = $MM_VIEW_SCN ? $GUI_SHOW : $GUI_HIDE)
+	GUICtrlSetState($hGUI.Back, ($MM_VIEW_CURRENT = $MM_VIEW_PLUGINS Or $MM_VIEW_CURRENT = $MM_VIEW_SCN) ? $GUI_SHOW : $GUI_HIDE)
 
 	If $MM_VIEW_CURRENT = $MM_VIEW_MODS Then
 		TreeViewTryFollow($sFollowMod)
