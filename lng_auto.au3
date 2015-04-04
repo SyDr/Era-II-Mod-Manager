@@ -44,12 +44,12 @@ If Not MapExists($MM_LNG_CACHE["scenarios"], "delete_confirm") Or Not IsString($
 If Not MapExists($MM_LNG_CACHE["scenarios"], "load_options") Or Not IsMap($MM_LNG_CACHE["scenarios"]["load_options"]) Then $MM_LNG_CACHE["scenarios"]["load_options"] = MapEmpty()
 If Not MapExists($MM_LNG_CACHE["scenarios"]["load_options"], "caption") Or Not IsString($MM_LNG_CACHE["scenarios"]["load_options"]["caption"]) Then $MM_LNG_CACHE["scenarios"]["load_options"]["caption"] = "Select load options"
 If Not MapExists($MM_LNG_CACHE["scenarios"]["load_options"], "exe") Or Not IsString($MM_LNG_CACHE["scenarios"]["load_options"]["exe"]) Then $MM_LNG_CACHE["scenarios"]["load_options"]["exe"] = "Set starting exe to ""%s"""
-If Not MapExists($MM_LNG_CACHE["scenarios"]["load_options"], "wog_settings") Or Not IsString($MM_LNG_CACHE["scenarios"]["load_options"]["wog_settings"]) Then $MM_LNG_CACHE["scenarios"]["load_options"]["wog_settings"] = "Set wog settings to stored in preset"
+If Not MapExists($MM_LNG_CACHE["scenarios"]["load_options"], "wog_settings") Or Not IsString($MM_LNG_CACHE["scenarios"]["load_options"]["wog_settings"]) Then $MM_LNG_CACHE["scenarios"]["load_options"]["wog_settings"] = "Set WoG settings to stored in preset"
 If Not MapExists($MM_LNG_CACHE["scenarios"]["load_options"], "not_again") Or Not IsString($MM_LNG_CACHE["scenarios"]["load_options"]["not_again"]) Then $MM_LNG_CACHE["scenarios"]["load_options"]["not_again"] = "Don't ask again (you can also hold Shift to show this window)"
 If Not MapExists($MM_LNG_CACHE["scenarios"], "save_options") Or Not IsMap($MM_LNG_CACHE["scenarios"]["save_options"]) Then $MM_LNG_CACHE["scenarios"]["save_options"] = MapEmpty()
 If Not MapExists($MM_LNG_CACHE["scenarios"]["save_options"], "caption") Or Not IsString($MM_LNG_CACHE["scenarios"]["save_options"]["caption"]) Then $MM_LNG_CACHE["scenarios"]["save_options"]["caption"] = "Select save options"
 If Not MapExists($MM_LNG_CACHE["scenarios"]["save_options"], "exe") Or Not IsString($MM_LNG_CACHE["scenarios"]["save_options"]["exe"]) Then $MM_LNG_CACHE["scenarios"]["save_options"]["exe"] = "Save starting exe to preset"
-If Not MapExists($MM_LNG_CACHE["scenarios"]["save_options"], "wog_settings") Or Not IsString($MM_LNG_CACHE["scenarios"]["save_options"]["wog_settings"]) Then $MM_LNG_CACHE["scenarios"]["save_options"]["wog_settings"] = "Save wog settings to preset"
+If Not MapExists($MM_LNG_CACHE["scenarios"]["save_options"], "wog_settings") Or Not IsString($MM_LNG_CACHE["scenarios"]["save_options"]["wog_settings"]) Then $MM_LNG_CACHE["scenarios"]["save_options"]["wog_settings"] = "Save WoG settings to preset"
 If Not MapExists($MM_LNG_CACHE["scenarios"]["save_options"], "select_file") Or Not IsString($MM_LNG_CACHE["scenarios"]["save_options"]["select_file"]) Then $MM_LNG_CACHE["scenarios"]["save_options"]["select_file"] = "Select file to save"
 If Not MapExists($MM_LNG_CACHE["scenarios"]["save_options"], "select_filter") Or Not IsString($MM_LNG_CACHE["scenarios"]["save_options"]["select_filter"]) Then $MM_LNG_CACHE["scenarios"]["save_options"]["select_filter"] = "JSON files (*.json)"
 If Not MapExists($MM_LNG_CACHE["scenarios"], "import") Or Not IsMap($MM_LNG_CACHE["scenarios"]["import"]) Then $MM_LNG_CACHE["scenarios"]["import"] = MapEmpty()
@@ -59,6 +59,8 @@ If Not MapExists($MM_LNG_CACHE["scenarios"]["import"], "not_valid") Or Not IsStr
 If Not MapExists($MM_LNG_CACHE["scenarios"]["import"], "replace") Or Not IsString($MM_LNG_CACHE["scenarios"]["import"]["replace"]) Then $MM_LNG_CACHE["scenarios"]["import"]["replace"] = "Preset with same name already exist. Replace?"
 If Not MapExists($MM_LNG_CACHE["scenarios"], "export") Or Not IsMap($MM_LNG_CACHE["scenarios"]["export"]) Then $MM_LNG_CACHE["scenarios"]["export"] = MapEmpty()
 If Not MapExists($MM_LNG_CACHE["scenarios"]["export"], "caption") Or Not IsString($MM_LNG_CACHE["scenarios"]["export"]["caption"]) Then $MM_LNG_CACHE["scenarios"]["export"]["caption"] = "Export"
+If Not MapExists($MM_LNG_CACHE["scenarios"]["export"], "copy") Or Not IsString($MM_LNG_CACHE["scenarios"]["export"]["copy"]) Then $MM_LNG_CACHE["scenarios"]["export"]["copy"] = "Copy"
+If Not MapExists($MM_LNG_CACHE["scenarios"]["export"], "name") Or Not IsString($MM_LNG_CACHE["scenarios"]["export"]["name"]) Then $MM_LNG_CACHE["scenarios"]["export"]["name"] = "Export name"
 If Not MapExists($MM_LNG_CACHE, "game") Or Not IsMap($MM_LNG_CACHE["game"]) Then $MM_LNG_CACHE["game"] = MapEmpty()
 If Not MapExists($MM_LNG_CACHE["game"], "caption") Or Not IsString($MM_LNG_CACHE["game"]["caption"]) Then $MM_LNG_CACHE["game"]["caption"] = "Game"
 If Not MapExists($MM_LNG_CACHE["game"], "launch") Or Not IsString($MM_LNG_CACHE["game"]["launch"]) Then $MM_LNG_CACHE["game"]["launch"] = "Launch (%s)"

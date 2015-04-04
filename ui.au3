@@ -10,7 +10,7 @@
 #include "settings.au3"
 #include "utils.au3"
 
-Global $__UI_EVENT = False, $__UI_LIST
+Global $__UI_EVENT = False, $__UI_LIST, $__UI_INPUT
 
 Func UI_GameExeLaunch()
 	If $MM_COMPATIBILITY_MESSAGE <> "" Then
@@ -31,7 +31,6 @@ Func UI_Settings()
 	Local $hGUI = GUICreate(Lng_Get("settings.menu.settings"), 370, 200, Default, Default, Default, Default, $MM_UI_MAIN)
 	Local $aSize = WinGetClientSize($hGUI)
 	If Not @Compiled Then GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
-	GUIRegisterMsgStateful($WM_NOTIFY, "__UI_WM_NOTIFY_SETTINGS")
 
 	Local $hGroupAutoUpdate = GUICtrlCreateGroup(Lng_Get("settings.auto_update.group"), $iItemSpacing, $iItemSpacing, $aSize[0] - 2 * $iItemSpacing, 75 - 3 * $iItemSpacing)
 	Local $hLabelAuto = GUICtrlCreateLabel(Lng_Get("settings.auto_update.label"), 2 * $iItemSpacing, 5 * $iItemSpacing, Default, 17, $SS_CENTERIMAGE)
@@ -229,6 +228,66 @@ Func UI_Import_Scn()
 	GUISetState(@SW_RESTORE, $MM_UI_MAIN)
 
 	Return $mAnswer
+EndFunc
+
+Func UI_ScnExport()
+	Local $mAnswer = MapEmpty()
+	$mAnswer["name"] = Lng_Get("scenarios.export.name")
+	$mAnswer["exe"] = Settings_Get("list_exe")
+	$mAnswer["wog_settings"] = Settings_Get("list_wog_settings")
+
+	Local $bClose = False
+
+	GUISetState(@SW_DISABLE, $MM_UI_MAIN)
+
+	Local Const $iOptionGUIOnEventMode = AutoItSetOption("GUIOnEventMode", 0)
+	Local Const $iItemSpacing = 4
+
+	Local $hGUI = GUICreate(Lng_Get("scenarios.export.caption"), 460, 486, Default, Default, Default, Default, $MM_UI_MAIN)
+	Local $aSize = WinGetClientSize($hGUI)
+	If Not @Compiled Then GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
+	GUIRegisterMsgStateful($WM_COMMAND, "__UI_WM_COMMAND")
+
+	Local $hEdit = GUICtrlCreateEdit("", $iItemSpacing, $iItemSpacing, $aSize[0] - 2 * $iItemSpacing, 400, BitOR($ES_MULTILINE, $ES_READONLY))
+	GUICtrlSetData($hEdit, Jsmn_Encode(Scn_GetCurrentState($mAnswer), $JSMN_PRETTY_PRINT + $JSMN_UNESCAPED_UNICODE))
+	Local $hCheckExe = GUICtrlCreateCheckbox(Lng_Get("scenarios.save_options.exe"), $iItemSpacing, GUICtrlGetPos($hEdit).NextY + $iItemSpacing, Default, 17)
+	$__UI_INPUT = GUICtrlCreateInput(Lng_Get("scenarios.export.name"), $aSize[0] - $iItemSpacing - 150, GUICtrlGetPos($hEdit).NextY + $iItemSpacing, 150, 21)
+	Local $hCheckSet = GUICtrlCreateCheckbox(Lng_Get("scenarios.save_options.wog_settings"), $iItemSpacing, GUICtrlGetPos($hCheckExe).NextY + $iItemSpacing, Default, 17)
+	Local $hLine = GUICtrlCreateGraphic($iItemSpacing, GUICtrlGetPos($hCheckSet).NextY + $iItemSpacing, $aSize[0] - 2 * $iItemSpacing, 1)
+	GUICtrlSetGraphic($hLine, $GUI_GR_LINE, $aSize[0] - 2 * $iItemSpacing, 0)
+
+	Local $hCopy = GUICtrlCreateButton(Lng_Get("scenarios.export.copy"), $iItemSpacing, GUICtrlGetPos($hLine).NextY + $iItemSpacing, 100, 25)
+	Local $hOk = GUICtrlCreateButton("OK", $aSize[0] - $iItemSpacing - 75, GUICtrlGetPos($hLine).NextY + $iItemSpacing, 75, 25)
+	GUICtrlSetState($hCheckExe, $mAnswer["exe"] ? $GUI_CHECKED : $GUI_UNCHECKED)
+	GUICtrlSetState($hCheckSet, $mAnswer["wog_settings"] ? $GUI_CHECKED : $GUI_UNCHECKED)
+
+	GUISetState(@SW_SHOW)
+
+	While Not $bClose
+		Switch GUIGetMsg()
+			Case $GUI_EVENT_CLOSE, $hOk
+				$bClose = True
+			Case $hCheckExe, $hCheckSet
+				$mAnswer["exe"] = GUICtrlRead($hCheckExe) = $GUI_CHECKED
+				$mAnswer["wog_settings"] = GUICtrlRead($hCheckSet) = $GUI_CHECKED
+				GUICtrlSetData($hEdit, Jsmn_Encode(Scn_GetCurrentState($mAnswer), $JSMN_PRETTY_PRINT + $JSMN_UNESCAPED_UNICODE))
+			Case $hCopy
+				ClipPut(GUICtrlRead($hEdit))
+		EndSwitch
+
+		If $__UI_EVENT Then
+			$__UI_EVENT = False
+			$mAnswer["name"] = GUICtrlRead($__UI_INPUT)
+			GUICtrlSetData($hEdit, Jsmn_Encode(Scn_GetCurrentState($mAnswer), $JSMN_PRETTY_PRINT + $JSMN_UNESCAPED_UNICODE))
+		EndIf
+	WEnd
+
+	GUIRegisterMsgStateful($WM_COMMAND, "")
+	GUIDelete($hGUI)
+
+	AutoItSetOption("GUIOnEventMode", $iOptionGUIOnEventMode)
+	GUISetState(@SW_ENABLE, $MM_UI_MAIN)
+	GUISetState(@SW_RESTORE, $MM_UI_MAIN)
 EndFunc
 
 Func UI_SelectScnLoadOptions(Const ByRef $mData)
@@ -493,4 +552,23 @@ Func __UI_WM_NOTIFY($hwnd, $iMsg, $iwParam, $ilParam)
 
 	Return $GUI_RUNDEFMSG
 EndFunc   ;==>WM_NOTIFY
+
+Func __UI_WM_COMMAND($hWnd, $iMsg, $wParam, $lParam)
+	#forceref $hWnd, $iMsg
+	Local $hWndFrom, $iCode
+	$hWndFrom = $lParam
+
+	$iCode = _WinAPI_HiWord($wParam)
+
+	Switch $hWndFrom
+		Case GUICtrlGetHandle($__UI_INPUT)
+			Switch $iCode
+				Case $EN_CHANGE
+					$__UI_EVENT = True
+			EndSwitch
+	EndSwitch
+
+	Return $GUI_RUNDEFMSG
+EndFunc   ;==>WM_COMMAND
+
 
