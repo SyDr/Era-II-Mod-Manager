@@ -230,11 +230,28 @@ Func UI_Import_Scn()
 	Return $mAnswer
 EndFunc
 
-Func UI_ScnExport()
+Func __UI_ScnSetCurrentData(ByRef $mMap)
+	$mMap["current_data"] = $mMap["export_data"]
+	$mMap["current_data"]["name"] = $mMap["name"]
+	$mMap["current_data"]["exe"] = $mMap["exe"] ? $mMap["export_data"]["exe"] : ""
+	$mMap["current_data"]["wog_settings"] = $mMap["wog_settings"] ? $mMap["export_data"]["wog_settings"] : ""
+EndFunc
+
+Func UI_ScnExport(Const $mData = "")
 	Local $mAnswer = MapEmpty()
-	$mAnswer["name"] = Lng_Get("scenarios.export.name")
-	$mAnswer["exe"] = Settings_Get("list_exe")
-	$mAnswer["wog_settings"] = Settings_Get("list_wog_settings")
+	If Not IsMap($mData) Then
+		$mAnswer["name"] = Lng_Get("scenarios.export.name")
+		$mAnswer["exe"] = True
+		$mAnswer["wog_settings"] = True
+		$mAnswer["export_data"] = Scn_GetCurrentState($mAnswer)
+	Else
+		$mAnswer["export_data"] = $mData
+		$mAnswer["name"] = $mData["name"]
+	EndIf
+
+	$mAnswer["exe"] = $mAnswer["export_data"]["exe"] And Settings_Get("list_exe")
+    $mAnswer["wog_settings"] = $mAnswer["export_data"]["wog_settings"] And Settings_Get("list_wog_settings")
+	__UI_ScnSetCurrentData($mAnswer)
 
 	Local $bClose = False
 
@@ -249,17 +266,21 @@ Func UI_ScnExport()
 	GUIRegisterMsgStateful($WM_COMMAND, "__UI_WM_COMMAND")
 
 	Local $hEdit = GUICtrlCreateEdit("", $iItemSpacing, $iItemSpacing, $aSize[0] - 2 * $iItemSpacing, 400, BitOR($ES_MULTILINE, $ES_READONLY))
-	GUICtrlSetData($hEdit, Jsmn_Encode(Scn_GetCurrentState($mAnswer), $JSMN_PRETTY_PRINT + $JSMN_UNESCAPED_UNICODE))
+	GUICtrlSetData($hEdit, Jsmn_Encode($mAnswer["current_data"], $JSMN_PRETTY_PRINT + $JSMN_UNESCAPED_UNICODE))
 	Local $hCheckExe = GUICtrlCreateCheckbox(Lng_Get("scenarios.save_options.exe"), $iItemSpacing, GUICtrlGetPos($hEdit).NextY + $iItemSpacing, Default, 17)
-	$__UI_INPUT = GUICtrlCreateInput(Lng_Get("scenarios.export.name"), $aSize[0] - $iItemSpacing - 150, GUICtrlGetPos($hEdit).NextY + $iItemSpacing, 150, 21)
+	$__UI_INPUT = GUICtrlCreateInput($mAnswer["name"], $aSize[0] - $iItemSpacing - 150, GUICtrlGetPos($hEdit).NextY + $iItemSpacing, 150, 21)
 	Local $hCheckSet = GUICtrlCreateCheckbox(Lng_Get("scenarios.save_options.wog_settings"), $iItemSpacing, GUICtrlGetPos($hCheckExe).NextY + $iItemSpacing, Default, 17)
 	Local $hLine = GUICtrlCreateGraphic($iItemSpacing, GUICtrlGetPos($hCheckSet).NextY + $iItemSpacing, $aSize[0] - 2 * $iItemSpacing, 1)
 	GUICtrlSetGraphic($hLine, $GUI_GR_LINE, $aSize[0] - 2 * $iItemSpacing, 0)
 
 	Local $hCopy = GUICtrlCreateButton(Lng_Get("scenarios.export.copy"), $iItemSpacing, GUICtrlGetPos($hLine).NextY + $iItemSpacing, 100, 25)
 	Local $hOk = GUICtrlCreateButton("OK", $aSize[0] - $iItemSpacing - 75, GUICtrlGetPos($hLine).NextY + $iItemSpacing, 75, 25)
-	GUICtrlSetState($hCheckExe, $mAnswer["exe"] ? $GUI_CHECKED : $GUI_UNCHECKED)
-	GUICtrlSetState($hCheckSet, $mAnswer["wog_settings"] ? $GUI_CHECKED : $GUI_UNCHECKED)
+	GUICtrlSetImage($hCopy, @ScriptDir & "\icons\edit-copy.ico")
+
+	GUICtrlSetState($hCheckExe, $mAnswer["export_data"]["exe"] And $mAnswer["exe"] ? $GUI_CHECKED : $GUI_UNCHECKED)
+	GUICtrlSetState($hCheckExe, $mAnswer["export_data"]["exe"] ? $GUI_ENABLE : $GUI_DISABLE)
+	GUICtrlSetState($hCheckSet, $mAnswer["export_data"]["wog_settings"] And $mAnswer["wog_settings"] ? $GUI_CHECKED : $GUI_UNCHECKED)
+	GUICtrlSetState($hCheckSet, $mAnswer["export_data"]["wog_settings"] ? $GUI_ENABLE : $GUI_DISABLE)
 
 	GUISetState(@SW_SHOW)
 
@@ -270,7 +291,8 @@ Func UI_ScnExport()
 			Case $hCheckExe, $hCheckSet
 				$mAnswer["exe"] = GUICtrlRead($hCheckExe) = $GUI_CHECKED
 				$mAnswer["wog_settings"] = GUICtrlRead($hCheckSet) = $GUI_CHECKED
-				GUICtrlSetData($hEdit, Jsmn_Encode(Scn_GetCurrentState($mAnswer), $JSMN_PRETTY_PRINT + $JSMN_UNESCAPED_UNICODE))
+				__UI_ScnSetCurrentData($mAnswer)
+				GUICtrlSetData($hEdit, Jsmn_Encode($mAnswer["current_data"], $JSMN_PRETTY_PRINT + $JSMN_UNESCAPED_UNICODE))
 			Case $hCopy
 				ClipPut(GUICtrlRead($hEdit))
 		EndSwitch
@@ -278,7 +300,8 @@ Func UI_ScnExport()
 		If $__UI_EVENT Then
 			$__UI_EVENT = False
 			$mAnswer["name"] = GUICtrlRead($__UI_INPUT)
-			GUICtrlSetData($hEdit, Jsmn_Encode(Scn_GetCurrentState($mAnswer), $JSMN_PRETTY_PRINT + $JSMN_UNESCAPED_UNICODE))
+			__UI_ScnSetCurrentData($mAnswer)
+			GUICtrlSetData($hEdit, Jsmn_Encode($mAnswer["current_data"], $JSMN_PRETTY_PRINT + $JSMN_UNESCAPED_UNICODE))
 		EndIf
 	WEnd
 

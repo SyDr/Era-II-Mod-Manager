@@ -224,9 +224,11 @@ Func SD_GUI_Create()
 	$hGUI.ScnList.List = GUICtrlCreateListView("1|Name", 2, 2, Default, Default, BitOR($LVS_NOCOLUMNHEADER, $LVS_SINGLESEL, $LVS_SHOWSELALWAYS), BitOR($LVS_EX_FULLROWSELECT, 0))
 	$hGUI.ScnList.Load = GUICtrlCreateButton("", 0, 0, 90, 25)
 	$hGUI.ScnList.Save = GUICtrlCreateButton("", 0, 0, 90, 25)
+	$hGUI.ScnList.Export = GUICtrlCreateButton("", 0, 0, 90, 25)
 	$hGUI.ScnList.Delete = GUICtrlCreateButton("", 0, 0, 90, 25)
 	GUICtrlSetState($hGUI.ScnList.Load, $GUI_DISABLE)
 	GUICtrlSetState($hGUI.ScnList.Save, $GUI_DISABLE)
+	GUICtrlSetState($hGUI.ScnList.Export, $GUI_DISABLE)
 	GUICtrlSetState($hGUI.ScnList.Delete, $GUI_DISABLE)
 
 	SD_UI_ScnLoadItems()
@@ -380,7 +382,8 @@ Func SD_GUI_MainWindowResize(Const $bForce = False)
 		_GUICtrlListView_SetColumnWidth($hGUI.ScnList.List, 1, $LVSCW_AUTOSIZE_USEHEADER)
 		GUICtrlSetPos($hGUI.ScnList.Load, $iButtonLeft, 16, $iButtonWidth, 25)
 		GUICtrlSetPos($hGUI.ScnList.Save, $iButtonLeft, 16 + 25 + $iItemSpacing, $iButtonWidth, 25)
-		GUICtrlSetPos($hGUI.ScnList.Delete, $iButtonLeft, 16 + 50 + 2 * $iItemSpacing, $iButtonWidth, 25)
+		GUICtrlSetPos($hGUI.ScnList.Export, $iButtonLeft, 16 + 50 + 2 * $iItemSpacing, $iButtonWidth, 25)
+		GUICtrlSetPos($hGUI.ScnList.Delete, $iButtonLeft, 16 + 75 + 3 * $iItemSpacing, $iButtonWidth, 25)
 	EndIf
 
 	If $MM_VIEW_CURRENT = $MM_VIEW_PLUGINS Or $MM_VIEW_CURRENT = $MM_VIEW_SCN Then
@@ -467,6 +470,7 @@ Func SD_GUI_Events_Register()
 	GUICtrlSetOnEvent($hGUI.ScnList.Delete, "SD_UI_ScnDelete")
 	GUICtrlSetOnEvent($hGUI.ScnList.Load, "SD_UI_ScnLoad")
 	GUICtrlSetOnEvent($hGUI.ScnList.Save, "SD_UI_ScnSave")
+	GUICtrlSetOnEvent($hGUI.ScnList.Export, "SD_UI_ScnExport")
 
 	GUICtrlSetOnEvent($hGUI.Info.TabControl, "SD_GUI_TabChanged")
 
@@ -519,7 +523,19 @@ Func SD_UI_ScnImport()
 EndFunc
 
 Func SD_UI_ScnExport()
-	UI_ScnExport()
+	Local $bSpecificScn = @GUI_CtrlId = $hGUI.ScnList.Export
+	If Not $bSpecificScn Then
+		UI_ScnExport()
+	Else
+		Local $iItemIndex = _GUICtrlListView_GetSelectedIndices($hGUI.ScnList.List)
+		If $iItemIndex < 0 Then Return
+		If $iItemIndex = 0 Then
+			UI_ScnExport()
+		Else
+			Local $mData = Scn_Load($iItemIndex)
+			UI_ScnExport($mData)
+		EndIf
+	EndIf
 EndFunc
 
 Func SD_UI_ScnDelete()
@@ -608,6 +624,7 @@ Func SD_GUI_SetLng()
 	GUICtrlSetData($hGUI.MenuScn.Export, Lng_Get("scenarios.export.caption"))
 	GUICtrlSetData($hGUI.ScnList.Group, Lng_Get("scenarios.caption"))
 	GUICtrlSetData($hGUI.ScnList.Save, Lng_Get("scenarios.save"))
+	GUICtrlSetData($hGUI.ScnList.Export, Lng_Get("scenarios.export.caption"))
 	GUICtrlSetData($hGUI.ScnList.Load, Lng_Get("scenarios.load"))
 	GUICtrlSetData($hGUI.ScnList.Delete, Lng_Get("scenarios.delete"))
 
@@ -1412,9 +1429,11 @@ Func WM_NOTIFY($hwnd, $iMsg, $iwParam, $ilParam)
 					If Not _GUICtrlListView_GetSelectedCount($hGUI.ScnList.List) Then
 						GUICtrlSetState($hGUI.ScnList.Load, $GUI_DISABLE)
 						GUICtrlSetState($hGUI.ScnList.Save, $GUI_DISABLE)
+						GUICtrlSetState($hGUI.ScnList.Export, $GUI_DISABLE)
 						GUICtrlSetState($hGUI.ScnList.Delete, $GUI_DISABLE)
 					Else
 						GUICtrlSetState($hGUI.ScnList.Save, $MM_GAME_NO_DIR ? $GUI_DISABLE : $GUI_ENABLE)
+						GUICtrlSetState($hGUI.ScnList.Export, $MM_GAME_NO_DIR ? $GUI_DISABLE : $GUI_ENABLE)
 						Local $aSelected = _GUICtrlListView_GetSelectedIndices($hGUI.ScnList.List, True)
 						GUICtrlSetState($hGUI.ScnList.Load, ($aSelected[0] >= 1 And $aSelected[1] == 0) Or $MM_GAME_NO_DIR ? $GUI_DISABLE : $GUI_ENABLE)
 						GUICtrlSetState($hGUI.ScnList.Delete, $aSelected[0] >= 1 And $aSelected[1] == 0 ? $GUI_DISABLE : $GUI_ENABLE)
@@ -1465,6 +1484,7 @@ Func SD_SwitchView(Const $iNewView = $MM_VIEW_MODS)
 	GUICtrlSetState($hGUI.ScnList.List, $MM_VIEW_CURRENT = $MM_VIEW_SCN ? $GUI_SHOW : $GUI_HIDE)
 	GUICtrlSetState($hGUI.ScnList.Load, $MM_VIEW_CURRENT = $MM_VIEW_SCN ? $GUI_SHOW : $GUI_HIDE)
 	GUICtrlSetState($hGUI.ScnList.Save, $MM_VIEW_CURRENT = $MM_VIEW_SCN ? $GUI_SHOW : $GUI_HIDE)
+	GUICtrlSetState($hGUI.ScnList.Export, $MM_VIEW_CURRENT = $MM_VIEW_SCN ? $GUI_SHOW : $GUI_HIDE)
 	GUICtrlSetState($hGUI.ScnList.Delete, $MM_VIEW_CURRENT = $MM_VIEW_SCN ? $GUI_SHOW : $GUI_HIDE)
 
 	GUICtrlSetState($hGUI.Back, ($MM_VIEW_CURRENT = $MM_VIEW_PLUGINS Or $MM_VIEW_CURRENT = $MM_VIEW_SCN) ? $GUI_SHOW : $GUI_HIDE)
