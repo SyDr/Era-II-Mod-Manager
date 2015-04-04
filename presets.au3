@@ -101,9 +101,14 @@ Func Scn_ApplyWogSettings(Const $sString)
 EndFunc
 
 Func Scn_LoadWogSettings()
-	Local Const $MAX = 1000
 	Local $sFilePath = _PathFull(IniRead($MM_GAME_DIR & "\wog.ini", "WoGification", "Options_File_Path", ".\"), $MM_GAME_DIR) & _
 		IniRead($MM_GAME_DIR & "\wog.ini", "WoGification", "Options_File_Name", "MM_PresetSettings.dat")
+
+	Return Scn_LoadWogSettingsFromFile($sFilePath)
+EndFunc
+
+Func Scn_LoadWogSettingsFromFile(Const $sFilePath)
+	Local Const $MAX = 1000
 
 	Local $aData[$MAX], $bData
 	Local $hFile = FileOpen($sFilePath, $FO_BINARY)
