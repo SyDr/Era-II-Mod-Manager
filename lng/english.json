@@ -49,13 +49,13 @@
 		"load_options" : {
 			"caption" : "Select load options",
 			"exe" : "Set starting exe to \"%s\"",
-			"wog_settings" : "Set wog settings to stored in preset",
+			"wog_settings" : "Set WoG settings to stored in preset",
 			"not_again" : "Don't ask again (you can also hold Shift to show this window)"
 		},
 		"save_options" : {
 			"caption" : "Select save options",
 			"exe" : "Save starting exe to preset",
-			"wog_settings" : "Save wog settings to preset",
+			"wog_settings" : "Save WoG settings to preset",
 			"select_file" : "Select file to save",
 			"select_filter" : "JSON files (*.json)"
 		},
@@ -66,7 +66,9 @@
 			"replace" : "Preset with same name already exist. Replace?"
 		},
 		"export" : {
-			"caption" : "Export"
+			"caption" : "Export",
+			"copy" : "Copy",
+			"name" : "Export name"
 		}
 	},
 	"game" : {

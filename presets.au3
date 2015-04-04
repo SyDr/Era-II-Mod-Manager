@@ -53,8 +53,7 @@ Func Scn_LoadData(Const $sData)
 	Return $mScenario
 EndFunc
 
-Func Scn_Save(Const $mOptions)
-	Const $sFileName = $MM_SCN_DIRECTORY & "\" & $mOptions["name"] & ".json"
+Func Scn_GetCurrentState(Const $mOptions)
 	Local $mData
 	__Scn_Validate($mData)
 
@@ -64,8 +63,13 @@ Func Scn_Save(Const $mOptions)
 	If $mOptions["wog_settings"] Then $mData["wog_settings"] = Scn_LoadWogSettings()
 	$mData["list"] = Mod_ListGetAsArray()
 
+	Return $mData
+EndFunc
+
+Func Scn_Save(Const $mOptions)
+	Const $sFileName = $MM_SCN_DIRECTORY & "\" & $mOptions["name"] & ".json"
 	FileDelete($sFileName)
-	FileWrite($sFileName, Jsmn_Encode($mData, $JSMN_PRETTY_PRINT + $JSMN_UNESCAPED_UNICODE))
+	FileWrite($sFileName, Jsmn_Encode(Scn_GetCurrentState($mOptions), $JSMN_PRETTY_PRINT + $JSMN_UNESCAPED_UNICODE))
 EndFunc
 
 Func __Scn_Validate(ByRef $mData)

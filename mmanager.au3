@@ -519,7 +519,7 @@ Func SD_UI_ScnImport()
 EndFunc
 
 Func SD_UI_ScnExport()
-;~ 	UI_ScnExport()
+	UI_ScnExport()
 EndFunc
 
 Func SD_UI_ScnDelete()
