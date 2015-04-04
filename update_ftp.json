@@ -11,8 +11,8 @@
 		"portable": "/beta/MM_0.92.0.0.beta.zip"
 	},
 	"beta": {
-		"version": "0.92.1.0",
-		"setup": "/beta/MM_0.92.1.0.beta.exe",
-		"portable": "/beta/MM_0.92.1.0.beta.zip"
+		"version": "0.93.0.0",
+		"setup": "/beta/MM_0.93.0.0.beta.exe",
+		"portable": "/beta/MM_0.93.0.0.beta.zip"
 	}
 }
