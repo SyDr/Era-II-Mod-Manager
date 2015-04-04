@@ -73,7 +73,7 @@ Func __Settings_Validate()
 	If Not MapExists($MM_SETTINGS_CACHE, "list") Or Not IsMap($MM_SETTINGS_CACHE["list"]) Then $MM_SETTINGS_CACHE["list"] = MapEmpty()
 	If Not MapExists($MM_SETTINGS_CACHE["list"], "not_again") Or Not IsBool($MM_SETTINGS_CACHE["list"]["not_again"]) Then $MM_SETTINGS_CACHE["list"]["not_again"] = False
 	If Not MapExists($MM_SETTINGS_CACHE["list"], "exe") Or Not IsBool($MM_SETTINGS_CACHE["list"]["exe"]) Then $MM_SETTINGS_CACHE["list"]["exe"] = False
-	If Not MapExists($MM_SETTINGS_CACHE["list"], "wog_settings") Or Not IsBool($MM_SETTINGS_CACHE["list"]["wog_settings"]) Then $MM_SETTINGS_CACHE["list"]["wog_settings"] = False
+	If Not MapExists($MM_SETTINGS_CACHE["list"], "wog_settings") Or Not IsBool($MM_SETTINGS_CACHE["list"]["wog_settings"]) Then $MM_SETTINGS_CACHE["list"]["wog_settings"] = True
 	If Not MapExists($MM_SETTINGS_CACHE["list"], "only_load") Or Not IsBool($MM_SETTINGS_CACHE["list"]["only_load"]) Then $MM_SETTINGS_CACHE["list"]["only_load"] = False
 
 	If VersionCompare($MM_SETTINGS_CACHE["version"], $MM_VERSION_NUMBER) < 0 Then $MM_SETTINGS_CACHE["version"] = $MM_VERSION_NUMBER
