@@ -24,6 +24,11 @@ Func Scn_ListLoad()
 	$MM_SCN_LIST = $aScnList
 EndFunc
 
+Func Scn_Exist(Const $sName)
+	_ArraySearch($MM_SCN_LIST, $sName, 1)
+	Return Not @error
+EndFunc
+
 Func Scn_Delete(Const $iItemIndex)
 	If $iItemIndex < 1 Or $iItemIndex > $MM_SCN_LIST[0] Then Return
 	FileRecycle($MM_SCN_DIRECTORY & "\" & $MM_SCN_LIST[$iItemIndex] & ".json")
@@ -35,16 +40,20 @@ Func Scn_Apply(Const ByRef $mData)
 EndFunc
 
 Func Scn_Load(Const $iItemIndex)
-	Local $mScenario
 	If $iItemIndex >= 1 And $iItemIndex <= $MM_SCN_LIST[0] Then
-		$mScenario = Jsmn_Decode(FileRead($MM_SCN_DIRECTORY & "\" & $MM_SCN_LIST[$iItemIndex] & ".json"))
+		Return Scn_LoadData(FileRead($MM_SCN_DIRECTORY & "\" & $MM_SCN_LIST[$iItemIndex] & ".json"))
+	Else
+		Return Scn_LoadData("")
 	EndIf
+EndFunc
 
+Func Scn_LoadData(Const $sData)
+	Local $mScenario = Jsmn_Decode($sData)
 	__Scn_Validate($mScenario)
 	Return $mScenario
 EndFunc
 
-Func Scn_Save(Const ByRef $mOptions)
+Func Scn_Save(Const $mOptions)
 	Const $sFileName = $MM_SCN_DIRECTORY & "\" & $mOptions["name"] & ".json"
 	Local $mData
 	__Scn_Validate($mData)

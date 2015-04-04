@@ -255,6 +255,10 @@ EndFunc   ;==>SD_GUI_Create
 Func SD_GUI_MenuCreate()
 	$hGUI.MenuScn.Menu = GUICtrlCreateMenu("-")
 	$hGUI.MenuScn.Manage = GUICtrlCreateMenuItem("-", $hGUI.MenuScn.Menu)
+	$hGUI.MenuScn.Import = GUICtrlCreateMenuItem("-", $hGUI.MenuScn.Manage)
+	$hGUI.MenuScn.Export = GUICtrlCreateMenuItem("-", $hGUI.MenuScn.Manage)
+	If $MM_GAME_NO_DIR Then GUICtrlSetState($hGUI.MenuScn.Import, $GUI_DISABLE)
+	If $MM_GAME_NO_DIR Then GUICtrlSetState($hGUI.MenuScn.Export, $GUI_DISABLE)
 
 	$hGUI.MenuGame.Menu = GUICtrlCreateMenu("-")
 	$hGUI.MenuGame.Launch = GUICtrlCreateMenuItem("-", $hGUI.MenuGame.Menu)
@@ -443,6 +447,8 @@ Func SD_GUI_Events_Register()
 	GUICtrlSetOnEvent($hGUI.ModList.Down, "SD_GUI_Mod_Move_Down")
 	GUICtrlSetOnEvent($hGUI.ModList.ChangeState, "SD_GUI_Mod_EnableDisable")
 	GUICtrlSetOnEvent($hGUI.MenuScn.Manage, "SD_GUI_ScenarioManage")
+	GUICtrlSetOnEvent($hGUI.MenuScn.Import, "SD_UI_ScnImport")
+	GUICtrlSetOnEvent($hGUI.MenuScn.Export, "SD_UI_ScnExport")
 	GUICtrlSetOnEvent($hGUI.MenuSettings.Compatibility, "SD_GUI_Mod_Compatibility")
 	GUICtrlSetOnEvent($hGUI.MenuSettings.Settings, "SD_GUI_ChangeSettings")
 	GUICtrlSetOnEvent($hGUI.MenuMod.Plugins, "SD_GUI_Manage_Plugins")
@@ -493,6 +499,27 @@ Func SD_UI_ScnLoadItems()
 	Next
 
 	_GUICtrlListView_EndUpdate($hGUI.ScnList.List)
+EndFunc
+
+Func SD_UI_ScnImport()
+	Local $mData = UI_Import_Scn()
+	If Not $mData["selected"] Then Return
+
+	Scn_Apply($mData["data"])
+	If $mData["wog_settings"] Then Scn_ApplyWogSettings($mData["wog_settings"])
+	If $mData["exe"] Then SD_UI_ApplyExe($mData["exe"])
+	TreeViewMain()
+	$sFollowMod = $MM_LIST_CONTENT[0][0] > 0 ? $MM_LIST_CONTENT[1][$MOD_ID] : ""
+	TreeViewTryFollow($sFollowMod)
+
+	If Not $mData["only_load"] Then
+		Scn_Save($mData["data"])
+		SD_UI_ScnLoadItems()
+	EndIf
+EndFunc
+
+Func SD_UI_ScnExport()
+;~ 	UI_ScnExport()
 EndFunc
 
 Func SD_UI_ScnDelete()
@@ -577,6 +604,8 @@ Func SD_GUI_SetLng()
 
 	GUICtrlSetData($hGUI.MenuScn.Menu, Lng_Get("scenarios.caption"))
 	GUICtrlSetData($hGUI.MenuScn.Manage, Lng_Get("scenarios.manage"))
+	GUICtrlSetData($hGUI.MenuScn.Import, Lng_Get("scenarios.import.caption"))
+	GUICtrlSetData($hGUI.MenuScn.Export, Lng_Get("scenarios.export.caption"))
 	GUICtrlSetData($hGUI.ScnList.Group, Lng_Get("scenarios.caption"))
 	GUICtrlSetData($hGUI.ScnList.Save, Lng_Get("scenarios.save"))
 	GUICtrlSetData($hGUI.ScnList.Load, Lng_Get("scenarios.load"))
