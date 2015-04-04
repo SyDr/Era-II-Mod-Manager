@@ -50,7 +50,7 @@ $hGUI.Info = MapEmpty()
 $hGUI.WindowResizeInProgress = False
 $hGUI.WindowResizeLags = False
 $hGUI.Screen = MapEmpty()
-Global $hDummyF5, $hDummyLinks, $hDummyCategories
+Global $hDummyF5, $hDummyLinks, $hDummyCategories, $hDummyF9
 Global Const $iItemSpacing = 4
 
 Global $aModListGroups[1][3]; group item id, is enabled, priority/group tag
@@ -237,10 +237,11 @@ Func SD_GUI_Create()
 	$hGUI.Back = GUICtrlCreateButton("", 0, 0, 90, 25)
 
 	$hDummyF5 = GUICtrlCreateDummy()
+	$hDummyF9 = GUICtrlCreateDummy()
 	$hDummyLinks = GUICtrlCreateDummy()
 	$hDummyCategories = GUICtrlCreateDummy()
 
-	Local $AccelKeys[2][2] = [["{F5}", $hDummyF5], ["{F8}", $hDummyCategories]]
+	Local $AccelKeys[3][2] = [["{F5}", $hDummyF5], ["{F8}", $hDummyCategories], ["{F9}", $hDummyF9]]
 	GUISetAccelerators($AccelKeys)
 
 	SD_GUI_Mod_Controls_Disable()
@@ -480,6 +481,7 @@ Func SD_GUI_Events_Register()
 	GUICtrlSetOnEvent($hGUI.Screen.Control, "SD_GUI_BigScreen")
 
 	GUICtrlSetOnEvent($hDummyF5, "SD_GUI_Update")
+	GUICtrlSetOnEvent($hDummyF9, "SD_GUI_ImportOldPresets")
 	GUICtrlSetOnEvent($hDummyLinks, "SD_GUI_Mod_Website")
 	GUICtrlSetOnEvent($hDummyCategories, "SD_GUI_ModCategoriesUpdate")
 EndFunc   ;==>SD_GUI_Events_Register
@@ -601,6 +603,36 @@ Func SD_GUI_ModCategoriesUpdate()
 		ProgressSet($i/$iTotalMods*100, StringFormat("%i from %i done", $i, $iTotalMods))
 	Next
 	ProgressOff()
+EndFunc
+
+Func SD_GUI_ImportOldPresets()
+	Local $sFolder = FileSelectFolder("", "", 1 + 2, "", $MM_UI_MAIN)
+	If @error Then Return
+
+	Local $aFiles = _FileListToArray($sFolder & "\Tools\Mod Manager\presets", "*.txt", $FLTA_FILES, True)
+	If @error Then Return
+
+	Local $sDrive = "", $sDir = "", $sFilename = "", $sExtension = ""
+	Local $aList, $sSettings, $sExe
+	Local $mMap
+
+	For $i = 1 To $aFiles[0]
+		_PathSplit($aFiles[$i], $sDrive, $sDir, $sFilename, $sExtension)
+		_FileReadToArray($aFiles[$i], $aList, $FRTA_NOCOUNT)
+		If @error Then $aList = ArrayEmpty()
+		$sExe = FileReadLine($sDrive & $sDir & $sFilename & $sExtension & ".e2p", 1)
+		$sSettings = FileReadLine($sDrive & $sDir & $sFilename & $sExtension & ".e2p", 2)
+		$sSettings = Scn_LoadWogSettingsFromFile($sFolder & "\" & $sSettings)
+
+		$mMap = MapEmpty()
+		$mMap["name"] = $sFilename
+		$mMap["exe"] = $sExe
+		$mMap["wog_settings"] = $sSettings
+		$mMap["list"] = $aList
+		Scn_Save($mMap)
+	Next
+
+	SD_GUI_Update()
 EndFunc
 
 Func SD_GUI_SetLng()
