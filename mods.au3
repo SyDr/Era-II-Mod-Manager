@@ -337,26 +337,29 @@ Func Mod_ListSave()
 	EndIf
 EndFunc   ;==>Mod_ListSave
 
-Func Mod_ListLoadFromMemory(Const $aModList, Const $bOnlyCheck = False)
-	Local $aAnswer[1] = [0]
-	For $i = $aModList[0][0] To 1 Step -1
-		If Not $aModList[$i][$LIST_IS_OPTIONAL] And Not MapExists($MM_LIST_MAP, $aModList[$i][$LIST_MOD_ID]) Then
-			_ArrayAdd($aAnswer, $aModList[$i][$LIST_MOD_ID])
-			$aAnswer[0][0] += 1
+Func Mod_ListGetAsArray()
+	Local $aReturn = ArrayEmpty()
+
+	For $iCount = $MM_LIST_CONTENT[0][0] To 1 Step -1
+		If $MM_LIST_CONTENT[$iCount][$MOD_IS_ENABLED] Then
+			$aReturn[UBound($aReturn) - 1] = $MM_LIST_CONTENT[$iCount][$MOD_ID]
+			ReDim $aReturn[UBound($aReturn) + 1]
 		EndIf
 	Next
 
-	If Not $bOnlyCheck Then
-		Mod_DisableAll()
-		Mod_ListLoad()
+	If UBound($aReturn) > 1 Then ReDim $aReturn[UBound($aReturn) - 1]
+	Return $aReturn
+EndFunc
 
-		For $i = $aModList[0][0] To 1 Step -1
-			If MapExists($MM_LIST_MAP, $aModList[$i][$LIST_MOD_ID]) Then Mod_Enable(Mod_GetIndexByID($aModList[$i][$LIST_MOD_ID]), True, False)
-		Next
-		Mod_ListSave()
-	EndIf
+Func Mod_ListLoadFromMemory(Const $aModList)
+	Mod_DisableAll()
+	Mod_ListLoad()
 
-	Return $aAnswer
+	For $i = UBound($aModList) - 1 To 0 Step -1
+		If $aModList[$i] <> "" And MapExists($MM_LIST_MAP, $aModList[$i]) Then Mod_Enable(Mod_GetIndexByID($aModList[$i]), True, False)
+	Next
+
+	Mod_ListSave()
 EndFunc
 
 Func Mod_GetIndexByID($sModID)

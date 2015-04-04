@@ -69,6 +69,12 @@ Func __Settings_Validate()
 	If Not MapExists($MM_SETTINGS_CACHE["update"], "last_check") Or Not IsString($MM_SETTINGS_CACHE["update"]["last_check"]) Or _
 		Not _DateIsValid($MM_SETTINGS_CACHE["update"]["last_check"]) Then $MM_SETTINGS_CACHE["update"]["last_check"] = _NowCalc()
 
+	; 0.93.0.0
+	If Not MapExists($MM_SETTINGS_CACHE, "list") Or Not IsMap($MM_SETTINGS_CACHE["list"]) Then $MM_SETTINGS_CACHE["list"] = MapEmpty()
+	If Not MapExists($MM_SETTINGS_CACHE["list"], "not_again") Or Not IsBool($MM_SETTINGS_CACHE["list"]["not_again"]) Then $MM_SETTINGS_CACHE["list"]["not_again"] = False
+	If Not MapExists($MM_SETTINGS_CACHE["list"], "exe") Or Not IsBool($MM_SETTINGS_CACHE["list"]["exe"]) Then $MM_SETTINGS_CACHE["list"]["exe"] = False
+	If Not MapExists($MM_SETTINGS_CACHE["list"], "wog_settings") Or Not IsBool($MM_SETTINGS_CACHE["list"]["wog_settings"]) Then $MM_SETTINGS_CACHE["list"]["wog_settings"] = False
+
 	If VersionCompare($MM_SETTINGS_CACHE["version"], $MM_VERSION_NUMBER) < 0 Then $MM_SETTINGS_CACHE["version"] = $MM_VERSION_NUMBER
 EndFunc
 
@@ -97,6 +103,12 @@ Func Settings_Get(Const ByRef $sName)
 			$vReturn = Not $MM_PORTABLE ? $MM_SETTINGS_CACHE["update"]["auto"] : False
 		Case "update_last_check"
 			$vReturn = $MM_SETTINGS_CACHE["update"]["last_check"]
+		Case "list_no_ask"
+			$vReturn = $MM_SETTINGS_CACHE["list"]["not_again"]
+		Case "list_exe"
+			$vReturn = $MM_SETTINGS_CACHE["list"]["exe"]
+		Case "list_wog_settings"
+			$vReturn = $MM_SETTINGS_CACHE["list"]["wog_settings"]
 	EndSwitch
 
 	Return $vReturn
@@ -129,6 +141,12 @@ Func Settings_Set(Const ByRef $sName, Const ByRef $vValue)
 			If Not $MM_PORTABLE Then $MM_SETTINGS_CACHE["update"]["auto"] = $vValue
 		Case "update_last_check"
 			$MM_SETTINGS_CACHE["update"]["last_check"] = $vValue
+		Case "list_no_ask"
+			$MM_SETTINGS_CACHE["list"]["not_again"] = $vValue
+		Case "list_exe"
+			$MM_SETTINGS_CACHE["list"]["exe"] = $vValue
+		Case "list_wog_settings"
+			$MM_SETTINGS_CACHE["list"]["wog_settings"] = $vValue
 	EndSwitch
 EndFunc   ;==>Settings_Set
 

@@ -6,6 +6,7 @@
 #include "include_fwd.au3"
 
 #include "lng.au3"
+#include "presets.au3"
 #include "settings.au3"
 #include "utils.au3"
 
@@ -27,20 +28,31 @@ Func UI_Settings()
 	Local $bClose = False
 	Local $bSave = False
 
-	Local $hGUI = GUICreate(Lng_Get("settings.menu.settings"), 370, 100, Default, Default, Default, Default, $MM_UI_MAIN)
+	Local $hGUI = GUICreate(Lng_Get("settings.menu.settings"), 370, 200, Default, Default, Default, Default, $MM_UI_MAIN)
 	Local $aSize = WinGetClientSize($hGUI)
 	If Not @Compiled Then GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
 	GUIRegisterMsgStateful($WM_NOTIFY, "__UI_WM_NOTIFY_SETTINGS")
 
-	GUICtrlCreateGroup(Lng_Get("settings.auto_update.group"), $iItemSpacing, $iItemSpacing, $aSize[0] - 2 * $iItemSpacing, $aSize[1] - 3 * $iItemSpacing - 25)
+	Local $hGroupAutoUpdate = GUICtrlCreateGroup(Lng_Get("settings.auto_update.group"), $iItemSpacing, $iItemSpacing, $aSize[0] - 2 * $iItemSpacing, 75 - 3 * $iItemSpacing)
 	Local $hLabelAuto = GUICtrlCreateLabel(Lng_Get("settings.auto_update.label"), 2 * $iItemSpacing, 5 * $iItemSpacing, Default, 17, $SS_CENTERIMAGE)
 	Local $hComboAuto = GUICtrlCreateCombo("", GUICtrlGetPos($hLabelAuto).NextX, 5 * $iItemSpacing, $aSize[0] - GUICtrlGetPos($hLabelAuto).NextX - 2 * $iItemSpacing, 25, $CBS_DROPDOWNLIST)
 	GUICtrlSetData($hComboAuto, Lng_Get("settings.auto_update.day") & "|" & Lng_Get("settings.auto_update.week") & "|" & Lng_Get("settings.auto_update.month") & "|" & Lng_Get("settings.auto_update.never"), _
 		UI_IntervalToItem(Settings_Get("update_interval")))
 
 	Local $hCheckboxAuto = GUICtrlCreateCheckbox(Lng_Get("settings.auto_update.auto"), 6 * $iItemSpacing, GUICtrlGetPos($hLabelAuto).NextY + 2 * $iItemSpacing, Default, 17)
+
+	Local $hGroupListLoad = GUICtrlCreateGroup(Lng_Get("settings.list_load_options.group"), $iItemSpacing, GUICtrlGetPos($hGroupAutoUpdate).NextY + $iItemSpacing, _
+		$aSize[0] - 2 * $iItemSpacing, $aSize[1] - 3 * $iItemSpacing - 25 - GUICtrlGetPos($hGroupAutoUpdate).NextY)
+	Local $hCheckboxExe = GUICtrlCreateCheckbox(Lng_Get("settings.list_load_options.exe"), 2 * $iItemSpacing, GUICtrlGetPos($hGroupListLoad).Top + 5 * $iItemSpacing, Default, 17)
+	Local $hCheckboxSet = GUICtrlCreateCheckbox(Lng_Get("settings.list_load_options.wog_settings"), 2 * $iItemSpacing, GUICtrlGetPos($hCheckboxExe).NextY + $iItemSpacing, Default, 17)
+	Local $hCheckboxDontAsk = GUICtrlCreateCheckbox(Lng_Get("settings.list_load_options.dont_ask"), 2 * $iItemSpacing, GUICtrlGetPos($hCheckboxSet).NextY + $iItemSpacing, Default, 17)
+
 	GUICtrlSetState($hCheckboxAuto, Settings_Get("update_auto") ? $GUI_CHECKED : $GUI_UNCHECKED)
 	GUICtrlSetState($hCheckboxAuto, (UI_ItemToInterval(GUICtrlRead($hComboAuto)) = 0 Or $MM_PORTABLE) ? $GUI_DISABLE : $GUI_ENABLE)
+	GUICtrlSetState($hCheckboxExe, Settings_Get("list_exe") ? $GUI_CHECKED : $GUI_UNCHECKED)
+	GUICtrlSetState($hCheckboxSet, Settings_Get("list_wog_settings") ? $GUI_CHECKED : $GUI_UNCHECKED)
+	GUICtrlSetState($hCheckboxDontAsk, Settings_Get("list_no_ask") ? $GUI_CHECKED : $GUI_UNCHECKED)
+
 	Local $hOk = GUICtrlCreateButton("OK", $aSize[0] - $iItemSpacing - 75, $aSize[1] - $iItemSpacing - 25, 75, 25)
 
 	GUISetState(@SW_SHOW)
@@ -58,7 +70,9 @@ Func UI_Settings()
 
 	If $bSave Then
 		Settings_Set("update_interval", UI_ItemToInterval(GUICtrlRead($hComboAuto)))
-		Settings_Set("update_auto", GUICtrlRead($hCheckboxAuto) = $GUI_CHECKED)
+		Settings_Set("list_exe", GUICtrlRead($hCheckboxExe) = $GUI_CHECKED)
+		Settings_Set("list_wog_settings", GUICtrlRead($hCheckboxSet) = $GUI_CHECKED)
+		Settings_Set("list_no_ask", GUICtrlRead($hCheckboxDontAsk) = $GUI_CHECKED)
 		Settings_Save()
 	EndIf
 
@@ -153,6 +167,154 @@ Func UI_SelectGameDir()
 		$MM_GAME_EXE = Settings_Get("exe")
 		Return True
 	EndIf
+EndFunc
+
+Func UI_SelectScnLoadOptions(Const ByRef $mData)
+	Local $mAnswer = MapEmpty(), $bSkip = Settings_Get("list_no_ask")
+	$mAnswer["selected"] = False
+	$mAnswer["exe"] = $mData["exe"] And Settings_Get("list_exe")
+	$mAnswer["wog_settings"] = $mData["wog_settings"] And Settings_Get("list_wog_settings")
+
+	If ($bSkip And Not _IsPressed("10")) Or (Not $mData["exe"] And Not $mData["wog_settings"]) Then
+		$mAnswer["selected"] = True
+		Return $mAnswer
+	EndIf
+
+
+	GUISetState(@SW_DISABLE, $MM_UI_MAIN)
+
+	Local Const $iOptionGUIOnEventMode = AutoItSetOption("GUIOnEventMode", 0)
+	Local Const $iItemSpacing = 4
+	Local $bClose = False, $bSelected = False
+
+	Local $hGUI = GUICreate(Lng_Get("scenarios.load_options.caption"), 420, 80, Default, Default, Default, Default, $MM_UI_MAIN)
+	Local $aSize = WinGetClientSize($hGUI)
+	If Not @Compiled Then GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
+
+	Local $hCheckExe = GUICtrlCreateCheckbox(Lng_GetF("scenarios.load_options.exe", $mData["exe"]), $iItemSpacing, $iItemSpacing, Default, 17)
+	Local $hCheckSet = GUICtrlCreateCheckbox(Lng_Get("scenarios.load_options.wog_settings"), $iItemSpacing, GUICtrlGetPos($hCheckExe).NextY + $iItemSpacing, Default, 17)
+	Local $hLine = GUICtrlCreateGraphic($iItemSpacing, GUICtrlGetPos($hCheckSet).NextY + $iItemSpacing, $aSize[0] - 2 * $iItemSpacing, 1)
+	GUICtrlSetGraphic($hLine, $GUI_GR_LINE, $aSize[0] - 2 * $iItemSpacing, 0)
+
+	Local $hCheckNotAgain = GUICtrlCreateCheckbox(Lng_Get("scenarios.load_options.not_again"), $iItemSpacing, GUICtrlGetPos($hLine).NextY + $iItemSpacing, Default, 17)
+	Local $hOk = GUICtrlCreateButton("OK", $aSize[0] - $iItemSpacing - 75, GUICtrlGetPos($hCheckNotAgain).Top, 75, 25)
+
+	GUICtrlSetState($hCheckExe, $mAnswer["exe"] ? $GUI_CHECKED : $GUI_UNCHECKED)
+	GUICtrlSetState($hCheckExe, $mData["exe"] ? $GUI_ENABLE : $GUI_DISABLE)
+	GUICtrlSetState($hCheckSet, $mAnswer["wog_settings"] ? $GUI_CHECKED : $GUI_UNCHECKED)
+	GUICtrlSetState($hCheckSet, $mData["wog_settings"] ? $GUI_ENABLE : $GUI_DISABLE)
+	GUICtrlSetState($hCheckNotAgain, $bSkip ? $GUI_CHECKED : $GUI_UNCHECKED)
+
+	GUISetState(@SW_SHOW)
+
+	While Not $bClose And Not $bSelected
+		Switch GUIGetMsg()
+			Case $GUI_EVENT_CLOSE
+				$bClose = True
+			Case $hOk
+				$bSelected = True
+		EndSwitch
+	WEnd
+
+	If $bSelected Then
+		$mAnswer["selected"] = True
+		If $mData["exe"] Then Settings_Set("list_exe", GUICtrlRead($hCheckExe) = $GUI_CHECKED)
+		If $mData["wog_settings"] Then Settings_Set("list_wog_settings", GUICtrlRead($hCheckSet) = $GUI_CHECKED)
+		Settings_Set("list_no_ask", GUICtrlRead($hCheckNotAgain) = $GUI_CHECKED)
+		Settings_Save()
+		$mAnswer["exe"] = $mData["exe"] And Settings_Get("list_exe")
+		$mAnswer["wog_settings"] = $mData["wog_settings"] And Settings_Get("list_wog_settings")
+	EndIf
+
+	GUIDelete($hGUI)
+
+	AutoItSetOption("GUIOnEventMode", $iOptionGUIOnEventMode)
+	GUISetState(@SW_ENABLE, $MM_UI_MAIN)
+	GUISetState(@SW_RESTORE, $MM_UI_MAIN)
+
+	Return $mAnswer
+EndFunc
+
+Func UI_SelectScnSaveOptions($sDefaultName)
+	Local $mAnswer = MapEmpty()
+	$mAnswer["selected"] = False
+	$mAnswer["name"] = ""
+	$mAnswer["exe"] = Settings_Get("list_exe")
+	$mAnswer["wog_settings"] = Settings_Get("list_wog_settings")
+
+	Local $bClose = False, $bSelected = False, $sPath
+
+	If $sDefaultName = "" Then
+		$sPath = __UI_SelectSavePath($MM_UI_MAIN)
+		If Not @error Then
+			$sDefaultName = $sPath
+		Else
+			Return $mAnswer
+		EndIf
+	EndIf
+
+	GUISetState(@SW_DISABLE, $MM_UI_MAIN)
+
+	Local Const $iOptionGUIOnEventMode = AutoItSetOption("GUIOnEventMode", 0)
+	Local Const $iItemSpacing = 4
+
+
+	Local $hGUI = GUICreate(Lng_Get("scenarios.save_options.caption"), 420, 104, Default, Default, Default, Default, $MM_UI_MAIN)
+	Local $aSize = WinGetClientSize($hGUI)
+	If Not @Compiled Then GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
+
+	Local $hCombo = GUICtrlCreateCombo("", $iItemSpacing, $iItemSpacing, $aSize[0] - 3 * $iItemSpacing - 35, 25, BitOR($CBS_DROPDOWNLIST, $CBS_AUTOHSCROLL))
+	GUICtrlSetData($hCombo, _ArrayToString($MM_SCN_LIST, Default, 1))
+	If $sDefaultName <> "" Then GUICtrlSetData($hCombo, $sDefaultName, $sDefaultName)
+	Local $hDir = GUICtrlCreateButton("...", GUICtrlGetPos($hCombo).NextX + $iItemSpacing, $iItemSpacing - 2, 35, 25)
+	Local $hCheckExe = GUICtrlCreateCheckbox(Lng_Get("scenarios.save_options.exe"), $iItemSpacing, GUICtrlGetPos($hCombo).NextY + $iItemSpacing, Default, 17)
+	Local $hCheckSet = GUICtrlCreateCheckbox(Lng_Get("scenarios.save_options.wog_settings"), $iItemSpacing, GUICtrlGetPos($hCheckExe).NextY + $iItemSpacing, Default, 17)
+	Local $hLine = GUICtrlCreateGraphic($iItemSpacing, GUICtrlGetPos($hCheckSet).NextY + $iItemSpacing, $aSize[0] - 2 * $iItemSpacing, 1)
+	GUICtrlSetGraphic($hLine, $GUI_GR_LINE, $aSize[0] - 2 * $iItemSpacing, 0)
+
+	Local $hOk = GUICtrlCreateButton("OK", $aSize[0] - $iItemSpacing - 75, GUICtrlGetPos($hLine).NextY + $iItemSpacing, 75, 25)
+
+	GUICtrlSetState($hCheckExe, $mAnswer["exe"] ? $GUI_CHECKED : $GUI_UNCHECKED)
+	GUICtrlSetState($hCheckSet, $mAnswer["wog_settings"] ? $GUI_CHECKED : $GUI_UNCHECKED)
+
+	GUISetState(@SW_SHOW)
+
+	While Not $bClose And Not $bSelected
+		Switch GUIGetMsg()
+			Case $GUI_EVENT_CLOSE
+				$bClose = True
+			Case $hOk
+				$bSelected = True
+			Case $hDir
+				$sPath = __UI_SelectSavePath($hGUI, GUICtrlRead($hCombo) & ".json")
+				If Not @error Then
+					GUICtrlSetData($hCombo, $sPath, $sPath)
+				EndIf
+		EndSwitch
+	WEnd
+
+	If $bSelected Then
+		$mAnswer["selected"] = True
+		$mAnswer["name"] = GUICtrlRead($hCombo)
+		$mAnswer["exe"] = GUICtrlRead($hCheckExe) = $GUI_CHECKED
+		$mAnswer["wog_settings"] = GUICtrlRead($hCheckSet) = $GUI_CHECKED
+	EndIf
+
+	GUIDelete($hGUI)
+
+	AutoItSetOption("GUIOnEventMode", $iOptionGUIOnEventMode)
+	GUISetState(@SW_ENABLE, $MM_UI_MAIN)
+	GUISetState(@SW_RESTORE, $MM_UI_MAIN)
+
+	Return $mAnswer
+EndFunc
+
+Func __UI_SelectSavePath(Const $hParent, Const $sName = "")
+	Local $sDrive, $sDir, $sFileName, $sExtension
+	Local $sPath = FileSaveDialog(Lng_Get("scenarios.save_options.select_file"), $MM_SCN_DIRECTORY, Lng_Get("scenarios.save_options.select_filter"), Default, $sName, $hParent)
+	If @error Then Return SetError(@error, @extended, "")
+	_PathSplit($sPath, $sDrive, $sDir, $sFileName, $sExtension)
+	Return SetError(0, 0, $sFileName)
 EndFunc
 
 Func UI_GetSuggestedGameDirList()

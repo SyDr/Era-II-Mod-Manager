@@ -459,6 +459,8 @@ Func SD_GUI_Events_Register()
 	GUICtrlSetOnEvent($hGUI.Back, "SD_GUI_BackToMainView")
 	GUICtrlSetOnEvent($hGUI.MenuHelp.CheckForUpdates, "Update_CheckNewPorgram")
 	GUICtrlSetOnEvent($hGUI.ScnList.Delete, "SD_UI_ScnDelete")
+	GUICtrlSetOnEvent($hGUI.ScnList.Load, "SD_UI_ScnLoad")
+	GUICtrlSetOnEvent($hGUI.ScnList.Save, "SD_UI_ScnSave")
 
 	GUICtrlSetOnEvent($hGUI.Info.TabControl, "SD_GUI_TabChanged")
 
@@ -502,6 +504,35 @@ Func SD_UI_ScnDelete()
 
 	Scn_Delete($iItemIndex)
 	SD_UI_ScnLoadItems()
+EndFunc
+
+Func SD_UI_ScnSave()
+	Local $iItemIndex = _GUICtrlListView_GetSelectedIndices($hGUI.ScnList.List)
+	If $iItemIndex < 0 Then Return
+
+	Local $mOptions = UI_SelectScnSaveOptions($iItemIndex > 0 ? $MM_SCN_LIST[$iItemIndex] : "")
+	If Not $mOptions["selected"] Then Return
+
+	Scn_Save($mOptions)
+	SD_UI_ScnLoadItems()
+	SD_GUI_BackToMainView()
+EndFunc
+
+Func SD_UI_ScnLoad()
+	Local $iItemIndex = _GUICtrlListView_GetSelectedIndices($hGUI.ScnList.List)
+	If $iItemIndex < 0 Then Return
+
+	Local $mData = Scn_Load($iItemIndex)
+	Local $mOptions = UI_SelectScnLoadOptions($mData)
+	If Not $mOptions["selected"] Then Return
+
+	Scn_Apply($mData)
+	If $mOptions["wog_settings"] Then Scn_ApplyWogSettings($mData["wog_settings"])
+	If $mOptions["exe"] Then SD_UI_ApplyExe($mData["exe"])
+
+	TreeViewMain()
+	$sFollowMod = $MM_LIST_CONTENT[0][0] > 0 ? $MM_LIST_CONTENT[1][$MOD_ID] : ""
+	SD_GUI_BackToMainView()
 EndFunc
 
 Func SD_GUI_ChangeSettings()
@@ -622,7 +653,10 @@ Func SD_GUI_BackToMainView()
 EndFunc   ;==>SD_GUI_BackToMainView
 
 Func SD_GUI_GameExeChange()
-	Local $sNewExe = UI_SelectGameExe()
+	SD_UI_ApplyExe(UI_SelectGameExe())
+EndFunc
+
+Func SD_UI_ApplyExe(Const $sNewExe)
 	If $MM_GAME_EXE <> $sNewExe Then
 		$MM_GAME_EXE = $sNewExe
 		GUICtrlSetData($hGUI.MenuGame.Launch, Lng_GetF("game.launch", $MM_GAME_EXE))
@@ -897,6 +931,7 @@ Func SD_GUI_Update()
 	GUISwitch($MM_UI_MAIN)
 	TreeViewMain()
 	If $MM_VIEW_CURRENT = $MM_VIEW_MODS Then TreeViewTryFollow($sFollowMod)
+	SD_UI_ScnLoadItems()
 EndFunc   ;==>SD_GUI_Update
 
 Func TreeViewMain()
@@ -1350,9 +1385,9 @@ Func WM_NOTIFY($hwnd, $iMsg, $iwParam, $ilParam)
 						GUICtrlSetState($hGUI.ScnList.Save, $GUI_DISABLE)
 						GUICtrlSetState($hGUI.ScnList.Delete, $GUI_DISABLE)
 					Else
-						GUICtrlSetState($hGUI.ScnList.Save, $GUI_ENABLE)
+						GUICtrlSetState($hGUI.ScnList.Save, $MM_GAME_NO_DIR ? $GUI_DISABLE : $GUI_ENABLE)
 						Local $aSelected = _GUICtrlListView_GetSelectedIndices($hGUI.ScnList.List, True)
-						GUICtrlSetState($hGUI.ScnList.Load, $aSelected[0] >= 1 And $aSelected[1] == 0 ? $GUI_DISABLE : $GUI_ENABLE)
+						GUICtrlSetState($hGUI.ScnList.Load, ($aSelected[0] >= 1 And $aSelected[1] == 0) Or $MM_GAME_NO_DIR ? $GUI_DISABLE : $GUI_ENABLE)
 						GUICtrlSetState($hGUI.ScnList.Delete, $aSelected[0] >= 1 And $aSelected[1] == 0 ? $GUI_DISABLE : $GUI_ENABLE)
 					EndIf
 			EndSwitch
