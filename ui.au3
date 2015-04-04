@@ -169,6 +169,68 @@ Func UI_SelectGameDir()
 	EndIf
 EndFunc
 
+Func UI_Import_Scn()
+	Local $mAnswer = MapEmpty()
+	$mAnswer["selected"] = False
+	$mAnswer["only_load"] = Settings_Get("list_only_load")
+
+	Local $bClose = False, $bSelected = False, $mParsed, $iUserChoice
+
+	GUISetState(@SW_DISABLE, $MM_UI_MAIN)
+
+	Local Const $iOptionGUIOnEventMode = AutoItSetOption("GUIOnEventMode", 0)
+	Local Const $iItemSpacing = 4
+
+	Local $hGUI = GUICreate(Lng_Get("scenarios.import.caption"), 460, 436, Default, Default, Default, Default, $MM_UI_MAIN)
+	Local $aSize = WinGetClientSize($hGUI)
+	If Not @Compiled Then GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
+
+	Local $hEdit = GUICtrlCreateEdit("", $iItemSpacing, $iItemSpacing, $aSize[0] - 2 * $iItemSpacing, 400, $ES_MULTILINE)
+	GUICtrlSetData($hEdit, ClipGet())
+
+	Local $hCheckOnlyLoad = GUICtrlCreateCheckbox(Lng_Get("scenarios.import.only_load"), $iItemSpacing, GUICtrlGetPos($hEdit).NextY + $iItemSpacing, Default, 17)
+	Local $hOk = GUICtrlCreateButton("OK", $aSize[0] - $iItemSpacing - 75, GUICtrlGetPos($hEdit).NextY + $iItemSpacing, 75, 25)
+	GUICtrlSetState($hCheckOnlyLoad, Not $mAnswer["only_load"] ? $GUI_CHECKED : $GUI_UNCHECKED)
+
+	GUISetState(@SW_SHOW)
+
+	While Not $bClose And Not $bSelected
+		Switch GUIGetMsg()
+			Case $GUI_EVENT_CLOSE
+				$bClose = True
+			Case $hOk
+				$mAnswer["only_load"] = GUICtrlRead($hCheckOnlyLoad) = $GUI_CHECKED
+				$mParsed = Scn_LoadData(GUICtrlRead($hEdit))
+				If Not $mAnswer["only_load"] And Not $mParsed["name"] Then
+					MsgBox($MB_OK + $MB_ICONINFORMATION + $MB_TASKMODAL, "", Lng_Get("scenarios.import.not_valid"))
+					ContinueLoop
+				ElseIf Not $mAnswer["only_load"] And Scn_Exist($mParsed["name"]) Then
+					$iUserChoice = MsgBox($MB_YESNO + $MB_ICONQUESTION + $MB_DEFBUTTON2 + $MB_TASKMODAL, "", Lng_Get("scenarios.import.replace"))
+					If $iUserChoice <> $IDYES Then ContinueLoop
+				EndIf
+
+				$mAnswer = UI_SelectScnLoadOptions($mParsed)
+				If $mAnswer["selected"] Then $bSelected = True
+		EndSwitch
+	WEnd
+
+	If $bSelected Then
+		$mAnswer["selected"] = True
+		$mAnswer["data"] = $mParsed
+		$mAnswer["name"] = $mAnswer["data"]["name"]
+		Settings_Set("list_only_load", $mAnswer["only_load"])
+		Settings_Save()
+	EndIf
+
+	GUIDelete($hGUI)
+
+	AutoItSetOption("GUIOnEventMode", $iOptionGUIOnEventMode)
+	GUISetState(@SW_ENABLE, $MM_UI_MAIN)
+	GUISetState(@SW_RESTORE, $MM_UI_MAIN)
+
+	Return $mAnswer
+EndFunc
+
 Func UI_SelectScnLoadOptions(Const ByRef $mData)
 	Local $mAnswer = MapEmpty(), $bSkip = Settings_Get("list_no_ask")
 	$mAnswer["selected"] = False
@@ -179,7 +241,6 @@ Func UI_SelectScnLoadOptions(Const ByRef $mData)
 		$mAnswer["selected"] = True
 		Return $mAnswer
 	EndIf
-
 
 	GUISetState(@SW_DISABLE, $MM_UI_MAIN)
 
@@ -266,6 +327,7 @@ Func UI_SelectScnSaveOptions($sDefaultName)
 	Local $hCombo = GUICtrlCreateCombo("", $iItemSpacing, $iItemSpacing, $aSize[0] - 3 * $iItemSpacing - 35, 25, BitOR($CBS_DROPDOWNLIST, $CBS_AUTOHSCROLL))
 	GUICtrlSetData($hCombo, _ArrayToString($MM_SCN_LIST, Default, 1))
 	If $sDefaultName <> "" Then GUICtrlSetData($hCombo, $sDefaultName, $sDefaultName)
+
 	Local $hDir = GUICtrlCreateButton("...", GUICtrlGetPos($hCombo).NextX + $iItemSpacing, $iItemSpacing - 2, 35, 25)
 	Local $hCheckExe = GUICtrlCreateCheckbox(Lng_Get("scenarios.save_options.exe"), $iItemSpacing, GUICtrlGetPos($hCombo).NextY + $iItemSpacing, Default, 17)
 	Local $hCheckSet = GUICtrlCreateCheckbox(Lng_Get("scenarios.save_options.wog_settings"), $iItemSpacing, GUICtrlGetPos($hCheckExe).NextY + $iItemSpacing, Default, 17)

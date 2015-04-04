@@ -38,7 +38,7 @@ If Not MapExists($MM_LNG_CACHE["scenarios"], "save") Or Not IsString($MM_LNG_CAC
 If Not MapExists($MM_LNG_CACHE["scenarios"], "load") Or Not IsString($MM_LNG_CACHE["scenarios"]["load"]) Then $MM_LNG_CACHE["scenarios"]["load"] = "Load"
 If Not MapExists($MM_LNG_CACHE["scenarios"], "delete") Or Not IsString($MM_LNG_CACHE["scenarios"]["delete"]) Then $MM_LNG_CACHE["scenarios"]["delete"] = "Delete"
 If Not MapExists($MM_LNG_CACHE["scenarios"], "special") Or Not IsString($MM_LNG_CACHE["scenarios"]["special"]) Then $MM_LNG_CACHE["scenarios"]["special"] = "Special"
-If Not MapExists($MM_LNG_CACHE["scenarios"], "new") Or Not IsString($MM_LNG_CACHE["scenarios"]["new"]) Then $MM_LNG_CACHE["scenarios"]["new"] = "New (Copy)"
+If Not MapExists($MM_LNG_CACHE["scenarios"], "new") Or Not IsString($MM_LNG_CACHE["scenarios"]["new"]) Then $MM_LNG_CACHE["scenarios"]["new"] = "New"
 If Not MapExists($MM_LNG_CACHE["scenarios"], "all") Or Not IsString($MM_LNG_CACHE["scenarios"]["all"]) Then $MM_LNG_CACHE["scenarios"]["all"] = "All"
 If Not MapExists($MM_LNG_CACHE["scenarios"], "delete_confirm") Or Not IsString($MM_LNG_CACHE["scenarios"]["delete_confirm"]) Then $MM_LNG_CACHE["scenarios"]["delete_confirm"] = "Do you really want to delete this preset? \n%s\n\n(The preset file will be moved to recycle bin, if it's possible))"
 If Not MapExists($MM_LNG_CACHE["scenarios"], "load_options") Or Not IsMap($MM_LNG_CACHE["scenarios"]["load_options"]) Then $MM_LNG_CACHE["scenarios"]["load_options"] = MapEmpty()
@@ -52,6 +52,13 @@ If Not MapExists($MM_LNG_CACHE["scenarios"]["save_options"], "exe") Or Not IsStr
 If Not MapExists($MM_LNG_CACHE["scenarios"]["save_options"], "wog_settings") Or Not IsString($MM_LNG_CACHE["scenarios"]["save_options"]["wog_settings"]) Then $MM_LNG_CACHE["scenarios"]["save_options"]["wog_settings"] = "Save wog settings to preset"
 If Not MapExists($MM_LNG_CACHE["scenarios"]["save_options"], "select_file") Or Not IsString($MM_LNG_CACHE["scenarios"]["save_options"]["select_file"]) Then $MM_LNG_CACHE["scenarios"]["save_options"]["select_file"] = "Select file to save"
 If Not MapExists($MM_LNG_CACHE["scenarios"]["save_options"], "select_filter") Or Not IsString($MM_LNG_CACHE["scenarios"]["save_options"]["select_filter"]) Then $MM_LNG_CACHE["scenarios"]["save_options"]["select_filter"] = "JSON files (*.json)"
+If Not MapExists($MM_LNG_CACHE["scenarios"], "import") Or Not IsMap($MM_LNG_CACHE["scenarios"]["import"]) Then $MM_LNG_CACHE["scenarios"]["import"] = MapEmpty()
+If Not MapExists($MM_LNG_CACHE["scenarios"]["import"], "caption") Or Not IsString($MM_LNG_CACHE["scenarios"]["import"]["caption"]) Then $MM_LNG_CACHE["scenarios"]["import"]["caption"] = "Import"
+If Not MapExists($MM_LNG_CACHE["scenarios"]["import"], "only_load") Or Not IsString($MM_LNG_CACHE["scenarios"]["import"]["only_load"]) Then $MM_LNG_CACHE["scenarios"]["import"]["only_load"] = "Only load. Don't save"
+If Not MapExists($MM_LNG_CACHE["scenarios"]["import"], "not_valid") Or Not IsString($MM_LNG_CACHE["scenarios"]["import"]["not_valid"]) Then $MM_LNG_CACHE["scenarios"]["import"]["not_valid"] = "Can't import this preset"
+If Not MapExists($MM_LNG_CACHE["scenarios"]["import"], "replace") Or Not IsString($MM_LNG_CACHE["scenarios"]["import"]["replace"]) Then $MM_LNG_CACHE["scenarios"]["import"]["replace"] = "Preset with same name already exist. Replace?"
+If Not MapExists($MM_LNG_CACHE["scenarios"], "export") Or Not IsMap($MM_LNG_CACHE["scenarios"]["export"]) Then $MM_LNG_CACHE["scenarios"]["export"] = MapEmpty()
+If Not MapExists($MM_LNG_CACHE["scenarios"]["export"], "caption") Or Not IsString($MM_LNG_CACHE["scenarios"]["export"]["caption"]) Then $MM_LNG_CACHE["scenarios"]["export"]["caption"] = "Export"
 If Not MapExists($MM_LNG_CACHE, "game") Or Not IsMap($MM_LNG_CACHE["game"]) Then $MM_LNG_CACHE["game"] = MapEmpty()
 If Not MapExists($MM_LNG_CACHE["game"], "caption") Or Not IsString($MM_LNG_CACHE["game"]["caption"]) Then $MM_LNG_CACHE["game"]["caption"] = "Game"
 If Not MapExists($MM_LNG_CACHE["game"], "launch") Or Not IsString($MM_LNG_CACHE["game"]["launch"]) Then $MM_LNG_CACHE["game"]["launch"] = "Launch (%s)"

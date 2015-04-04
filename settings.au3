@@ -74,6 +74,7 @@ Func __Settings_Validate()
 	If Not MapExists($MM_SETTINGS_CACHE["list"], "not_again") Or Not IsBool($MM_SETTINGS_CACHE["list"]["not_again"]) Then $MM_SETTINGS_CACHE["list"]["not_again"] = False
 	If Not MapExists($MM_SETTINGS_CACHE["list"], "exe") Or Not IsBool($MM_SETTINGS_CACHE["list"]["exe"]) Then $MM_SETTINGS_CACHE["list"]["exe"] = False
 	If Not MapExists($MM_SETTINGS_CACHE["list"], "wog_settings") Or Not IsBool($MM_SETTINGS_CACHE["list"]["wog_settings"]) Then $MM_SETTINGS_CACHE["list"]["wog_settings"] = False
+	If Not MapExists($MM_SETTINGS_CACHE["list"], "only_load") Or Not IsBool($MM_SETTINGS_CACHE["list"]["only_load"]) Then $MM_SETTINGS_CACHE["list"]["only_load"] = False
 
 	If VersionCompare($MM_SETTINGS_CACHE["version"], $MM_VERSION_NUMBER) < 0 Then $MM_SETTINGS_CACHE["version"] = $MM_VERSION_NUMBER
 EndFunc
@@ -109,12 +110,14 @@ Func Settings_Get(Const ByRef $sName)
 			$vReturn = $MM_SETTINGS_CACHE["list"]["exe"]
 		Case "list_wog_settings"
 			$vReturn = $MM_SETTINGS_CACHE["list"]["wog_settings"]
+		Case "list_only_load"
+			$vReturn = $MM_SETTINGS_CACHE["list"]["only_load"]
 	EndSwitch
 
 	Return $vReturn
 EndFunc   ;==>Settings_Get
 
-Func Settings_Set(Const ByRef $sName, Const ByRef $vValue)
+Func Settings_Set(Const ByRef $sName, Const $vValue)
 	If Not $MM_SETTINGS_INIT Then __Settings_Init()
 
 	Switch $sName
@@ -147,6 +150,8 @@ Func Settings_Set(Const ByRef $sName, Const ByRef $vValue)
 			$MM_SETTINGS_CACHE["list"]["exe"] = $vValue
 		Case "list_wog_settings"
 			$MM_SETTINGS_CACHE["list"]["wog_settings"] = $vValue
+		Case "list_only_load"
+			$MM_SETTINGS_CACHE["list"]["only_load"] = $vValue
 	EndSwitch
 EndFunc   ;==>Settings_Set
 

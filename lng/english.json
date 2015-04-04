@@ -43,7 +43,7 @@
 		"load" : "Load",
 		"delete" : "Delete",
 		"special" : "Special",
-		"new" : "New (Copy)",
+		"new" : "New",
 		"all" : "All",
 		"delete_confirm" : "Do you really want to delete this preset? \n%s\n\n(The preset file will be moved to recycle bin, if it's possible))",
 		"load_options" : {
@@ -58,6 +58,15 @@
 			"wog_settings" : "Save wog settings to preset",
 			"select_file" : "Select file to save",
 			"select_filter" : "JSON files (*.json)"
+		},
+		"import" : {
+			"caption" : "Import",
+			"only_load" : "Only load. Don't save",
+			"not_valid" : "Can't import this preset",
+			"replace" : "Preset with same name already exist. Replace?"
+		},
+		"export" : {
+			"caption" : "Export"
 		}
 	},
 	"game" : {
