@@ -189,7 +189,7 @@ Func UI_Import_Scn()
 
 	Local $hCheckOnlyLoad = GUICtrlCreateCheckbox(Lng_Get("scenarios.import.only_load"), $iItemSpacing, GUICtrlGetPos($hEdit).NextY + $iItemSpacing, Default, 17)
 	Local $hOk = GUICtrlCreateButton("OK", $aSize[0] - $iItemSpacing - 75, GUICtrlGetPos($hEdit).NextY + $iItemSpacing, 75, 25)
-	GUICtrlSetState($hCheckOnlyLoad, Not $mAnswer["only_load"] ? $GUI_CHECKED : $GUI_UNCHECKED)
+	GUICtrlSetState($hCheckOnlyLoad, $mAnswer["only_load"] ? $GUI_CHECKED : $GUI_UNCHECKED)
 
 	GUISetState(@SW_SHOW)
 
@@ -208,13 +208,14 @@ Func UI_Import_Scn()
 					If $iUserChoice <> $IDYES Then ContinueLoop
 				EndIf
 
-				$mAnswer = UI_SelectScnLoadOptions($mParsed)
+				$mAnswer = UI_SelectScnLoadOptions($mParsed, $hGUI)
 				If $mAnswer["selected"] Then $bSelected = True
 		EndSwitch
 	WEnd
 
 	If $bSelected Then
 		$mAnswer["selected"] = True
+		$mAnswer["only_load"] = GUICtrlRead($hCheckOnlyLoad) = $GUI_CHECKED
 		$mAnswer["data"] = $mParsed
 		$mAnswer["name"] = $mAnswer["data"]["name"]
 		Settings_Set("list_only_load", $mAnswer["only_load"])
@@ -313,7 +314,7 @@ Func UI_ScnExport(Const $mData = "")
 	GUISetState(@SW_RESTORE, $MM_UI_MAIN)
 EndFunc
 
-Func UI_SelectScnLoadOptions(Const ByRef $mData)
+Func UI_SelectScnLoadOptions(Const ByRef $mData, Const $hParent = $MM_UI_MAIN)
 	Local $mAnswer = MapEmpty(), $bSkip = Settings_Get("list_no_ask")
 	$mAnswer["selected"] = False
 	$mAnswer["exe"] = $mData["exe"] And Settings_Get("list_exe")
@@ -324,13 +325,13 @@ Func UI_SelectScnLoadOptions(Const ByRef $mData)
 		Return $mAnswer
 	EndIf
 
-	GUISetState(@SW_DISABLE, $MM_UI_MAIN)
+	GUISetState(@SW_DISABLE, $hParent)
 
 	Local Const $iOptionGUIOnEventMode = AutoItSetOption("GUIOnEventMode", 0)
 	Local Const $iItemSpacing = 4
 	Local $bClose = False, $bSelected = False
 
-	Local $hGUI = GUICreate(Lng_Get("scenarios.load_options.caption"), 420, 80, Default, Default, Default, Default, $MM_UI_MAIN)
+	Local $hGUI = GUICreate(Lng_Get("scenarios.load_options.caption"), 420, 80, Default, Default, Default, Default, $hParent)
 	Local $aSize = WinGetClientSize($hGUI)
 	If Not @Compiled Then GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
 
@@ -372,8 +373,8 @@ Func UI_SelectScnLoadOptions(Const ByRef $mData)
 	GUIDelete($hGUI)
 
 	AutoItSetOption("GUIOnEventMode", $iOptionGUIOnEventMode)
-	GUISetState(@SW_ENABLE, $MM_UI_MAIN)
-	GUISetState(@SW_RESTORE, $MM_UI_MAIN)
+	GUISetState(@SW_ENABLE, $hParent)
+	GUISetState(@SW_RESTORE, $hParent)
 
 	Return $mAnswer
 EndFunc

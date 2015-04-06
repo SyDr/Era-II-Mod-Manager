@@ -67,9 +67,12 @@ Func Scn_GetCurrentState(Const $mOptions)
 EndFunc
 
 Func Scn_Save(Const $mOptions)
+	If Not $mOptions["name"] Then Return False
 	Const $sFileName = $MM_SCN_DIRECTORY & "\" & $mOptions["name"] & ".json"
-	FileDelete($sFileName)
-	FileWrite($sFileName, Jsmn_Encode(Scn_GetCurrentState($mOptions), $JSMN_PRETTY_PRINT + $JSMN_UNESCAPED_UNICODE))
+	Local $hFile = FileOpen($sFileName, $FO_OVERWRITE + $FO_CREATEPATH + $FO_UTF8)
+	FileWrite($hFile, Jsmn_Encode(Scn_GetCurrentState($mOptions), $JSMN_PRETTY_PRINT + $JSMN_UNESCAPED_UNICODE))
+	FileClose($hFile)
+	Return True
 EndFunc
 
 Func __Scn_Validate(ByRef $mData)
@@ -127,14 +130,14 @@ EndFunc
 Func Scn_WSToString(Const ByRef $aData)
 	Local $sAnswer
 
-	Local $iCurrentItem = "", $iCurrentCount = 0, $iItem
+	Local $iCurrentItem = -1, $iCurrentCount = 0, $iItem
 	For $i = 0 To UBound($aData)
-		$iItem = $i <> UBound($aData) ? $aData[$i] : -1
+		$iItem = $i <> UBound($aData) ? Int($aData[$i]) : -1
 
 		If $iItem = $iCurrentItem Then
 			$iCurrentCount += 1
 		Else
-			If Not IsString($iCurrentItem) Then
+			If $iCurrentItem <> -1 Then
 				If $iCurrentItem = 0 Then
 					$sAnswer &= $iCurrentCount
 				ElseIf $iCurrentItem = 1 And $iCurrentCount > 1 Then
@@ -145,7 +148,8 @@ Func Scn_WSToString(Const ByRef $aData)
 
 				$sAnswer &= ";"
 			EndIf
-			$iCurrentItem = $iItem
+
+			$iCurrentItem = Int($iItem)
 			$iCurrentCount = 1
 		EndIf
 	Next

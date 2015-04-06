@@ -10,7 +10,7 @@ this allows easy overwrite #AutoIt3Wrapper_Res_Fileversion via simple IniWrite
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseUpx=y
 #AutoIt3Wrapper_Res_Description=A mod manager for Era II
-#AutoIt3Wrapper_Res_Fileversion=0.93.0.0
+#AutoIt3Wrapper_Res_Fileversion=0.93.1.0
 #AutoIt3Wrapper_Res_LegalCopyright=Aliaksei SyDr Karalenka
 #AutoIt3Wrapper_Res_requestedExecutionLevel=asInvoker
 #AutoIt3Wrapper_AU3Check_Parameters=-d -w 1 -w 2 -w 3 -w 4 -w 5 -w 6 -w 7
@@ -231,6 +231,11 @@ Func SD_GUI_Create()
 	GUICtrlSetState($hGUI.ScnList.Export, $GUI_DISABLE)
 	GUICtrlSetState($hGUI.ScnList.Delete, $GUI_DISABLE)
 
+	$hGUI.ScnList.ImageList = _GUIImageList_Create(16, 16, 4, 1)
+	_GUIImageList_AddIcon($hGUI.ScnList.ImageList, @ScriptDir & "\icons\go-next.ico")
+	_GUICtrlListView_SetImageList($hGUI.ScnList.List, $hGUI.ScnList.ImageList, 1)
+
+
 	SD_UI_ScnLoadItems()
 
 	; other
@@ -258,10 +263,13 @@ EndFunc   ;==>SD_GUI_Create
 Func SD_GUI_MenuCreate()
 	$hGUI.MenuScn.Menu = GUICtrlCreateMenu("-")
 	$hGUI.MenuScn.Manage = GUICtrlCreateMenuItem("-", $hGUI.MenuScn.Menu)
+	$hGUI.MenuScn.Save = GUICtrlCreateMenuItem("-", $hGUI.MenuScn.Menu)
+	GUICtrlCreateMenuItem("", $hGUI.MenuScn.Menu)
 	$hGUI.MenuScn.Import = GUICtrlCreateMenuItem("-", $hGUI.MenuScn.Manage)
 	$hGUI.MenuScn.Export = GUICtrlCreateMenuItem("-", $hGUI.MenuScn.Manage)
 	If $MM_GAME_NO_DIR Then GUICtrlSetState($hGUI.MenuScn.Import, $GUI_DISABLE)
 	If $MM_GAME_NO_DIR Then GUICtrlSetState($hGUI.MenuScn.Export, $GUI_DISABLE)
+	If $MM_GAME_NO_DIR Then GUICtrlSetState($hGUI.MenuScn.Save, $GUI_DISABLE)
 
 	$hGUI.MenuGame.Menu = GUICtrlCreateMenu("-")
 	$hGUI.MenuGame.Launch = GUICtrlCreateMenuItem("-", $hGUI.MenuGame.Menu)
@@ -451,6 +459,7 @@ Func SD_GUI_Events_Register()
 	GUICtrlSetOnEvent($hGUI.ModList.Down, "SD_GUI_Mod_Move_Down")
 	GUICtrlSetOnEvent($hGUI.ModList.ChangeState, "SD_GUI_Mod_EnableDisable")
 	GUICtrlSetOnEvent($hGUI.MenuScn.Manage, "SD_GUI_ScenarioManage")
+	GUICtrlSetOnEvent($hGUI.MenuScn.Save, "SD_UI_ScnSave")
 	GUICtrlSetOnEvent($hGUI.MenuScn.Import, "SD_UI_ScnImport")
 	GUICtrlSetOnEvent($hGUI.MenuScn.Export, "SD_UI_ScnExport")
 	GUICtrlSetOnEvent($hGUI.MenuSettings.Compatibility, "SD_GUI_Mod_Compatibility")
@@ -495,12 +504,14 @@ Func SD_UI_ScnLoadItems()
 	_GUICtrlListView_InsertGroup($hGUI.ScnList.List, -1, 3, Lng_Get("scenarios.all"))
 
     Local $iIndex = _GUICtrlListView_AddItem($hGUI.ScnList.List, "")
+	_GUICtrlListView_SetItemImage($hGUI.ScnList.List, $iIndex, Settings_Get("current_preset") ? -1 : 0)
 	_GUICtrlListView_SetItemGroupID($hGUI.ScnList.List, $iIndex, 1)
     _GUICtrlListView_AddSubItem($hGUI.ScnList.List, $iIndex,  Lng_Get("scenarios.new"), 1)
 
 	For $i = 1 To $MM_SCN_LIST[0]
 		$iIndex = _GUICtrlListView_AddItem($hGUI.ScnList.List, "")
 		_GUICtrlListView_SetItemGroupID($hGUI.ScnList.List, $iIndex, 3)
+		_GUICtrlListView_SetItemImage($hGUI.ScnList.List, $iIndex, (Settings_Get("current_preset") = $MM_SCN_LIST[$i]) ? 0 : -1)
 		_GUICtrlListView_AddSubItem($hGUI.ScnList.List, $iIndex, $MM_SCN_LIST[$i], 1)
 	Next
 
@@ -512,16 +523,23 @@ Func SD_UI_ScnImport()
 	If Not $mData["selected"] Then Return
 
 	Scn_Apply($mData["data"])
-	If $mData["wog_settings"] Then Scn_ApplyWogSettings($mData["wog_settings"])
-	If $mData["exe"] Then SD_UI_ApplyExe($mData["exe"])
+	If $mData["wog_settings"] Then Scn_ApplyWogSettings($mData["data"]["wog_settings"])
+	If $mData["exe"] Then SD_UI_ApplyExe($mData["data"]["exe"])
 	TreeViewMain()
 	$sFollowMod = $MM_LIST_CONTENT[0][0] > 0 ? $MM_LIST_CONTENT[1][$MOD_ID] : ""
 	TreeViewTryFollow($sFollowMod)
 
 	If Not $mData["only_load"] Then
 		Scn_Save($mData["data"])
-		SD_UI_ScnLoadItems()
+		Settings_Set("current_preset", $mData["data"]["name"])
+		Settings_Save()
+		GUICtrlSetData($hGUI.MenuScn.Save, Lng_GetF("scenarios.save_menu", Settings_Get("current_preset") ? Settings_Get("current_preset") : Lng_Get("scenarios.new")))
+	Else
+		Settings_Set("current_preset", "")
+		Settings_Save()
+		GUICtrlSetData($hGUI.MenuScn.Save, Lng_GetF("scenarios.save_menu", Settings_Get("current_preset") ? Settings_Get("current_preset") : Lng_Get("scenarios.new")))
 	EndIf
+	SD_UI_ScnLoadItems()
 EndFunc
 
 Func SD_UI_ScnExport()
@@ -547,20 +565,32 @@ Func SD_UI_ScnDelete()
 	Local $iAnswer = MsgBox($MB_YESNO + $MB_ICONQUESTION + $MB_DEFBUTTON2 + $MB_TASKMODAL, "", StringFormat(Lng_Get("scenarios.delete_confirm"), $MM_SCN_LIST[$iItemIndex]), Default, $MM_UI_MAIN)
 	If $iAnswer = $IDNO Then Return
 
+	If $MM_SCN_LIST[$iItemIndex] = Settings_Get("current_preset") Then
+		Settings_Set("current_preset", "")
+		GUICtrlSetData($hGUI.MenuScn.Save, Lng_GetF("scenarios.save_menu", Settings_Get("current_preset") ? Settings_Get("current_preset") : Lng_Get("scenarios.new")))
+		Settings_Save()
+	EndIf
+
 	Scn_Delete($iItemIndex)
 	SD_UI_ScnLoadItems()
 EndFunc
 
 Func SD_UI_ScnSave()
+	Local $bFromMenu = @GUI_CtrlId = $hGUI.MenuScn.Save
+
 	Local $iItemIndex = _GUICtrlListView_GetSelectedIndices($hGUI.ScnList.List)
 	If $iItemIndex < 0 Then Return
 
-	Local $mOptions = UI_SelectScnSaveOptions($iItemIndex > 0 ? $MM_SCN_LIST[$iItemIndex] : "")
+	Local $mOptions = UI_SelectScnSaveOptions($bFromMenu ? Settings_Get("current_preset") : ($iItemIndex > 0 ? $MM_SCN_LIST[$iItemIndex] : ""))
 	If Not $mOptions["selected"] Then Return
 
-	Scn_Save($mOptions)
-	SD_UI_ScnLoadItems()
-	SD_GUI_BackToMainView()
+	If Scn_Save($mOptions) Then
+		Settings_Set("current_preset", $mOptions["name"])
+		Settings_Save()
+		GUICtrlSetData($hGUI.MenuScn.Save, Lng_GetF("scenarios.save_menu", Settings_Get("current_preset") ? Settings_Get("current_preset") : Lng_Get("scenarios.new")))
+		SD_UI_ScnLoadItems()
+		SD_GUI_BackToMainView()
+	EndIf
 EndFunc
 
 Func SD_UI_ScnLoad()
@@ -572,6 +602,11 @@ Func SD_UI_ScnLoad()
 	If Not $mOptions["selected"] Then Return
 
 	Scn_Apply($mData)
+	Settings_Set("current_preset", $mData["name"])
+	Settings_Save()
+	GUICtrlSetData($hGUI.MenuScn.Save, Lng_GetF("scenarios.save_menu", Settings_Get("current_preset") ? Settings_Get("current_preset") : Lng_Get("scenarios.new")))
+	SD_UI_ScnLoadItems()
+
 	If $mOptions["wog_settings"] Then Scn_ApplyWogSettings($mData["wog_settings"])
 	If $mOptions["exe"] Then SD_UI_ApplyExe($mData["exe"])
 
@@ -652,6 +687,7 @@ Func SD_GUI_SetLng()
 
 	GUICtrlSetData($hGUI.MenuScn.Menu, Lng_Get("scenarios.caption"))
 	GUICtrlSetData($hGUI.MenuScn.Manage, Lng_Get("scenarios.manage"))
+	GUICtrlSetData($hGUI.MenuScn.Save, Lng_GetF("scenarios.save_menu", Settings_Get("current_preset") ? Settings_Get("current_preset") : Lng_Get("scenarios.new")))
 	GUICtrlSetData($hGUI.MenuScn.Import, Lng_Get("scenarios.import.caption"))
 	GUICtrlSetData($hGUI.MenuScn.Export, Lng_Get("scenarios.export.caption"))
 	GUICtrlSetData($hGUI.ScnList.Group, Lng_Get("scenarios.caption"))
@@ -997,6 +1033,9 @@ Func SD_GUI_ChangeGameDir()
 		GUICtrlSetData($hGUI.MenuGame.Launch, Lng_GetF("game.launch", $MM_GAME_EXE))
 		GUICtrlSetState($hGUI.MenuGame.Menu, $GUI_ENABLE)
 		GUICtrlSetState($hGUI.MenuSettings.Add, $GUI_ENABLE)
+		GUICtrlSetState($hGUI.MenuScn.Import, $GUI_ENABLE)
+		GUICtrlSetState($hGUI.MenuScn.Export, $GUI_ENABLE)
+		GUICtrlSetState($hGUI.MenuScn.Save, $GUI_ENABLE)
 		GUICtrlSetState($hGUI.MenuGame.Launch, $MM_GAME_EXE = "" ? $GUI_DISABLE : $GUI_ENABLE)
 		$aScreens = ArrayEmpty()
 		SD_GUI_UpdateScreen(0)
