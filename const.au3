@@ -5,7 +5,7 @@
 #ce
 
 Global Const $MM_PORTABLE = False
-Global Const $MM_VERSION_NUMBER = "0.93.1.0"
+Global Const $MM_VERSION_NUMBER = "0.93.1.1"
 
 Global Const $MM_VERSION_SUBTYPE = "beta"
 Global Const $MM_VERSION_NAME = "Siege Engine"
