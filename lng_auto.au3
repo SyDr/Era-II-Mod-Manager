@@ -35,6 +35,7 @@ If Not MapExists($MM_LNG_CACHE, "scenarios") Or Not IsMap($MM_LNG_CACHE["scenari
 If Not MapExists($MM_LNG_CACHE["scenarios"], "caption") Or Not IsString($MM_LNG_CACHE["scenarios"]["caption"]) Then $MM_LNG_CACHE["scenarios"]["caption"] = "Presets"
 If Not MapExists($MM_LNG_CACHE["scenarios"], "manage") Or Not IsString($MM_LNG_CACHE["scenarios"]["manage"]) Then $MM_LNG_CACHE["scenarios"]["manage"] = "Manage"
 If Not MapExists($MM_LNG_CACHE["scenarios"], "save") Or Not IsString($MM_LNG_CACHE["scenarios"]["save"]) Then $MM_LNG_CACHE["scenarios"]["save"] = "Save"
+If Not MapExists($MM_LNG_CACHE["scenarios"], "save_menu") Or Not IsString($MM_LNG_CACHE["scenarios"]["save_menu"]) Then $MM_LNG_CACHE["scenarios"]["save_menu"] = "Save (%s)"
 If Not MapExists($MM_LNG_CACHE["scenarios"], "load") Or Not IsString($MM_LNG_CACHE["scenarios"]["load"]) Then $MM_LNG_CACHE["scenarios"]["load"] = "Load"
 If Not MapExists($MM_LNG_CACHE["scenarios"], "delete") Or Not IsString($MM_LNG_CACHE["scenarios"]["delete"]) Then $MM_LNG_CACHE["scenarios"]["delete"] = "Delete"
 If Not MapExists($MM_LNG_CACHE["scenarios"], "special") Or Not IsString($MM_LNG_CACHE["scenarios"]["special"]) Then $MM_LNG_CACHE["scenarios"]["special"] = "Special"
