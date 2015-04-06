@@ -340,7 +340,7 @@ EndFunc   ;==>Mod_ListSave
 Func Mod_ListGetAsArray()
 	Local $aReturn = ArrayEmpty()
 
-	For $iCount = $MM_LIST_CONTENT[0][0] To 1 Step -1
+	For $iCount = 1 To $MM_LIST_CONTENT[0][0]
 		If $MM_LIST_CONTENT[$iCount][$MOD_IS_ENABLED] Then
 			$aReturn[UBound($aReturn) - 1] = $MM_LIST_CONTENT[$iCount][$MOD_ID]
 			ReDim $aReturn[UBound($aReturn) + 1]
