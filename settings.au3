@@ -8,7 +8,7 @@
 
 Global $MM_SETTINGS_CACHE, $MM_SETTINGS_INIT = False
 
-Func Settings_Save()
+Func __Settings_Save()
 	If Not $MM_SETTINGS_INIT Then __Settings_Init()
 	FileDelete($MM_SETTINGS_PATH)
 	FileWrite($MM_SETTINGS_PATH, Jsmn_Encode($MM_SETTINGS_CACHE, $JSMN_PRETTY_PRINT + $JSMN_UNESCAPED_UNICODE))
@@ -161,6 +161,7 @@ Func Settings_Set(Const ByRef $sName, Const $vValue)
 		Case "current_preset"
 			$MM_SETTINGS_CACHE["preset"]["current"] = $vValue
 	EndSwitch
+	__Settings_Save()
 EndFunc   ;==>Settings_Set
 
 Func __Settings_Init()

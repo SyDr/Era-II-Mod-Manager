@@ -72,7 +72,6 @@ Func UI_Settings()
 		Settings_Set("list_exe", GUICtrlRead($hCheckboxExe) = $GUI_CHECKED)
 		Settings_Set("list_wog_settings", GUICtrlRead($hCheckboxSet) = $GUI_CHECKED)
 		Settings_Set("list_no_ask", GUICtrlRead($hCheckboxDontAsk) = $GUI_CHECKED)
-		Settings_Save()
 	EndIf
 
 	GUIDelete($hGUI)
@@ -219,7 +218,6 @@ Func UI_Import_Scn()
 		$mAnswer["data"] = $mParsed
 		$mAnswer["name"] = $mAnswer["data"]["name"]
 		Settings_Set("list_only_load", $mAnswer["only_load"])
-		Settings_Save()
 	EndIf
 
 	GUIDelete($hGUI)
@@ -365,7 +363,6 @@ Func UI_SelectScnLoadOptions(Const ByRef $mData, Const $hParent = $MM_UI_MAIN)
 		If $mData["exe"] Then Settings_Set("list_exe", GUICtrlRead($hCheckExe) = $GUI_CHECKED)
 		If $mData["wog_settings"] Then Settings_Set("list_wog_settings", GUICtrlRead($hCheckSet) = $GUI_CHECKED)
 		Settings_Set("list_no_ask", GUICtrlRead($hCheckNotAgain) = $GUI_CHECKED)
-		Settings_Save()
 		$mAnswer["exe"] = $mData["exe"] And Settings_Get("list_exe")
 		$mAnswer["wog_settings"] = $mData["wog_settings"] And Settings_Get("list_wog_settings")
 	EndIf

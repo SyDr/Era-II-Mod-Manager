@@ -36,5 +36,3 @@ Global $MM_PLUGINS_PART_PRESENT[3] ; state if a plugins from some group exist
 Global $MM_COMPATIBILITY_MESSAGE = ""
 
 Global $MM_UI_MAIN
-
-Global $MM_UPDATE[2] ; type (0 - none/wait for update, 1 - info, 2 - setup, 3 - complete), download handle
