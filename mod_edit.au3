@@ -10,13 +10,13 @@
 #include "settings.au3"
 #include "utils.au3"
 
-Func ModEdit_Editor(Const $iModIndex, Const $hParent)
+Func ModEdit_Editor(Const $iModIndex)
 	Local Const $iSelectedMod = Mod_GetSelectedMod()
 	Mod_SetSelectedMod($iModIndex)
 
 	Local Const $iOptionGUIOnEventMode = AutoItSetOption("GUIOnEventMode", 0)
 
-	GUISetState(@SW_DISABLE, $hParent)
+	GUISetState(@SW_DISABLE, MM_GetCurrentWindow())
 
 	Local Const $iItemSpacing = 4
 	Local Const $iLabelHeight = 17
@@ -27,7 +27,7 @@ Func ModEdit_Editor(Const $iModIndex, Const $hParent)
 	$hGUI.LngCode = Lng_Get("lang.code")
 	Local $aSize, $vRes, $nMsg
 
-	$hGUI.Form = GUICreate(Lng_Get("mod_edit.caption"), 420, 278 + 25 + 4, Default, Default, Default, Default, $hParent)
+	$hGUI.Form = MM_GUICreate(Lng_Get("mod_edit.caption"), 420, 278 + 25 + 4)
 	If Not @Compiled Then GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
 	$aSize = WinGetClientSize($hGUI.Form)
 
@@ -151,10 +151,10 @@ Func ModEdit_Editor(Const $iModIndex, Const $hParent)
 
 	Mod_SetSelectedMod($iSelectedMod)
 	If $bOk Then Mod_Save($iModIndex, $hGUI.Info)
-	GUIDelete($hGUI.Form)
+	MM_GUIDelete()
 
-	GUISetState(@SW_ENABLE, $hParent)
-	GUISetState(@SW_RESTORE, $hParent)
+	GUISetState(@SW_ENABLE, MM_GetCurrentWindow())
+	GUISetState(@SW_RESTORE, MM_GetCurrentWindow())
 
 	Return $bOk
 EndFunc

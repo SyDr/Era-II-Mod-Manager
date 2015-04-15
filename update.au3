@@ -16,7 +16,7 @@ Func Update_CheckNewPorgram()
 	Local Const $iOptionGUIOnEventMode = AutoItSetOption("GUIOnEventMode", 0)
 	Local Const $iOptionGUICoordMode = AutoItSetOption("GUICoordMode", 0)
 
-	GUISetState(@SW_DISABLE, $MM_UI_MAIN)
+	GUISetState(@SW_DISABLE, MM_GetCurrentWindow())
 	Local Const $iMinWidth = 400
 	Local Const $iItemSpacing = 4
 
@@ -28,7 +28,7 @@ Func Update_CheckNewPorgram()
 	$hGUI.Close = False
 	Local $bIsSuccess, $nMsg, $aSize, $iAnswer
 
-	$hGUI.Form = GUICreate(Lng_Get("update.caption"), $iMinWidth + Round(Random(0, (@DesktopWidth - $iMinWidth)/10, 1)), 173, Default, Default, Default, Default, $MM_UI_MAIN)
+	$hGUI.Form = MM_GUICreate(Lng_Get("update.caption"), $iMinWidth + Round(Random(0, (@DesktopWidth - $iMinWidth)/10, 1)), 173)
 	If Not @Compiled Then GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
 	$aSize = WinGetClientSize($hGUI.Form)
 
@@ -189,13 +189,13 @@ Func Update_CheckNewPorgram()
 	WEnd
 
 	InetClose($hGUI.Info.Handle)
-	GUIDelete($hGUI.Form)
+	MM_GUIDelete()
 
 	AutoItSetOption("GUIOnEventMode", $iOptionGUIOnEventMode)
 	AutoItSetOption("GUICoordMode", $iOptionGUICoordMode)
 
-	GUISetState(@SW_ENABLE, $MM_UI_MAIN)
-	GUISetState(@SW_RESTORE, $MM_UI_MAIN)
+	GUISetState(@SW_ENABLE, MM_GetCurrentWindow())
+	GUISetState(@SW_RESTORE, MM_GetCurrentWindow())
 EndFunc
 
 Func Update_Init()
@@ -278,7 +278,7 @@ Func __Update_AutoCycle()
 	ElseIf $__MM_UPDATE[0] = 3 Then
 		$__MM_UPDATE[0] = 0
 		Settings_Set("update_last_check", _NowCalc())
-		If MsgBox($MB_YESNO + $MB_ICONQUESTION + $MB_SYSTEMMODAL, "", Lng_Get("update.new_version_available"), Default, $MM_UI_MAIN) = $IDYES Then Update_CheckNewPorgram()
+		If MsgBox($MB_YESNO + $MB_ICONQUESTION + $MB_SYSTEMMODAL, "", Lng_Get("update.new_version_available"), Default, MM_GetCurrentWindow()) = $IDYES Then Update_CheckNewPorgram()
 	EndIf
 EndFunc
 
