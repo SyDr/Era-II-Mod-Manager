@@ -5,6 +5,8 @@
 
 #include "include_fwd.au3"
 
+Global $__MM_UTILS_VIEWS[1]
+
 Func Utils_LaunchInBrowser(Const $sLink)
 	Local Const $http = "http://"
 	Local Const $https = "https://"
@@ -134,6 +136,23 @@ Func GUIRegisterMsgStateful(Const $iMessage, Const ByRef $sFuncName)
 		MapRemove($mRegistered, $iMessage)
 	EndIf
 EndFunc
+
+Func MM_GUICreate(Const $sTitle = "", Const $iWidth = Default, Const $iHeight = Default, Const $iLeft = Default, Const $iTop = Default, Const $iStyle = Default, Const $iExStyle = Default)
+	_ArrayAdd($__MM_UTILS_VIEWS, GUICreate($sTitle, $iWidth, $iHeight, $iLeft, $iTop, $iStyle, $iExStyle, $__MM_UTILS_VIEWS[0] > 0 ? $__MM_UTILS_VIEWS[$__MM_UTILS_VIEWS[0]] : 0))
+	$__MM_UTILS_VIEWS[0] += 1
+	Return MM_GetCurrentWindow()
+EndFunc
+
+Func MM_GetCurrentWindow()
+	Return $__MM_UTILS_VIEWS[$__MM_UTILS_VIEWS[0]]
+EndFunc
+
+Func MM_GUIDelete()
+	GUIDelete($__MM_UTILS_VIEWS[$__MM_UTILS_VIEWS[0]])
+	$__MM_UTILS_VIEWS[0] -= 1
+	ReDim $__MM_UTILS_VIEWS[$__MM_UTILS_VIEWS[0] + 1]
+EndFunc
+
 
 Func Utils_InnoLangToMM(Const $sInnoLng)
 	Return $sInnoLng & ".json"

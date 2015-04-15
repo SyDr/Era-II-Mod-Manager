@@ -14,7 +14,7 @@ Global $__UI_EVENT = False, $__UI_LIST, $__UI_INPUT
 
 Func UI_GameExeLaunch()
 	If $MM_COMPATIBILITY_MESSAGE <> "" Then
-		Local $iAnswer = MsgBox($MB_SYSTEMMODAL + $MB_YESNO, "", $MM_COMPATIBILITY_MESSAGE & @CRLF & Lng_Get("compatibility.launch_anyway"), Default, $MM_UI_MAIN)
+		Local $iAnswer = MsgBox($MB_SYSTEMMODAL + $MB_YESNO, "", $MM_COMPATIBILITY_MESSAGE & @CRLF & Lng_Get("compatibility.launch_anyway"), Default, MM_GetCurrentWindow())
 		If $iAnswer <> $IDYES Then Return
 	EndIf
 
@@ -22,13 +22,13 @@ Func UI_GameExeLaunch()
 EndFunc
 
 Func UI_Settings()
-	GUISetState(@SW_DISABLE, $MM_UI_MAIN)
+	GUISetState(@SW_DISABLE, MM_GetCurrentWindow())
 	Local Const $iOptionGUIOnEventMode = AutoItSetOption("GUIOnEventMode", 0)
 	Local Const $iItemSpacing = 4
 	Local $bClose = False
 	Local $bSave = False
 
-	Local $hGUI = GUICreate(Lng_Get("settings.menu.settings"), 370, 200, Default, Default, Default, Default, $MM_UI_MAIN)
+	Local $hGUI = MM_GUICreate(Lng_Get("settings.menu.settings"), 370, 200)
 	Local $aSize = WinGetClientSize($hGUI)
 	If Not @Compiled Then GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
 
@@ -74,11 +74,11 @@ Func UI_Settings()
 		Settings_Set("list_no_ask", GUICtrlRead($hCheckboxDontAsk) = $GUI_CHECKED)
 	EndIf
 
-	GUIDelete($hGUI)
+	MM_GUIDelete()
 
 	AutoItSetOption("GUIOnEventMode", $iOptionGUIOnEventMode)
-	GUISetState(@SW_ENABLE, $MM_UI_MAIN)
-	GUISetState(@SW_RESTORE, $MM_UI_MAIN)
+	GUISetState(@SW_ENABLE, MM_GetCurrentWindow())
+	GUISetState(@SW_RESTORE, MM_GetCurrentWindow())
 EndFunc
 
 Func UI_IntervalToItem(Const $iInterval)
@@ -109,7 +109,7 @@ EndFunc
 
 Func UI_SelectGameDir()
 	Local $aList = UI_GetSuggestedGameDirList()
-	GUISetState(@SW_DISABLE, $MM_UI_MAIN)
+	GUISetState(@SW_DISABLE, MM_GetCurrentWindow())
 
 	Local Const $iOptionGUIOnEventMode = AutoItSetOption("GUIOnEventMode", 0)
 	Local Const $iItemSpacing = 4
@@ -118,7 +118,7 @@ Func UI_SelectGameDir()
 	Local $sPath
 	Local $iAnswer
 
-	Local $hGUI = GUICreate(Lng_Get("settings.game_dir.caption"), 420, $iItemSpacing + 50, Default, Default, Default, Default, $MM_UI_MAIN)
+	Local $hGUI = MM_GUICreate(Lng_Get("settings.game_dir.caption"), 420, $iItemSpacing + 50)
 	Local $aSize = WinGetClientSize($hGUI)
 	If Not @Compiled Then GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
 
@@ -148,11 +148,11 @@ Func UI_SelectGameDir()
 		EndSwitch
 	WEnd
 
-	GUIDelete($hGUI)
+	MM_GUIDelete()
 
 	AutoItSetOption("GUIOnEventMode", $iOptionGUIOnEventMode)
-	GUISetState(@SW_ENABLE, $MM_UI_MAIN)
-	GUISetState(@SW_RESTORE, $MM_UI_MAIN)
+	GUISetState(@SW_ENABLE, MM_GetCurrentWindow())
+	GUISetState(@SW_RESTORE, MM_GetCurrentWindow())
 
 	If Not $bSelected Or Not $sPath Then
 		Return False
@@ -174,12 +174,12 @@ Func UI_Import_Scn()
 
 	Local $bClose = False, $bSelected = False, $mParsed, $iUserChoice
 
-	GUISetState(@SW_DISABLE, $MM_UI_MAIN)
+	GUISetState(@SW_DISABLE, MM_GetCurrentWindow())
 
 	Local Const $iOptionGUIOnEventMode = AutoItSetOption("GUIOnEventMode", 0)
 	Local Const $iItemSpacing = 4
 
-	Local $hGUI = GUICreate(Lng_Get("scenarios.import.caption"), 460, 436, Default, Default, Default, Default, $MM_UI_MAIN)
+	Local $hGUI = MM_GUICreate(Lng_Get("scenarios.import.caption"), 460, 436)
 	Local $aSize = WinGetClientSize($hGUI)
 	If Not @Compiled Then GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
 
@@ -207,7 +207,7 @@ Func UI_Import_Scn()
 					If $iUserChoice <> $IDYES Then ContinueLoop
 				EndIf
 
-				$mAnswer = UI_SelectScnLoadOptions($mParsed, $hGUI)
+				$mAnswer = UI_SelectScnLoadOptions($mParsed)
 				If $mAnswer["selected"] Then $bSelected = True
 		EndSwitch
 	WEnd
@@ -220,11 +220,11 @@ Func UI_Import_Scn()
 		Settings_Set("list_only_load", $mAnswer["only_load"])
 	EndIf
 
-	GUIDelete($hGUI)
+	MM_GUIDelete()
 
 	AutoItSetOption("GUIOnEventMode", $iOptionGUIOnEventMode)
-	GUISetState(@SW_ENABLE, $MM_UI_MAIN)
-	GUISetState(@SW_RESTORE, $MM_UI_MAIN)
+	GUISetState(@SW_ENABLE, MM_GetCurrentWindow())
+	GUISetState(@SW_RESTORE, MM_GetCurrentWindow())
 
 	Return $mAnswer
 EndFunc
@@ -254,12 +254,12 @@ Func UI_ScnExport(Const $mData = "")
 
 	Local $bClose = False
 
-	GUISetState(@SW_DISABLE, $MM_UI_MAIN)
+	GUISetState(@SW_DISABLE, MM_GetCurrentWindow())
 
 	Local Const $iOptionGUIOnEventMode = AutoItSetOption("GUIOnEventMode", 0)
 	Local Const $iItemSpacing = 4
 
-	Local $hGUI = GUICreate(Lng_Get("scenarios.export.caption"), 460, 486, Default, Default, Default, Default, $MM_UI_MAIN)
+	Local $hGUI = MM_GUICreate(Lng_Get("scenarios.export.caption"), 460, 486)
 	Local $aSize = WinGetClientSize($hGUI)
 	If Not @Compiled Then GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
 	GUIRegisterMsgStateful($WM_COMMAND, "__UI_WM_COMMAND")
@@ -305,14 +305,14 @@ Func UI_ScnExport(Const $mData = "")
 	WEnd
 
 	GUIRegisterMsgStateful($WM_COMMAND, "")
-	GUIDelete($hGUI)
+	MM_GUIDelete()
 
 	AutoItSetOption("GUIOnEventMode", $iOptionGUIOnEventMode)
 	GUISetState(@SW_ENABLE, $MM_UI_MAIN)
 	GUISetState(@SW_RESTORE, $MM_UI_MAIN)
 EndFunc
 
-Func UI_SelectScnLoadOptions(Const ByRef $mData, Const $hParent = $MM_UI_MAIN)
+Func UI_SelectScnLoadOptions(Const ByRef $mData)
 	Local $mAnswer = MapEmpty(), $bSkip = Settings_Get("list_no_ask")
 	$mAnswer["selected"] = False
 	$mAnswer["exe"] = $mData["exe"] And Settings_Get("list_exe")
@@ -323,13 +323,13 @@ Func UI_SelectScnLoadOptions(Const ByRef $mData, Const $hParent = $MM_UI_MAIN)
 		Return $mAnswer
 	EndIf
 
-	GUISetState(@SW_DISABLE, $hParent)
+	GUISetState(@SW_DISABLE, MM_GetCurrentWindow())
 
 	Local Const $iOptionGUIOnEventMode = AutoItSetOption("GUIOnEventMode", 0)
 	Local Const $iItemSpacing = 4
 	Local $bClose = False, $bSelected = False
 
-	Local $hGUI = GUICreate(Lng_Get("scenarios.load_options.caption"), 420, 80, Default, Default, Default, Default, $hParent)
+	Local $hGUI = MM_GUICreate(Lng_Get("scenarios.load_options.caption"), 420, 80)
 	Local $aSize = WinGetClientSize($hGUI)
 	If Not @Compiled Then GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
 
@@ -367,11 +367,11 @@ Func UI_SelectScnLoadOptions(Const ByRef $mData, Const $hParent = $MM_UI_MAIN)
 		$mAnswer["wog_settings"] = $mData["wog_settings"] And Settings_Get("list_wog_settings")
 	EndIf
 
-	GUIDelete($hGUI)
+	MM_GUIDelete()
 
 	AutoItSetOption("GUIOnEventMode", $iOptionGUIOnEventMode)
-	GUISetState(@SW_ENABLE, $hParent)
-	GUISetState(@SW_RESTORE, $hParent)
+	GUISetState(@SW_ENABLE, MM_GetCurrentWindow())
+	GUISetState(@SW_RESTORE, MM_GetCurrentWindow())
 
 	Return $mAnswer
 EndFunc
@@ -386,7 +386,7 @@ Func UI_SelectScnSaveOptions($sDefaultName)
 	Local $bClose = False, $bSelected = False, $sPath
 
 	If $sDefaultName = "" Then
-		$sPath = __UI_SelectSavePath($MM_UI_MAIN)
+		$sPath = __UI_SelectSavePath()
 		If Not @error Then
 			$sDefaultName = $sPath
 		Else
@@ -394,13 +394,13 @@ Func UI_SelectScnSaveOptions($sDefaultName)
 		EndIf
 	EndIf
 
-	GUISetState(@SW_DISABLE, $MM_UI_MAIN)
+	GUISetState(@SW_DISABLE, MM_GetCurrentWindow())
 
 	Local Const $iOptionGUIOnEventMode = AutoItSetOption("GUIOnEventMode", 0)
 	Local Const $iItemSpacing = 4
 
 
-	Local $hGUI = GUICreate(Lng_Get("scenarios.save_options.caption"), 420, 104, Default, Default, Default, Default, $MM_UI_MAIN)
+	Local $hGUI = MM_GUICreate(Lng_Get("scenarios.save_options.caption"), 420, 104)
 	Local $aSize = WinGetClientSize($hGUI)
 	If Not @Compiled Then GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
 
@@ -428,7 +428,7 @@ Func UI_SelectScnSaveOptions($sDefaultName)
 			Case $hOk
 				$bSelected = True
 			Case $hDir
-				$sPath = __UI_SelectSavePath($hGUI, GUICtrlRead($hCombo) & ".json")
+				$sPath = __UI_SelectSavePath(GUICtrlRead($hCombo) & ".json")
 				If Not @error Then
 					GUICtrlSetData($hCombo, $sPath, $sPath)
 				EndIf
@@ -442,18 +442,18 @@ Func UI_SelectScnSaveOptions($sDefaultName)
 		$mAnswer["wog_settings"] = GUICtrlRead($hCheckSet) = $GUI_CHECKED
 	EndIf
 
-	GUIDelete($hGUI)
+	MM_GUIDelete()
 
 	AutoItSetOption("GUIOnEventMode", $iOptionGUIOnEventMode)
-	GUISetState(@SW_ENABLE, $MM_UI_MAIN)
-	GUISetState(@SW_RESTORE, $MM_UI_MAIN)
+	GUISetState(@SW_ENABLE, MM_GetCurrentWindow())
+	GUISetState(@SW_RESTORE, MM_GetCurrentWindow())
 
 	Return $mAnswer
 EndFunc
 
-Func __UI_SelectSavePath(Const $hParent, Const $sName = "")
+Func __UI_SelectSavePath(Const $sName = "")
 	Local $sDrive, $sDir, $sFileName, $sExtension
-	Local $sPath = FileSaveDialog(Lng_Get("scenarios.save_options.select_file"), $MM_SCN_DIRECTORY, Lng_Get("scenarios.save_options.select_filter"), Default, $sName, $hParent)
+	Local $sPath = FileSaveDialog(Lng_Get("scenarios.save_options.select_file"), $MM_SCN_DIRECTORY, Lng_Get("scenarios.save_options.select_filter"), Default, $sName, MM_GetCurrentWindow())
 	If @error Then Return SetError(@error, @extended, "")
 	_PathSplit($sPath, $sDrive, $sDir, $sFileName, $sExtension)
 	Return SetError(0, 0, $sFileName)
@@ -479,7 +479,7 @@ Func UI_SelectGameExe()
 	If Not IsArray($aList) Then Local $aList[1] = [0]
 	Local Const $iOptionGUIOnEventMode = AutoItSetOption("GUIOnEventMode", 0)
 	Local Const $aBlacklist = Settings_Get("game.blacklist")
-	GUISetState(@SW_DISABLE, $MM_UI_MAIN)
+	GUISetState(@SW_DISABLE, MM_GetCurrentWindow())
 
 	Local Const $iItemSpacing = 4
 	Local $bClose = False
@@ -487,7 +487,7 @@ Func UI_SelectGameExe()
 	Local $sReturn = $MM_GAME_EXE
 	Local $bAllowName, $sSelected
 
-	Local $hGUI = GUICreate("", 200, 324, Default, Default, Default, Default, $MM_UI_MAIN)
+	Local $hGUI = MM_GUICreate("", 200, 324)
 	Local $aSize = WinGetClientSize($hGUI)
 	If Not @Compiled Then GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
 	GUIRegisterMsgStateful($WM_NOTIFY, "__UI_WM_NOTIFY")
@@ -547,11 +547,11 @@ Func UI_SelectGameExe()
 	EndIf
 
 	GUIRegisterMsgStateful($WM_NOTIFY, "")
-	GUIDelete($hGUI)
+	MM_GUIDelete()
 
 	AutoItSetOption("GUIOnEventMode", $iOptionGUIOnEventMode)
-	GUISetState(@SW_ENABLE, $MM_UI_MAIN)
-	GUISetState(@SW_RESTORE, $MM_UI_MAIN)
+	GUISetState(@SW_ENABLE, MM_GetCurrentWindow())
+	GUISetState(@SW_RESTORE, MM_GetCurrentWindow())
 	Return $sReturn
 EndFunc
 

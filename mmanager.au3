@@ -169,7 +169,7 @@ EndFunc   ;==>SD_GUI_Language_Change
 Func SD_GUI_Create()
 	Local Const $iOptionGUICoordMode = AutoItSetOption("GUICoordMode", 0)
 
-	$MM_UI_MAIN = GUICreate($MM_TITLE, $MM_WINDOW_MIN_WIDTH, $MM_WINDOW_MIN_HEIGHT, Default, Default, BitOR($GUI_SS_DEFAULT_GUI, $WS_SIZEBOX, $WS_MAXIMIZEBOX), $WS_EX_ACCEPTFILES)
+	$MM_UI_MAIN = MM_GUICreate($MM_TITLE, $MM_WINDOW_MIN_WIDTH, $MM_WINDOW_MIN_HEIGHT, Default, Default, BitOR($GUI_SS_DEFAULT_GUI, $WS_SIZEBOX, $WS_MAXIMIZEBOX), $WS_EX_ACCEPTFILES)
 	$MM_WINDOW_MIN_WIDTH_FULL = WinGetPos($MM_UI_MAIN)[2]
 	$MM_WINDOW_MIN_HEIGHT_FULL = WinGetPos($MM_UI_MAIN)[3]
 	GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
@@ -718,7 +718,7 @@ Func SD_GUI_SetLng()
 EndFunc   ;==>SD_GUI_SetLng
 
 Func SD_GUI_Mod_Compatibility()
-	MsgBox(4096, "", $MM_COMPATIBILITY_MESSAGE, Default, $MM_UI_MAIN)
+	MsgBox(4096, "", $MM_COMPATIBILITY_MESSAGE, Default, MM_GetCurrentWindow())
 EndFunc   ;==>SD_GUI_Mod_Compatibility
 
 Func SD_GUI_Mod_OpenFolder()
@@ -731,7 +731,7 @@ EndFunc   ;==>SD_GUI_Mod_OpenFolder
 Func SD_GUI_Mod_EditMod()
 	Local $iModIndex = TreeViewGetSelectedIndex()
 	If $iModIndex = -1 Then Return -1 ; never
-	If ModEdit_Editor($iModIndex, $MM_UI_MAIN) Then SD_GUI_Update()
+	If ModEdit_Editor($iModIndex) Then SD_GUI_Update()
 EndFunc
 
 Func SD_GUI_Mod_PackMod()
@@ -913,7 +913,7 @@ Func SD_GUI_Close()
 	SD_GUI_UpdateScreen(0)
 	_GDIPlus_Shutdown()
 	$bMainUICycle = False
-	GUIDelete($MM_UI_MAIN)
+	MM_GUIDelete()
 	If $bExit Then Exit
 EndFunc   ;==>SD_GUI_Close
 
