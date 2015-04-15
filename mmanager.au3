@@ -79,7 +79,7 @@ ElseIf $CMDLine[0] > 0 Then
 EndIf
 
 StartUp_CheckRunningInstance()
-Update_AutoInit()
+Update_Init()
 
 If Not IsDeclared("__MM_NO_UI") Then
 	While True
@@ -115,8 +115,6 @@ Func MainLoop()
 				ShellExecute("explorer.exe", "/select," & $MM_LIST_FILE_PATH, $MM_LIST_DIR_PATH)
 			EndIf
 		EndIf
-
-		Update_AutoCycle()
 	WEnd
 EndFunc   ;==>MainLoop
 
@@ -532,11 +530,9 @@ Func SD_UI_ScnImport()
 	If Not $mData["only_load"] Then
 		Scn_Save($mData["data"])
 		Settings_Set("current_preset", $mData["data"]["name"])
-		Settings_Save()
 		GUICtrlSetData($hGUI.MenuScn.Save, Lng_GetF("scenarios.save_menu", Settings_Get("current_preset") ? Settings_Get("current_preset") : Lng_Get("scenarios.new")))
 	Else
 		Settings_Set("current_preset", "")
-		Settings_Save()
 		GUICtrlSetData($hGUI.MenuScn.Save, Lng_GetF("scenarios.save_menu", Settings_Get("current_preset") ? Settings_Get("current_preset") : Lng_Get("scenarios.new")))
 	EndIf
 	SD_UI_ScnLoadItems()
@@ -568,7 +564,6 @@ Func SD_UI_ScnDelete()
 	If $MM_SCN_LIST[$iItemIndex] = Settings_Get("current_preset") Then
 		Settings_Set("current_preset", "")
 		GUICtrlSetData($hGUI.MenuScn.Save, Lng_GetF("scenarios.save_menu", Settings_Get("current_preset") ? Settings_Get("current_preset") : Lng_Get("scenarios.new")))
-		Settings_Save()
 	EndIf
 
 	Scn_Delete($iItemIndex)
@@ -586,7 +581,6 @@ Func SD_UI_ScnSave()
 
 	If Scn_Save($mOptions) Then
 		Settings_Set("current_preset", $mOptions["name"])
-		Settings_Save()
 		GUICtrlSetData($hGUI.MenuScn.Save, Lng_GetF("scenarios.save_menu", Settings_Get("current_preset") ? Settings_Get("current_preset") : Lng_Get("scenarios.new")))
 		SD_UI_ScnLoadItems()
 		SD_GUI_BackToMainView()
@@ -603,7 +597,6 @@ Func SD_UI_ScnLoad()
 
 	Scn_Apply($mData)
 	Settings_Set("current_preset", $mData["name"])
-	Settings_Save()
 	GUICtrlSetData($hGUI.MenuScn.Save, Lng_GetF("scenarios.save_menu", Settings_Get("current_preset") ? Settings_Get("current_preset") : Lng_Get("scenarios.new")))
 	SD_UI_ScnLoadItems()
 
@@ -916,7 +909,6 @@ EndFunc   ;==>SD_GUI_LoadSize
 
 Func SD_GUI_Close()
 	SD_GUI_SaveSize()
-	Settings_Save()
 	$aScreens = ArrayEmpty()
 	SD_GUI_UpdateScreen(0)
 	_GDIPlus_Shutdown()

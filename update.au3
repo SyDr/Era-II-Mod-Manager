@@ -9,6 +9,9 @@
 #include "settings.au3"
 #include "utils.au3"
 
+
+Global $__MM_UPDATE[2] ; type (0 - none/wait for update, 1 - info, 2 - setup, 3 - complete), download handle
+
 Func Update_CheckNewPorgram()
 	Local Const $iOptionGUIOnEventMode = AutoItSetOption("GUIOnEventMode", 0)
 	Local Const $iOptionGUICoordMode = AutoItSetOption("GUICoordMode", 0)
@@ -195,78 +198,86 @@ Func Update_CheckNewPorgram()
 	GUISetState(@SW_RESTORE, $MM_UI_MAIN)
 EndFunc
 
-Func Update_AutoInit()
-	If FileExists($MM_DATA_DIRECTORY & "\update\setup.exe") And FileExists($MM_DATA_DIRECTORY & "\update\complete.txt") Then
-		FileDelete($MM_DATA_DIRECTORY & "\update\complete.txt")
-		ShellExecute($MM_DATA_DIRECTORY & "\update\setup.exe", "/SILENT")
+Func Update_Init()
+	Local Const $sUpdateFile = $MM_DATA_DIRECTORY & "\update\complete.txt"
+	Local Const $sExeName = $MM_DATA_DIRECTORY & "\update\setup.exe"
+
+	If FileExists($sExeName) And FileExists($sUpdateFile) Then
+		FileDelete($sUpdateFile)
+		ShellExecute($sExeName, "/SILENT")
 		Exit
 	EndIf
 
-	FileDelete($MM_DATA_DIRECTORY & "\update\*.*")
-	DirCreate($MM_DATA_DIRECTORY & "\update")
+	DirRemove($MM_DATA_DIRECTORY & "\update\", 1)
 
 	If Update_UpdateNeeded() Then
+		DirCreate($MM_DATA_DIRECTORY & "\update")
 		_TracePoint("Update: download info")
-		$MM_UPDATE[0] = 1
-		$MM_UPDATE[1] = InetGet($MM_UPDATE_URL & "/mm.json", $MM_DATA_DIRECTORY & "\update\setup.json", $INET_FORCERELOAD, $INET_DOWNLOADBACKGROUND)
+		$__MM_UPDATE[0] = 1
+		$__MM_UPDATE[1] = InetGet($MM_UPDATE_URL & "/mm.json", $MM_DATA_DIRECTORY & "\update\setup.json", $INET_FORCERELOAD, $INET_DOWNLOADBACKGROUND)
+		AdlibRegister("__Update_AutoCycle", 3000)
 	EndIf
 EndFunc
 
 Func Update_UpdateNeeded()
-	Const $sLastUpdateCheck = Settings_Get("update_last_check")
-	Const $sNow = _NowCalc()
-	Const $iInterval = Settings_Get("update_interval")
+	Local Const $sLastUpdateCheck = Settings_Get("update_last_check")
+	Local Const $iInterval = Settings_Get("update_interval")
+	Local Const $sNow = _NowCalc()
 
-	If $iInterval = 0 Then Return
-	Local $iDiff = _DateDiff("s", $sNow, _DateAdd("D", $iInterval, $sLastUpdateCheck))
+	If $iInterval = 0 Then Return False
+	Local Const $iDiff = _DateDiff("s", $sNow, _DateAdd("D", $iInterval, $sLastUpdateCheck))
 	_TracePoint(StringFormat("Update: next update in %s seconds", $iDiff))
 
 	Return $iDiff < 0
 EndFunc
 
-Func Update_AutoCycle()
-	If $MM_UPDATE[0] = 0 Then Return
+Func __Update_AutoCycle()
+	If $__MM_UPDATE[0] = 0 Then
+		AdlibUnRegister("__Update_AutoCycle")
+		Return
+	EndIf
 
-	If $MM_UPDATE[0] = 1 Or $MM_UPDATE[0] = 2 Then
-		If Not InetGetInfo($MM_UPDATE[1], $INET_DOWNLOADCOMPLETE) Then Return
-		If Not InetGetInfo($MM_UPDATE[1], $INET_DOWNLOADSUCCESS) Then
-			$MM_UPDATE[0] = 0
+	If $__MM_UPDATE[0] = 1 Or $__MM_UPDATE[0] = 2 Then
+		If Not InetGetInfo($__MM_UPDATE[1], $INET_DOWNLOADCOMPLETE) Then Return
+		If Not InetGetInfo($__MM_UPDATE[1], $INET_DOWNLOADSUCCESS) Then
+			$__MM_UPDATE[0] = 0 ; will unregister itself on next function run
 			Return
 		EndIf
 	EndIf
 
 	Local $hParsedInfo
 
-	If $MM_UPDATE[0] = 1 Then
+	If $__MM_UPDATE[0] = 1 Then
 		_TracePoint("Update: info loaded")
-		InetClose($MM_UPDATE[1])
+		InetClose($__MM_UPDATE[1])
 		$hParsedInfo = Jsmn_Decode(FileRead($MM_DATA_DIRECTORY & "\update\setup.json"))
 
 		If Not __Update_InfoFileValidate($hParsedInfo) Then
-			$MM_UPDATE[0] = 0
-		ElseIf $hParsedInfo[$MM_VERSION_SUBTYPE]["version"] = $MM_VERSION_NUMBER Then
-			_TracePoint("Update: same version")
-			$MM_UPDATE[0] = 0
+			$__MM_UPDATE[0] = 0
+		ElseIf VersionCompare($hParsedInfo[$MM_VERSION_SUBTYPE]["version"], $MM_VERSION_NUMBER) = 0 Then
+			_TracePoint("Update: same version detected")
+			$__MM_UPDATE[0] = 0
 			Settings_Set("update_last_check", _NowCalc())
-			Settings_Save()
+		ElseIf VersionCompare($hParsedInfo[$MM_VERSION_SUBTYPE]["version"], $MM_VERSION_NUMBER) < 0 Then
+			_TracePoint("Update: installed version is newer >_<")
+			$__MM_UPDATE[0] = 0
+			Settings_Set("update_last_check", _NowCalc())
 		ElseIf Settings_Get("update_auto") Then
-			_TracePoint("Update: new version")
-			$MM_UPDATE[0] = 2
-			$MM_UPDATE[1] = InetGet($MM_UPDATE_URL & $hParsedInfo[$MM_VERSION_SUBTYPE]["setup"], $MM_DATA_DIRECTORY & "\update\setup.exe", $INET_FORCERELOAD, $INET_DOWNLOADBACKGROUND)
+			_TracePoint("Update: new version detected")
+			$__MM_UPDATE[0] = 2
+			$__MM_UPDATE[1] = InetGet($MM_UPDATE_URL & $hParsedInfo[$MM_VERSION_SUBTYPE]["setup"], $MM_DATA_DIRECTORY & "\update\setup.exe", $INET_FORCERELOAD, $INET_DOWNLOADBACKGROUND)
 		Else
-			$MM_UPDATE[0] = 3
+			$__MM_UPDATE[0] = 3
 		EndIf
 
-	ElseIf $MM_UPDATE[0] = 2 Then
+	ElseIf $__MM_UPDATE[0] = 2 Then
+		$__MM_UPDATE[0] = 0
 		_TracePoint("Update: new version downloaded")
 		FileClose(FileOpen($MM_DATA_DIRECTORY & "\update\complete.txt", $FO_OVERWRITE))
-		$MM_UPDATE[0] = 0
 		Settings_Set("update_last_check", _NowCalc())
-		Settings_Save()
-	ElseIf $MM_UPDATE[0] = 3 Then
-		$MM_UPDATE[0] = 0
+	ElseIf $__MM_UPDATE[0] = 3 Then
+		$__MM_UPDATE[0] = 0
 		Settings_Set("update_last_check", _NowCalc())
-		Settings_Save()
 		If MsgBox($MB_YESNO + $MB_ICONQUESTION + $MB_SYSTEMMODAL, "", Lng_Get("update.new_version_available"), Default, $MM_UI_MAIN) = $IDYES Then Update_CheckNewPorgram()
 	EndIf
 EndFunc
