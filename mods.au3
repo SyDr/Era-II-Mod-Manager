@@ -192,7 +192,6 @@ Func Mod_Get(Const $sPath, $iModIndex = -1)
 	ElseIf $aParts[1] = "description" Then
 		$vReturn = $MM_LIST_MAP[$sModId]["description"][$aParts[2]][$MM_LANGUAGE_CODE]
 		If $vReturn = "" Then $vReturn = $MM_LIST_MAP[$sModId]["description"][$aParts[2]]["en_US"]
-		If $vReturn = "" Then $vReturn = Lng_Get("info_group.no_info")
 	ElseIf $aParts[1] = "plugins" And Not MapExists($MM_LIST_MAP[$sModId]["plugins"], $aParts[2]) Then
 		Switch $aParts[3]
 			Case "caption"
