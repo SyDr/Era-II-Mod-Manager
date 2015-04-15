@@ -132,7 +132,7 @@ Func ModEdit_Editor(Const $iModIndex)
 				__ModEdit_SetIcon($hGUI)
 				__ModEdit_SetControlAccessibility($hGUI)
 			Case $hGUI.ButtonHelp
-				ShellExecute(@ScriptDir & "\doc\mod.json structure.rtf")
+				ShellExecute(@ScriptDir & "\doc\mod.txt")
 			Case $hGUI.ButtonSave
 				$bOk = True
 		EndSwitch
