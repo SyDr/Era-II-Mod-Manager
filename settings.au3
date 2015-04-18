@@ -96,7 +96,7 @@ Func Settings_Get(Const ByRef $sName)
 		Case "path"
 			$vReturn = $MM_PORTABLE ? $MM_GAME_DIR : $MM_SETTINGS_CACHE["game"]["selected"]
 		Case "exe"
-			$vReturn = $MM_PORTABLE ? $MM_SETTINGS_CACHE["game"]["exe"] : ($MM_SETTINGS_CACHE["game"]["exe"] ? $MM_SETTINGS_CACHE["game"]["items"][$MM_SETTINGS_CACHE["game"]["exe"]]["exe"] : "")
+			$vReturn = $MM_PORTABLE ? $MM_SETTINGS_CACHE["game"]["exe"] : ($MM_SETTINGS_CACHE["game"]["selected"] ? $MM_SETTINGS_CACHE["game"]["items"][$MM_SETTINGS_CACHE["game"]["selected"]]["exe"] : "")
 			If Not $vReturn And FileExists(Settings_Get("path") & "\h3era.exe") Then $vReturn = "h3era.exe"
 		Case "game.blacklist"
 			$vReturn = $MM_SETTINGS_CACHE["game"]["blacklist"]
