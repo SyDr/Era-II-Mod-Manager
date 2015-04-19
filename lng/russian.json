@@ -190,7 +190,9 @@
 			"caption" : "Заголовок и описание",
 			"language" : "Язык:",
 			"caption_label" : "Заголовок:",
-			"description_file" : "Файл описания:"
+			"description_file" : "Файл описания:",
+			"description_short" : "Краткое описание:",			
+			"description_short_from_file" : "Из файла"			
 		},
 		"group_other" :
 		{
