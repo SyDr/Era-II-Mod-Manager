@@ -20,46 +20,63 @@ Func ModEdit_Editor(Const $iModIndex)
 
 	Local Const $iItemSpacing = 4
 	Local Const $iLabelHeight = 17
-	Local Const $iInputHeight = 23
-	Local Const $iButtonHeight = 25
+	Local Const $iInputHeight = 21
+	Local Const $iButtonHeight = 23
+	Local Const $iEditHeight = $iInputHeight * 4
 	Local $hGUI = MapEmpty()
 	$hGUI.Info = $MM_LIST_MAP[Mod_Get("id")]
 	$hGUI.LngCode = Lng_Get("lang.code")
 	Local $aSize, $vRes, $nMsg
 
-	$hGUI.Form = MM_GUICreate(Lng_Get("mod_edit.caption"), 420, 278 + 25 + 4)
+	$hGUI.Form = MM_GUICreate(Lng_Get("mod_edit.caption"), 500, 278 + 50 + 4 + $iEditHeight)
 	If Not @Compiled Then GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
 	$aSize = WinGetClientSize($hGUI.Form)
 
-	$hGUI.GroupCaption = GUICtrlCreateGroup(Lng_Get("mod_edit.group_caption.caption"), $iItemSpacing, $iItemSpacing, $aSize[0] - 2 * $iItemSpacing, 7 * $iItemSpacing + 25 + $iButtonHeight + $iLabelHeight)
+	$hGUI.GroupCaption = GUICtrlCreateGroup(Lng_Get("mod_edit.group_caption.caption"), $iItemSpacing, $iItemSpacing, _
+		$aSize[0] - 2 * $iItemSpacing, 9 * $iItemSpacing + 25 + 2 * $iButtonHeight + 1 * $iLabelHeight + $iEditHeight)
 	$hGUI.LabelCaptionLanguage = GUICtrlCreateLabel(Lng_Get("mod_edit.group_caption.language"), 2 * $iItemSpacing, 5 * $iItemSpacing, Default, $iLabelHeight, $SS_CENTERIMAGE)
-	$hGUI.ComboCaptionLanguage = GUICtrlCreateCombo("", GUICtrlGetPos($hGUI.LabelCaptionLanguage).NextX, 5 * $iItemSpacing, $aSize[0] - GUICtrlGetPos($hGUI.LabelCaptionLanguage).NextX - 3 * $iItemSpacing, 25, BitOR($CBS_DROPDOWNLIST, $CBS_AUTOHSCROLL))
+	$hGUI.ComboCaptionLanguage = GUICtrlCreateCombo("", GUICtrlGetPos($hGUI.LabelCaptionLanguage).NextX, 5 * $iItemSpacing, _
+		$aSize[0] - GUICtrlGetPos($hGUI.LabelCaptionLanguage).NextX - 3 * $iItemSpacing, 25, BitOR($CBS_DROPDOWNLIST, $CBS_AUTOHSCROLL))
 	GUICtrlSetData($hGUI.ComboCaptionLanguage, _ArrayToString($MM_LNG_LIST, Default, 1, Default, "|", 2, 2))
 	GUICtrlSetData($hGUI.ComboCaptionLanguage, Lng_Get("lang.name"))
 
-	$hGUI.LabelCaptionCaption = GUICtrlCreateLabel(Lng_Get("mod_edit.group_caption.caption_label"), 2 * $iItemSpacing, GUICtrlGetPos($hGUI.ComboCaptionLanguage).NextY + $iItemSpacing, Default, $iLabelHeight, $SS_CENTERIMAGE)
-	$hGUI.InputCaptionCaption = GUICtrlCreateInput($hGUI.Info["caption"][$hGUI.LngCode], GUICtrlGetPos($hGUI.LabelCaptionCaption).NextX, GUICtrlGetPos($hGUI.LabelCaptionCaption).Top, $aSize[0] - GUICtrlGetPos($hGUI.LabelCaptionCaption).NextX - 3 * $iItemSpacing, $iInputHeight)
+	$hGUI.LabelCaptionCaption = GUICtrlCreateLabel(Lng_Get("mod_edit.group_caption.caption_label"), 2 * $iItemSpacing, GUICtrlGetPos($hGUI.ComboCaptionLanguage).NextY + $iItemSpacing, _
+		Default, $iLabelHeight, $SS_CENTERIMAGE)
+	$hGUI.InputCaptionCaption = GUICtrlCreateInput($hGUI.Info["caption"][$hGUI.LngCode], GUICtrlGetPos($hGUI.LabelCaptionCaption).NextX, GUICtrlGetPos($hGUI.LabelCaptionCaption).Top, _
+		$aSize[0] - GUICtrlGetPos($hGUI.LabelCaptionCaption).NextX - 3 * $iItemSpacing, $iInputHeight)
 
- 	$hGUI.LabelCaptionFile = GUICtrlCreateLabel(Lng_Get("mod_edit.group_caption.description_file"), 2 * $iItemSpacing, GUICtrlGetPos($hGUI.InputCaptionCaption).NextY + $iItemSpacing, Default, $iLabelHeight, $SS_CENTERIMAGE)
- 	$hGUI.InputCaptionFile = GUICtrlCreateInput($hGUI.Info["description"]["full"][$hGUI.LngCode], GUICtrlGetPos($hGUI.LabelCaptionFile).NextX, GUICtrlGetPos($hGUI.LabelCaptionFile).Top, $aSize[0] - GUICtrlGetPos($hGUI.LabelCaptionFile).NextX - 5 * $iItemSpacing - 2 * $iButtonHeight, $iInputHeight, $ES_READONLY)
- 	$hGUI.ButtonCaptionFile = GUICtrlCreateButton("...",GUICtrlGetPos($hGUI.InputCaptionFile).NextX + $iItemSpacing, GUICtrlGetPos($hGUI.InputCaptionFile).Top - 1, $iButtonHeight, $iButtonHeight)
- 	$hGUI.ButtonCaptionFileRemove = GUICtrlCreateButton("X", GUICtrlGetPos($hGUI.ButtonCaptionFile).NextX + $iItemSpacing, GUICtrlGetPos($hGUI.InputCaptionFile).Top - 1, $iButtonHeight, $iButtonHeight)
+ 	$hGUI.LabelDescFile = GUICtrlCreateLabel(Lng_Get("mod_edit.group_caption.description_file"), 2 * $iItemSpacing, GUICtrlGetPos($hGUI.InputCaptionCaption).NextY + $iItemSpacing, _
+		Default, $iLabelHeight, $SS_CENTERIMAGE)
+ 	$hGUI.InputDescFile = GUICtrlCreateInput($hGUI.Info["description"]["full"][$hGUI.LngCode], GUICtrlGetPos($hGUI.LabelDescFile).NextX, GUICtrlGetPos($hGUI.LabelDescFile).Top, _
+		$aSize[0] - GUICtrlGetPos($hGUI.LabelDescFile).NextX - 5 * $iItemSpacing - 2 * $iButtonHeight, $iInputHeight, $ES_READONLY)
+ 	$hGUI.ButtonCaptionFile = GUICtrlCreateButton("...", GUICtrlGetPos($hGUI.InputDescFile).NextX + $iItemSpacing, GUICtrlGetPos($hGUI.InputDescFile).Top - 1, $iButtonHeight, $iButtonHeight)
+ 	$hGUI.ButtonCaptionFileRemove = GUICtrlCreateButton("X", GUICtrlGetPos($hGUI.ButtonCaptionFile).NextX + $iItemSpacing, GUICtrlGetPos($hGUI.InputDescFile).Top - 1, $iButtonHeight, $iButtonHeight)
+	$hGUI.LabelDescShort = GUICtrlCreateLabel(Lng_Get("mod_edit.group_caption.description_short"), 2 * $iItemSpacing, GUICtrlGetPos($hGUI.ButtonCaptionFileRemove).NextY + $iItemSpacing, _
+		Default, $iLabelHeight, $SS_CENTERIMAGE)
+	$hGUI.ButtonDescFromFile = GUICtrlCreateButton(Lng_Get("mod_edit.group_caption.description_short_from_file"), $aSize[0] - 90  - 3 * $iItemSpacing, GUICtrlGetPos($hGUI.LabelDescShort).Top, 90, $iButtonHeight)
+	GUICtrlSetImage($hGUI.ButtonDescFromFile, @ScriptDir & "\icons\arrow-down-double.ico")
+	$hGUI.EditDescShort = GUICtrlCreateEdit($hGUI.Info["description"]["short"][$hGUI.LngCode], 2 * $iItemSpacing, GUICtrlGetPos($hGUI.LabelDescShort).NextY + 2 * $iItemSpacing, _
+		$aSize[0] - 5 * $iItemSpacing, $iEditHeight)
+	GUICtrlSetLimit($hGUI.EditDescShort, 500)
 
 	$hGUI.GroupOther = GUICtrlCreateGroup(Lng_Get("mod_edit.group_other.caption"), $iItemSpacing, GUICtrlGetPos($hGUI.GroupCaption).NextY, $aSize[0] - 2 * $iItemSpacing, 8 * $iItemSpacing + 3 * $iButtonHeight + $iInputHeight)
 	$hGUI.LabelModVersion = GUICtrlCreateLabel(Lng_Get("mod_edit.group_other.mod_version"), 2 * $iItemSpacing, GUICtrlGetPos($hGUI.GroupOther).Top + 4 * $iItemSpacing, Default, $iLabelHeight, $SS_CENTERIMAGE)
-	$hGUI.InputModVersion = GUICtrlCreateInput($hGUI.Info["mod_version"], GUICtrlGetPos($hGUI.LabelModVersion).NextX, GUICtrlGetPos($hGUI.LabelModVersion).Top, ($aSize[0] / 2) - GUICtrlGetPos($hGUI.LabelModVersion).NextX - $iButtonHeight - 2 * $iItemSpacing, $iInputHeight)
+	$hGUI.InputModVersion = GUICtrlCreateInput($hGUI.Info["mod_version"], GUICtrlGetPos($hGUI.LabelModVersion).NextX, GUICtrlGetPos($hGUI.LabelModVersion).Top, _
+		($aSize[0] / 2) - GUICtrlGetPos($hGUI.LabelModVersion).NextX - $iButtonHeight - 2 * $iItemSpacing, $iInputHeight)
 	$hGUI.ButtonModVersion = GUICtrlCreateButton("+", GUICtrlGetPos($hGUI.InputModVersion).NextX + $iItemSpacing, GUICtrlGetPos($hGUI.InputModVersion).Top - 1, $iButtonHeight, $iButtonHeight)
 	$hGUI.LabelAuthor = GUICtrlCreateLabel(Lng_Get("mod_edit.group_other.author"), GUICtrlGetPos($hGUI.ButtonModVersion).NextX + 2 * $iItemSpacing, GUICtrlGetPos($hGUI.LabelModVersion).Top, Default, $iLabelHeight, $SS_CENTERIMAGE)
 	$hGUI.InputAuthor = GUICtrlCreateInput($hGUI.Info["author"], GUICtrlGetPos($hGUI.LabelAuthor).NextX, GUICtrlGetPos($hGUI.LabelAuthor).Top, $aSize[0] - GUICtrlGetPos($hGUI.LabelAuthor).NextX - 3 * $iItemSpacing, $iInputHeight)
 
 	$hGUI.LabelPriority = GUICtrlCreateLabel(Lng_Get("mod_edit.group_other.priority"), 2 * $iItemSpacing, GUICtrlGetPos($hGUI.ButtonModVersion).NextY + $iItemSpacing, Default, $iLabelHeight, $SS_CENTERIMAGE)
-	$hGUI.InputPriority = GUICtrlCreateInput($hGUI.Info["priority"], GUICtrlGetPos($hGUI.LabelPriority).NextX, GUICtrlGetPos($hGUI.LabelPriority).Top, ($aSize[0] / 2) - GUICtrlGetPos($hGUI.LabelPriority).NextX - $iItemSpacing, $iInputHeight, $ES_READONLY)
+	$hGUI.InputPriority = GUICtrlCreateInput($hGUI.Info["priority"], GUICtrlGetPos($hGUI.LabelPriority).NextX, GUICtrlGetPos($hGUI.LabelPriority).Top, _
+		($aSize[0] / 2) - GUICtrlGetPos($hGUI.LabelPriority).NextX - $iItemSpacing, $iInputHeight, $ES_READONLY)
 	$hGUI.UpDownPriority = GUICtrlCreateUpdown($hGUI.InputPriority)
 	GUICtrlSetLimit($hGUI.UpDownPriority, 100, -100)
 
  	$hGUI.IconSelected = $hGUI.Info["icon"]["file"] <> ""
 	$hGUI.LabelIcon = GUICtrlCreateLabel(Lng_Get("mod_edit.group_other.icon"), GUICtrlGetPos($hGUI.UpDownPriority).NextX + 2 * $iItemSpacing, GUICtrlGetPos($hGUI.UpDownPriority).Top, Default, $iLabelHeight, $SS_CENTERIMAGE)
-	$hGUI.IconIcon = GUICtrlCreateIcon($MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iModIndex][0] & "\" & $hGUI.Info["icon"]["file"], -($hGUI.Info["icon"]["index"] + 1), GUICtrlGetPos($hGUI.LabelIcon).NextX, GUICtrlGetPos($hGUI.LabelIcon).Top, 16, 16)
+	$hGUI.IconIcon = GUICtrlCreateIcon($MM_LIST_DIR_PATH & "\" & $MM_LIST_CONTENT[$iModIndex][0] & "\" & $hGUI.Info["icon"]["file"], -($hGUI.Info["icon"]["index"] + 1), _
+		GUICtrlGetPos($hGUI.LabelIcon).NextX, GUICtrlGetPos($hGUI.LabelIcon).Top+2, 16, 16)
 	If $hGUI.IconIcon = 0 Then
 		$hGUI.IconSelected = False
 		$hGUI.IconIcon = GUICtrlCreateIcon(@ScriptDir & "\icons\folder-grey.ico", 0, GUICtrlGetPos($hGUI.LabelIcon).NextX, GUICtrlGetPos($hGUI.LabelIcon).Top, 16, 16)
@@ -99,22 +116,26 @@ Func ModEdit_Editor(Const $iModIndex)
 				$bIsCancel = True
 			Case $hGUI.ComboCaptionLanguage
 				$hGUI["Info"]["caption"][$hGUI.LngCode] = GUICtrlRead($hGUI.InputCaptionCaption)
-				$hGUI["Info"]["description"]["full"][$hGUI.LngCode] = GUICtrlRead($hGUI.InputCaptionFile)
+				$hGUI["Info"]["description"]["full"][$hGUI.LngCode] = GUICtrlRead($hGUI.InputDescFile)
+				$hGUI["Info"]["description"]["short"][$hGUI.LngCode] = GUICtrlRead($hGUI.EditDescShort)
 
 				$hGUI.LngCode = Lng_GetCodeByName(GUICtrlRead($hGUI.ComboCaptionLanguage))
 
 				GUICtrlSetData($hGUI.InputCaptionCaption, $hGUI.Info["caption"][$hGUI.LngCode])
-				GUICtrlSetData($hGUI.InputCaptionFile, $hGUI.Info["description"]["full"][$hGUI.LngCode])
+				GUICtrlSetData($hGUI.InputDescFile, $hGUI.Info["description"]["full"][$hGUI.LngCode])
+				GUICtrlSetData($hGUI.EditDescShort, $hGUI.Info["description"]["short"][$hGUI.LngCode])
 
 				__ModEdit_SetControlAccessibility($hGUI)
 			Case $hGUI.ButtonCaptionFile
-				$vRes = FileOpenDialog("", Mod_Get("dir\"), "(*.*)", $FD_PATHMUSTEXIST + $FD_FILEMUSTEXIST, GUICtrlRead($hGUI.InputCaptionFile), $hGUI.Form)
+				$vRes = FileOpenDialog("", Mod_Get("dir\"), "(*.*)", $FD_PATHMUSTEXIST + $FD_FILEMUSTEXIST, GUICtrlRead($hGUI.InputDescFile), $hGUI.Form)
 				If Not @error  And StringLeft($vRes, StringLen(Mod_Get("dir\"))) = Mod_Get("dir\")  Then
-					GUICtrlSetData($hGUI.InputCaptionFile, StringTrimLeft($vRes, StringLen(Mod_Get("dir\"))))
+					GUICtrlSetData($hGUI.InputDescFile, StringTrimLeft($vRes, StringLen(Mod_Get("dir\"))))
 					__ModEdit_SetControlAccessibility($hGUI)
 				EndIf
+			Case $hGUI.ButtonDescFromFile
+				GUICtrlSetData($hGUI.EditDescShort, FileRead(Mod_Get("dir\") & GUICtrlRead($hGUI.InputDescFile), 500))
 			Case $hGUI.ButtonCaptionFileRemove
-				GUICtrlSetData($hGUI.InputCaptionFile, "")
+				GUICtrlSetData($hGUI.InputDescFile, "")
 				__ModEdit_SetControlAccessibility($hGUI)
 			Case $hGUI.ButtonModVersion
 				GUICtrlSetData($hGUI.InputModVersion, VersionIncrement(GUICtrlRead($hGUI.InputModVersion)))
@@ -139,7 +160,8 @@ Func ModEdit_Editor(Const $iModIndex)
 	WEnd
 
 	$hGUI["Info"]["caption"][$hGUI.LngCode] = GUICtrlRead($hGUI.InputCaptionCaption)
-	$hGUI["Info"]["description"]["full"][$hGUI.LngCode] = GUICtrlRead($hGUI.InputCaptionFile)
+	$hGUI["Info"]["description"]["full"][$hGUI.LngCode] = GUICtrlRead($hGUI.InputDescFile)
+	$hGUI["Info"]["description"]["short"][$hGUI.LngCode] = GUICtrlRead($hGUI.EditDescShort)
 	$hGUI["Info"]["mod_version"] = GUICtrlRead($hGUI.InputModVersion)
 	$hGUI["Info"]["author"] = GUICtrlRead($hGUI.InputAuthor)
 	$hGUI["Info"]["homepage"] = GUICtrlRead($hGUI.InputHomepage)
@@ -194,7 +216,8 @@ Func __ModEdit_FormattedCompatibilityClassToPlain(Const $sPath)
 EndFunc
 
 Func __ModEdit_SetControlAccessibility(ByRef $hGUI)
-	GUICtrlSetState($hGUI.ButtonCaptionFileRemove, GUICtrlRead($hGUI.InputCaptionFile) <> "" ? $GUI_ENABLE : $GUI_DISABLE)
+	GUICtrlSetState($hGUI.ButtonCaptionFileRemove, GUICtrlRead($hGUI.InputDescFile) <> "" ? $GUI_ENABLE : $GUI_DISABLE)
+	GUICtrlSetState($hGUI.ButtonDescFromFile, GUICtrlRead($hGUI.InputDescFile) <> "" ? $GUI_ENABLE : $GUI_DISABLE)
 	GUICtrlSetState($hGUI.ButtonIcon, $hGUI.IconSelected ? $GUI_ENABLE : $GUI_DISABLE)
 EndFunc
 

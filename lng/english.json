@@ -190,7 +190,9 @@
 			"caption" : "Caption and description",
 			"language" : "Language:",
 			"caption_label" : "Caption:",
-			"description_file" : "Description file:"
+			"description_file" : "Description file:",
+			"description_short" : "Short description:",			
+			"description_short_from_file" : "From file"
 		},
 		"group_other" :
 		{
