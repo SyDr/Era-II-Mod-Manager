@@ -29,6 +29,7 @@ this allows easy overwrite #AutoIt3Wrapper_Res_Fileversion via simple IniWrite
 #include "startup.au3"
 #include "update.au3"
 #include "ui.au3"
+#include "wog_options.au3"
 
 AutoItSetOption("MustDeclareVars", 1)
 AutoItSetOption("GUIOnEventMode", 1)
@@ -274,6 +275,7 @@ Func SD_GUI_MenuCreate()
 	GUICtrlSetState($hGUI.MenuGame.Launch, $MM_GAME_EXE = "" ? $GUI_DISABLE : $GUI_ENABLE)
 	GUICtrlCreateMenuItem("", $hGUI.MenuGame.Menu)
 	$hGUI.MenuGame.Change = GUICtrlCreateMenuItem("-", $hGUI.MenuGame.Menu)
+	$hGUI.MenuGame.ChangeWO = GUICtrlCreateMenuItem("-", $hGUI.MenuGame.Menu)
 	If $MM_GAME_NO_DIR Then GUICtrlSetState($hGUI.MenuGame.Menu, $GUI_DISABLE)
 
 	$hGUI.MenuSettings.Menu = GUICtrlCreateMenu("-")
@@ -467,6 +469,7 @@ Func SD_GUI_Events_Register()
 	GUICtrlSetOnEvent($hGUI.MenuMod.Delete, "SD_GUI_Mod_Delete")
 	GUICtrlSetOnEvent($hGUI.MenuGame.Launch, "UI_GameExeLaunch")
 	GUICtrlSetOnEvent($hGUI.MenuGame.Change, "SD_GUI_GameExeChange")
+	GUICtrlSetOnEvent($hGUI.MenuGame.ChangeWO, "SD_GUI_GameWOChange")
 	GUICtrlSetOnEvent($hGUI.MenuSettings.Add, "SD_GUI_Mod_Add")
 	GUICtrlSetOnEvent($hGUI.MenuMod.OpenFolder, "SD_GUI_Mod_OpenFolder")
 	GUICtrlSetOnEvent($hGUI.MenuMod.EditMod, "SD_GUI_Mod_EditMod")
@@ -692,6 +695,7 @@ Func SD_GUI_SetLng()
 	GUICtrlSetData($hGUI.MenuGame.Menu, Lng_Get("game.caption"))
 	GUICtrlSetData($hGUI.MenuGame.Launch, Lng_GetF("game.launch", $MM_GAME_EXE))
 	GUICtrlSetData($hGUI.MenuGame.Change, Lng_Get("game.change"))
+	GUICtrlSetData($hGUI.MenuGame.ChangeWO, Lng_Get("game.wog_options"))
 
 	GUICtrlSetData($hGUI.MenuSettings.Compatibility, Lng_Get("mod_list.compatibility"))
 	GUICtrlSetData($hGUI.MenuSettings.Add, Lng_Get("mod_list.add_new"))
@@ -761,6 +765,15 @@ EndFunc   ;==>SD_GUI_BackToMainView
 
 Func SD_GUI_GameExeChange()
 	SD_UI_ApplyExe(UI_SelectGameExe())
+EndFunc
+
+Func SD_GUI_GameWOChange()
+	Local $aSettings = Scn_LoadWogSettingsToArray()
+	Local $aAnswer = WO_ManageOptions($aSettings)
+
+	If $aAnswer["selected"] Then
+		Scn_SaveWogSettingsFromArray($aAnswer["wog_options"])
+	EndIf
 EndFunc
 
 Func SD_UI_ApplyExe(Const $sNewExe)

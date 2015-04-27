@@ -75,7 +75,13 @@
 	"game" : {
 		"caption" : "Игра",
 		"launch" : "Запустить (%s)",
-		"change" : "Изменить",
+		"change" : "Изменить запускаемый файл",
+		"wog_options" : "Изменить опции WoG"
+	},
+	"wog_options" : {
+		"caption" : "Опции WoG",
+		"loading" : "Пожалуйста, подождите...",
+		"loading_text" : "это займёт всего несколько секунд"
 	},
 	"plugins_list" :
 	{

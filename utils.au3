@@ -38,6 +38,14 @@ Func ArrayEmpty(Const $iDim = 1)
 	Return $Array
 EndFunc
 
+Func ArraySimple(Const $iItem1, Const $iItem2 = Null, Const $iItem3 = Null)
+	Local $Array[1] = [$iItem1]
+	If $iItem2 <> Null Then _ArrayAdd($Array, $iItem2)
+	If $iItem3 <> Null Then _ArrayAdd($Array, $iItem3)
+
+	Return $Array
+EndFunc
+
 Func VersionCompare(Const $s1, Const $s2)
 	Local $aVersion1 = StringSplit($s1, ".", 2)
 	Local $aVersion2 = StringSplit($s2, ".", 2)
