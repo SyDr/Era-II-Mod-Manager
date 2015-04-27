@@ -65,7 +65,12 @@ If Not MapExists($MM_LNG_CACHE["scenarios"]["export"], "name") Or Not IsString($
 If Not MapExists($MM_LNG_CACHE, "game") Or Not IsMap($MM_LNG_CACHE["game"]) Then $MM_LNG_CACHE["game"] = MapEmpty()
 If Not MapExists($MM_LNG_CACHE["game"], "caption") Or Not IsString($MM_LNG_CACHE["game"]["caption"]) Then $MM_LNG_CACHE["game"]["caption"] = "Game"
 If Not MapExists($MM_LNG_CACHE["game"], "launch") Or Not IsString($MM_LNG_CACHE["game"]["launch"]) Then $MM_LNG_CACHE["game"]["launch"] = "Launch (%s)"
-If Not MapExists($MM_LNG_CACHE["game"], "change") Or Not IsString($MM_LNG_CACHE["game"]["change"]) Then $MM_LNG_CACHE["game"]["change"] = "Change"
+If Not MapExists($MM_LNG_CACHE["game"], "change") Or Not IsString($MM_LNG_CACHE["game"]["change"]) Then $MM_LNG_CACHE["game"]["change"] = "Change exe"
+If Not MapExists($MM_LNG_CACHE["game"], "wog_options") Or Not IsString($MM_LNG_CACHE["game"]["wog_options"]) Then $MM_LNG_CACHE["game"]["wog_options"] = "Change WoG options"
+If Not MapExists($MM_LNG_CACHE, "wog_options") Or Not IsMap($MM_LNG_CACHE["wog_options"]) Then $MM_LNG_CACHE["wog_options"] = MapEmpty()
+If Not MapExists($MM_LNG_CACHE["wog_options"], "caption") Or Not IsString($MM_LNG_CACHE["wog_options"]["caption"]) Then $MM_LNG_CACHE["wog_options"]["caption"] = "WoG Options"
+If Not MapExists($MM_LNG_CACHE["wog_options"], "loading") Or Not IsString($MM_LNG_CACHE["wog_options"]["loading"]) Then $MM_LNG_CACHE["wog_options"]["loading"] = "Please, wait..."
+If Not MapExists($MM_LNG_CACHE["wog_options"], "loading_text") Or Not IsString($MM_LNG_CACHE["wog_options"]["loading_text"]) Then $MM_LNG_CACHE["wog_options"]["loading_text"] = "this will take only few seconds"
 If Not MapExists($MM_LNG_CACHE, "plugins_list") Or Not IsMap($MM_LNG_CACHE["plugins_list"]) Then $MM_LNG_CACHE["plugins_list"] = MapEmpty()
 If Not MapExists($MM_LNG_CACHE["plugins_list"], "caption") Or Not IsString($MM_LNG_CACHE["plugins_list"]["caption"]) Then $MM_LNG_CACHE["plugins_list"]["caption"] = "Plugins (%s)"
 If Not MapExists($MM_LNG_CACHE["plugins_list"], "global") Or Not IsString($MM_LNG_CACHE["plugins_list"]["global"]) Then $MM_LNG_CACHE["plugins_list"]["global"] = "Global"

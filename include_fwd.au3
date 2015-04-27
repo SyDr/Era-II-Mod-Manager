@@ -32,6 +32,7 @@
 
 #include "include\JSMN.au3"
 #include "include\GUISysLink.au3"
+#include "include\ZLIB.au3"
 #include "data_fwd.au3"
 #include "maps.au3"
 #include "sfx_helper.au3"

@@ -75,7 +75,13 @@
 	"game" : {
 		"caption" : "Game",
 		"launch" : "Launch (%s)",
-		"change" : "Change",
+		"change" : "Change exe",
+		"wog_options" : "Change WoG options"
+	},
+	"wog_options" : {
+		"caption" : "WoG Options",
+		"loading" : "Please, wait...",
+		"loading_text" : "this will take only few seconds"
 	},
 	"plugins_list" :
 	{
