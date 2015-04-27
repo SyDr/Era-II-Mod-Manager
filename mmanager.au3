@@ -524,7 +524,7 @@ Func SD_UI_ScnImport()
 	If Not $mData["selected"] Then Return
 
 	Scn_Apply($mData["data"])
-	If $mData["wog_settings"] Then Scn_ApplyWogSettings($mData["data"]["wog_settings"])
+	If $mData["wog_settings"] Then Scn_SaveWogSettings($mData["data"]["wog_settings"])
 	If $mData["exe"] Then SD_UI_ApplyExe($mData["data"]["exe"])
 	TreeViewMain()
 	$sFollowMod = $MM_LIST_CONTENT[0][0] > 0 ? $MM_LIST_CONTENT[1][$MOD_ID] : ""
@@ -603,7 +603,7 @@ Func SD_UI_ScnLoad()
 	GUICtrlSetData($hGUI.MenuScn.Save, Lng_GetF("scenarios.save_menu", Settings_Get("current_preset") ? Settings_Get("current_preset") : Lng_Get("scenarios.new")))
 	SD_UI_ScnLoadItems()
 
-	If $mOptions["wog_settings"] Then Scn_ApplyWogSettings($mData["wog_settings"])
+	If $mOptions["wog_settings"] Then Scn_SaveWogSettings($mData["wog_settings"])
 	If $mOptions["exe"] Then SD_UI_ApplyExe($mData["exe"])
 
 	TreeViewMain()
@@ -768,11 +768,11 @@ Func SD_GUI_GameExeChange()
 EndFunc
 
 Func SD_GUI_GameWOChange()
-	Local $aSettings = Scn_LoadWogSettingsToArray()
+	Local $aSettings = Scn_LoadWogSettingsAsArray()
 	Local $aAnswer = WO_ManageOptions($aSettings)
 
 	If $aAnswer["selected"] Then
-		Scn_SaveWogSettingsFromArray($aAnswer["wog_options"])
+		Scn_SaveWogSettings($aAnswer["wog_options"])
 	EndIf
 EndFunc
 
