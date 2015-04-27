@@ -89,14 +89,13 @@ Func __Scn_Validate(ByRef $mData)
 	$mData["list"] = $aItems
 EndFunc
 
-Func Scn_SaveWogSettingsFromArray(Const $aArray)
-	Scn_ApplyWogSettings(Scn_WSToString($aArray))
+Func Scn_SaveWogSettingsFromArray(Const $aArray, Const $sFilePath = ".\", Const $sFileName = "MM_PresetSettings.dat")
+	Scn_ApplyWogSettings(Scn_WSToString($aArray), $sFilePath, $sFileName)
 EndFunc
 
-Func Scn_ApplyWogSettings(Const $sString)
-	Local Const $sFileName = "MM_PresetSettings.dat"
+Func Scn_ApplyWogSettings(Const $sString, Const $sFilePath = ".\", Const $sFileName = "MM_PresetSettings.dat")
 	Local $aData = Scn_StringToWS($sString)
-	Local $aSection[3][2] = [[2, ""],["Options_File_Path", ".\"],["Options_File_Name", $sFileName]]
+	Local $aSection[3][2] = [[2, ""],["Options_File_Path", $sFilePath],["Options_File_Name", $sFileName]]
 	IniWriteSection($MM_GAME_DIR & "\wog.ini", "WoGification", $aSection)
 
 	Local $hFile = FileOpen($MM_GAME_DIR & "\" & $sFileName, $FO_BINARY + $FO_OVERWRITE)
