@@ -71,6 +71,7 @@ If Not MapExists($MM_LNG_CACHE, "wog_options") Or Not IsMap($MM_LNG_CACHE["wog_o
 If Not MapExists($MM_LNG_CACHE["wog_options"], "caption") Or Not IsString($MM_LNG_CACHE["wog_options"]["caption"]) Then $MM_LNG_CACHE["wog_options"]["caption"] = "WoG Options"
 If Not MapExists($MM_LNG_CACHE["wog_options"], "loading") Or Not IsString($MM_LNG_CACHE["wog_options"]["loading"]) Then $MM_LNG_CACHE["wog_options"]["loading"] = "Please, wait..."
 If Not MapExists($MM_LNG_CACHE["wog_options"], "loading_text") Or Not IsString($MM_LNG_CACHE["wog_options"]["loading_text"]) Then $MM_LNG_CACHE["wog_options"]["loading_text"] = "this will take only few seconds"
+If Not MapExists($MM_LNG_CACHE["wog_options"], "bad_data") Or Not IsString($MM_LNG_CACHE["wog_options"]["bad_data"]) Then $MM_LNG_CACHE["wog_options"]["bad_data"] = "Can't load WoG options data. Check: \r\n\r\n1) Mod list (there should be mod with zsetup00.txt, usually WoG or WoG Revised) \r\n2) You have this mod installed"
 If Not MapExists($MM_LNG_CACHE, "plugins_list") Or Not IsMap($MM_LNG_CACHE["plugins_list"]) Then $MM_LNG_CACHE["plugins_list"] = MapEmpty()
 If Not MapExists($MM_LNG_CACHE["plugins_list"], "caption") Or Not IsString($MM_LNG_CACHE["plugins_list"]["caption"]) Then $MM_LNG_CACHE["plugins_list"]["caption"] = "Plugins (%s)"
 If Not MapExists($MM_LNG_CACHE["plugins_list"], "global") Or Not IsString($MM_LNG_CACHE["plugins_list"]["global"]) Then $MM_LNG_CACHE["plugins_list"]["global"] = "Global"
