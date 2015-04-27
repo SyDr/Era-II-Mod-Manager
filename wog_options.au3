@@ -13,12 +13,10 @@ Global $MM_WO_CAT[$WO_CAT] ; text, hint, popup, handle
 Global $MM_WO_GROUPS[$WO_CAT][$WO_GRP] ; text, hint, popup, type, handle
 Global $MM_WO_ITEMS[1] ; Comment, Script, Page, Group, Item, State, MP, ERM, Text, Hint, PopUp, Handle
 Global $MM_WO_MAP[$WO_CAT][$WO_GRP][$WO_OPT + 1] ; page / group / item [1 based, 0 - count] : index in $MM_WO_ITEMS
-Global $MM_WO_UI_OPTIONS
+Global $MM_WO_UI_OPTIONS, $MM_WO_SHOW_POPUP
 Global $mPages = MapEmpty() ; handle : page num (0 based)
 Global $mGroups = MapEmpty() ; handle : page, group (both 0 based)
 Global $mItems = MapEmpty() ; handle : page, group, item (item is 1 based, other 0 based)
-
-#include "mmanager.au3"
 
 Func WO_ClearData()
 	For $p = 0 To $WO_CAT - 1
@@ -62,14 +60,17 @@ Func WO_ManageOptions(Const $aOptions)
 	Local Const $iWidth = 180, $iHeight = 50, $iBaseWidth = 300
 	Local Const $iItemSpacing = 4
 	Local Const $iGroupWidth = $iBaseWidth - 1.5 * $iItemSpacing
-	Local $bClose, $bSelected, $iMessage, $hCloseButton
+	Local $bClose, $bSelected, $iMessage, $hCloseButton, $aCursoInfo
 	Local $hGUI = MM_GUICreate(Lng_Get("wog_options.caption"), $iWidth + $iBaseWidth * 2, 500)
 	Local $aSize = WinGetClientSize($hGUI)
 
-	LocaL $iLeft, $iTop, $hItemFunc, $iIndex, $iIndex2
+	GUIRegisterMsgStateful($WM_CONTEXTMENU, "__WO_WM_CONTEXTMENU")
+
+	Local $iLeft, $iTop, $hItemFunc, $iIndex, $iIndex2, $sPopup
 
 	For $p = 0 To $WO_CAT - 1
 		$MM_WO_CAT[$p].Handle = GUICtrlCreateRadio($MM_WO_CAT[$p].Text, 0, $p * $iHeight, $iWidth, $iHeight, BitOR($BS_MULTILINE, $BS_PUSHLIKE))
+		GUICtrlSetTip($MM_WO_CAT[$p].Handle, $MM_WO_CAT[$p].Hint)
 		$mPages[$MM_WO_CAT[$p].Handle] = $p
 	Next
 
@@ -84,6 +85,7 @@ Func WO_ManageOptions(Const $aOptions)
 			If $MM_WO_MAP[$p][$g][0] > 0 Then
 				$bGroupWithItems = True
 				$MM_WO_GROUPS[$p][$g].Handle = GUICtrlCreateGroup($MM_WO_GROUPS[$p][$g].Text, $iLeft, $iTop, ($p = 4 And $g = 0) ? (2 * $iGroupWidth + $iItemSpacing) : $iGroupWidth, 19 * $MM_WO_MAP[$p][$g][0] + 5 * $iItemSpacing)
+				GUICtrlSetTip($MM_WO_GROUPS[$p][$g].Handle, $MM_WO_GROUPS[$p][$g].Hint)
 				$mGroups[$MM_WO_GROUPS[$p][$g].Handle] = ArraySimple($p, $g)
 				GUICtrlSetState(-1, $GUI_HIDE)
 
@@ -92,7 +94,9 @@ Func WO_ManageOptions(Const $aOptions)
 				For $i = 1 To $MM_WO_MAP[$p][$g][0]
 					$iIndex = $MM_WO_MAP[$p][$g][$i]
 					$iIndex2 = $MM_WO_MAP[$p][$g][$i-1] ; invalid if $i = 1
-					$MM_WO_ITEMS[$iIndex].Handle = $hItemFunc($MM_WO_ITEMS[$iIndex].Text, $iLeft + $iItemSpacing, $i = 1 ? GUICtrlGetPos($MM_WO_GROUPS[$p][$g].Handle).Top + 3 * $iItemSpacing : GUICtrlGetPos($MM_WO_ITEMS[$iIndex2].Handle).NextY - 2)
+					$MM_WO_ITEMS[$iIndex].Handle = $hItemFunc($MM_WO_ITEMS[$iIndex].Text, _
+						$iLeft + $iItemSpacing, $i = 1 ? GUICtrlGetPos($MM_WO_GROUPS[$p][$g].Handle).Top + 3 * $iItemSpacing : GUICtrlGetPos($MM_WO_ITEMS[$iIndex2].Handle).NextY - 2, _
+						(($p = 4 And $g = 0) ? 2 : 1) * $iGroupWidth - 2 * $iItemSpacing)
 					GUICtrlSetTip($MM_WO_ITEMS[$iIndex].Handle, $MM_WO_ITEMS[$iIndex].Hint)
 					$mItems[$MM_WO_ITEMS[$iIndex].Handle] = ArraySimple($p, $g, $i)
 					GUICtrlSetState(-1, $GUI_HIDE)
@@ -123,6 +127,14 @@ Func WO_ManageOptions(Const $aOptions)
 				WO_OnPageChange($mPages[$iMessage])
 			Case MapExists($mItems, $iMessage)
 				WO_UpdateAccessibility($iMessage)
+			Case $MM_WO_SHOW_POPUP
+				$MM_WO_SHOW_POPUP = False
+				$aCursoInfo = GUIGetCursorInfo($hGUI)
+				If Not @error And $aCursoInfo[4] <> 0 Then
+					$sPopup = WO_GetItemInfoByHandle($aCursoInfo[4])
+;~ 					MsgBox($MB_SYSTEMMODAL, "",  $aCursoInfo[4])
+					If $sPopup Then MsgBox($MB_SYSTEMMODAL, "",  $sPopup, Default, MM_GetCurrentWindow())
+				EndIf
 		EndSelect
 	WEnd
 
@@ -131,6 +143,7 @@ Func WO_ManageOptions(Const $aOptions)
 		$mAnswer["wog_options"] = WO_ViewToSettings($MM_WO_UI_OPTIONS)
 	EndIf
 
+	GUIRegisterMsgStateful($WM_CONTEXTMENU, "")
 	MM_GUIDelete()
 	WO_ClearData()
 
@@ -140,6 +153,27 @@ Func WO_ManageOptions(Const $aOptions)
 
 	_TraceEnd()
 	Return $mAnswer
+EndFunc
+
+Func WO_GetItemInfoByHandle(Const $hHandle)
+	Local $aCoords
+	If MapExists($mPages, $hHandle) Then
+		Return $MM_WO_CAT[$mPages[$hHandle]].PopUp
+	ElseIf MapExists($mGroups, $hHandle) Then
+		$aCoords = $mGroups[$hHandle]
+		Return $MM_WO_GROUPS[$aCoords[0]][$aCoords[1]].PopUp
+	ElseIf MapExists($mItems, $hHandle) Then
+		$aCoords = $mItems[$hHandle]
+		Return $MM_WO_ITEMS[$MM_WO_MAP[$aCoords[0]][$aCoords[1]][$aCoords[2]]].PopUp
+	Else
+		Return ""
+	EndIf
+EndFunc
+
+Func __WO_WM_CONTEXTMENU($hWnd, $iMsg, $wParam, $lParam)
+	#forceref $hWnd, $iMsg
+	$MM_WO_SHOW_POPUP = True
+	Return $GUI_RUNDEFMSG
 EndFunc
 
 Func WO_IsCheckboxGroup(Const $iPage, Const $iGroup)
@@ -378,7 +412,6 @@ Func WO_ParseItemsData(Const ByRef $sData)
 
 EndFunc
 
-
 Func WO_ParseCategoriesData(Const ByRef $sCategoriesData)
 	Local $aData = StringSplit($sCategoriesData, @CRLF, $STR_ENTIRESPLIT)
 	Local $aToParse, $sData, $iValue, $iPage, $iGroup
@@ -403,7 +436,7 @@ Func WO_ParseCategoriesData(Const ByRef $sCategoriesData)
 					Case 1
 						$MM_WO_CAT[$iPage].Hint = $sData
 					Case 2
-						$MM_WO_CAT[$iPage].Popup = $sData
+						$MM_WO_CAT[$iPage].PopUp = $sData
 				EndSwitch
 			Case 29 To 124
 				$iValue -= 29
@@ -417,7 +450,7 @@ Func WO_ParseCategoriesData(Const ByRef $sCategoriesData)
 					Case 1
 						$MM_WO_GROUPS[$iPage][$iGroup].Hint = $sData
 					Case 2
-						$MM_WO_GROUPS[$iPage][$iGroup].Popup = $sData
+						$MM_WO_GROUPS[$iPage][$iGroup].PopUp = $sData
 				EndSwitch
 		EndSwitch
 	Next
