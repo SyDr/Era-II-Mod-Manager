@@ -89,29 +89,30 @@ Func __Scn_Validate(ByRef $mData)
 	$mData["list"] = $aItems
 EndFunc
 
-Func Scn_SaveWogSettingsFromArray(Const $aArray, Const $sFilePath = ".\", Const $sFileName = "MM_PresetSettings.dat")
-	Scn_ApplyWogSettings(Scn_WSToString($aArray), $sFilePath, $sFileName)
-EndFunc
+Func Scn_SaveWogSettings(Const $vData, $sPath = "")
+	If Not $sPath Then
+		Local Const $sFilePath = ".\"
+		Local Const $sFileName = "MM_PresetSettings.dat"
+		Local Const $aSection[3][2] = [[2, ""],["Options_File_Path", $sFilePath],["Options_File_Name", $sFileName]]
+		IniWriteSection($MM_GAME_DIR & "\wog.ini", "WoGification", $aSection)
 
-Func Scn_ApplyWogSettings(Const $sString, Const $sFilePath = ".\", Const $sFileName = "MM_PresetSettings.dat")
-	Local $aData = Scn_StringToWS($sString)
-	Local $aSection[3][2] = [[2, ""],["Options_File_Path", $sFilePath],["Options_File_Name", $sFileName]]
-	IniWriteSection($MM_GAME_DIR & "\wog.ini", "WoGification", $aSection)
+		$sPath = $MM_GAME_DIR & "\MM_PresetSettings.dat"
+	EndIf
 
-	Local $hFile = FileOpen($MM_GAME_DIR & "\" & $sFileName, $FO_BINARY + $FO_OVERWRITE)
+	Local Const $aData = IsArray($vData) ? $vData : Scn_StringToWS($vData)
+	Local $hFile = FileOpen($sPath, $FO_BINARY + $FO_OVERWRITE)
 	For $i = 0 To UBound($aData) - 1
 		FileWrite($hFile, $aData[$i])
 	Next
-
 	FileClose($hFile)
 EndFunc
 
-Func Scn_LoadWogSettings()
-	Return Scn_WSToString(Scn_LoadWogSettingsToArray())
+Func Scn_LoadWogSettings(Const $sFilePath = "")
+	Return Scn_WSToString(Scn_LoadWogSettingsAsArray($sFilePath))
 EndFunc
 
-Func Scn_LoadWogSettingsToArray()
-	Local $sFilePath = _PathFull(IniRead($MM_GAME_DIR & "\wog.ini", "WoGification", "Options_File_Path", ".\"), $MM_GAME_DIR) & _
+Func Scn_LoadWogSettingsAsArray($sFilePath = "")
+	If Not $sFilePath Then $sFilePath = _PathFull(IniRead($MM_GAME_DIR & "\wog.ini", "WoGification", "Options_File_Path", ".\"), $MM_GAME_DIR) & _
 		IniRead($MM_GAME_DIR & "\wog.ini", "WoGification", "Options_File_Name", "MM_PresetSettings.dat")
 
 	Return Scn_LoadWogSettingsFromFile($sFilePath)

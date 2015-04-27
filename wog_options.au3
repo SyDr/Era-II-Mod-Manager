@@ -17,6 +17,7 @@ Global $MM_WO_UI_OPTIONS, $MM_WO_SHOW_POPUP
 Global $mPages = MapEmpty() ; handle : page num (0 based)
 Global $mGroups = MapEmpty() ; handle : page, group (both 0 based)
 Global $mItems = MapEmpty() ; handle : page, group, item (item is 1 based, other 0 based)
+Global $MM_WO_CURRENT_PAGE = -1, $MM_WO_PREV_PAGE = -1
 
 #include "mmanager.au3"
 
@@ -34,6 +35,9 @@ Func WO_ClearData()
 
 	$MM_WO_ITEMS[0] = 0
 	ReDim $MM_WO_ITEMS[1]
+
+	$MM_WO_PREV_PAGE = -1
+	$MM_WO_PREV_PAGE = -1
 EndFunc
 
 Func WO_ManageOptions(Const $aOptions)
@@ -64,9 +68,10 @@ Func WO_ManageOptions(Const $aOptions)
 	Local Const $iItemSpacing = 4
 	Local Const $iGroupWidth = $iBaseWidth - 1.5 * $iItemSpacing
 	Local $bClose, $bSelected, $iMessage, $aCursoInfo
-	Local $hCloseButton, $hSaveButton, $hLoadButton, $hRestoreDefaultButton, $hUnchekAllButton, $hCheckAllButton
+	Local $hCloseButton, $hSaveButton, $hLoadButton, $hRestoreDefaultButton, $hUncheckAllButton, $hCheckAllButton
 	Local $hGUI = MM_GUICreate(Lng_Get("wog_options.caption"), $iWidth + $iBaseWidth * 2, 500)
 	Local $aSize = WinGetClientSize($hGUI)
+	If Not @Compiled Then GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
 
 	GUIRegisterMsgStateful($WM_CONTEXTMENU, "__WO_WM_CONTEXTMENU")
 
@@ -116,9 +121,9 @@ Func WO_ManageOptions(Const $aOptions)
 ;~ 	Local $hLine = GUICtrlCreateGraphic($iItemSpacing, $aSize[1] - 25 - 2 * $iItemSpacing, $aSize[0] - 2 * $iItemSpacing, 1)
 ;~ 	GUICtrlSetGraphic($hLine, $GUI_GR_LINE, $aSize[0] - 2 * $iItemSpacing, 0)
 
-	$hCheckAllButton = GUICtrlCreateButton(Lng_Get("wog_options.check"), $aSize[0] - 6 * $iButtonWidth  - 7 * $iItemSpacing, $aSize[1] - 25 - $iItemSpacing, 90, 25)
-	$hUnchekAllButton = GUICtrlCreateButton(Lng_Get("wog_options.uncheck"), GUICtrlGetPos($hCheckAllButton).NextX + $iItemSpacing, GUICtrlGetPos($hCheckAllButton).Top, $iButtonWidth, 25)
-	$hRestoreDefaultButton = GUICtrlCreateButton(Lng_Get("wog_options.default"),GUICtrlGetPos($hUnchekAllButton).NextX + $iItemSpacing, GUICtrlGetPos($hUnchekAllButton).Top, $iButtonWidth, 25)
+	$hCheckAllButton = GUICtrlCreateButton(Lng_Get("wog_options.check"), $aSize[0] - 6 * $iButtonWidth  - 7 * $iItemSpacing, $aSize[1] - 25 - $iItemSpacing, $iButtonWidth, 25)
+	$hUncheckAllButton = GUICtrlCreateButton(Lng_Get("wog_options.uncheck"), GUICtrlGetPos($hCheckAllButton).NextX + $iItemSpacing, GUICtrlGetPos($hCheckAllButton).Top, $iButtonWidth, 25)
+	$hRestoreDefaultButton = GUICtrlCreateButton(Lng_Get("wog_options.default"),GUICtrlGetPos($hUncheckAllButton).NextX + $iItemSpacing, GUICtrlGetPos($hUncheckAllButton).Top, $iButtonWidth, 25)
 	$hLoadButton = GUICtrlCreateButton(Lng_Get("wog_options.load"), GUICtrlGetPos($hRestoreDefaultButton).NextX + $iItemSpacing, GUICtrlGetPos($hRestoreDefaultButton).Top, $iButtonWidth, 25)
 	$hSaveButton = GUICtrlCreateButton(Lng_Get("wog_options.save"), GUICtrlGetPos($hLoadButton).NextX + $iItemSpacing, GUICtrlGetPos($hLoadButton).Top, $iButtonWidth, 25)
 	$hCloseButton = GUICtrlCreateButton("OK", GUICtrlGetPos($hSaveButton).NextX + $iItemSpacing, GUICtrlGetPos($hSaveButton).Top, $iButtonWidth, 25)
@@ -134,13 +139,22 @@ Func WO_ManageOptions(Const $aOptions)
 		$iMessage = GUIGetMsg()
 		Select
 			Case $iMessage = $hSaveButton
-				Local $sDrive, $sDir, $sFileName, $sExtension
 				Local $sPath = FileSaveDialog("", _PathFull(IniRead($MM_GAME_DIR & "\wog.ini", "WoGification", "Options_File_Path", ".\"), $MM_GAME_DIR), Lng_Get("wog_options.select_filter"), _
 					Default, IniRead($MM_GAME_DIR & "\wog.ini", "WoGification", "Options_File_Name", "MM_PresetSettings.dat"), MM_GetCurrentWindow())
+				If Not @error Then Scn_SaveWogSettings(WO_ViewToSettings($MM_WO_UI_OPTIONS), $sPath)
+			Case $iMessage = $hLoadButton
+				Local $sPath = FileOpenDialog("", _PathFull(IniRead($MM_GAME_DIR & "\wog.ini", "WoGification", "Options_File_Path", ".\"), $MM_GAME_DIR), Lng_Get("wog_options.select_filter"), _
+					$FD_FILEMUSTEXIST + $FD_PATHMUSTEXIST, IniRead($MM_GAME_DIR & "\wog.ini", "WoGification", "Options_File_Name", "MM_PresetSettings.dat"), MM_GetCurrentWindow())
 				If Not @error Then
-					_PathSplit($sPath, $sDrive, $sDir, $sFileName, $sExtension)
-					Scn_SaveWogSettingsFromArray(WO_ViewToSettings($MM_WO_UI_OPTIONS), ($sDrive & $sDir = $MM_GAME_DIR) ? ".\" : ($sDrive & $sDir), $sFileName & $sExtension)
+					WO_SettingsToView(Scn_LoadWogSettingsAsArray($sPath))
+					WO_UpdateAccessibility()
 				EndIf
+			Case $iMessage = $hRestoreDefaultButton
+				WO_SetState()
+			Case $iMessage = $hUncheckAllButton
+				WO_SetState(0)
+			Case $iMessage = $hCheckAllButton
+				WO_SetState(1)
 			Case $iMessage = $GUI_EVENT_CLOSE
 				$bClose = True
 			Case $iMessage = $hCloseButton
@@ -176,6 +190,27 @@ Func WO_ManageOptions(Const $aOptions)
 	Return $mAnswer
 EndFunc
 
+Func WO_SetState(Const $iType = -1)
+	; -1 is default, 0 - disable, 1 - enable
+	If $MM_WO_CURRENT_PAGE <> - 1 Then
+		Local $iIndex, $iIndex2, $iState
+		For $g = 0 To $WO_GRP - 1
+			For $i = 1 To $MM_WO_MAP[$MM_WO_CURRENT_PAGE][$g][0]
+				$iIndex = $MM_WO_MAP[$MM_WO_CURRENT_PAGE][$g][$i]
+				$iIndex2 = $MM_WO_ITEMS[$iIndex].ERM
+				$iState = $iType <> -1 ? $iType : $MM_WO_ITEMS[$iIndex].State
+
+				If $MM_WO_GROUPS[$MM_WO_CURRENT_PAGE][$g].Type Then
+					GUICtrlSetState($MM_WO_ITEMS[$iIndex].Handle, $iState = 1 ? $GUI_CHECKED : $GUI_UNCHECKED)
+				ElseIf $iType = -1 Then
+					GUICtrlSetState($MM_WO_ITEMS[$iIndex].Handle, $iState ? $GUI_CHECKED : $GUI_UNCHECKED)
+				EndIf
+			Next
+		Next
+		WO_UpdateAccessibility()
+	EndIf
+EndFunc
+
 Func WO_GetItemInfoByHandle(Const $hHandle)
 	Local $aCoords
 	If MapExists($mPages, $hHandle) Then
@@ -202,6 +237,7 @@ Func WO_IsCheckboxGroup(Const $iPage, Const $iGroup)
 EndFunc
 
 Func WO_SettingsToView(Const ByRef $aOptions)
+	GUISetState(@SW_LOCK)
 	Local $iIndex, $iIndex2
 
 	For $p = 0 To $WO_CAT - 1
@@ -217,9 +253,11 @@ Func WO_SettingsToView(Const ByRef $aOptions)
 			Next
 		Next
 	Next
+	GUISetState(@SW_UNLOCK)
 EndFunc
 
 Func WO_ViewToSettings($aResult)
+	ReDim $aResult[1000]
 	Local $iIndex, $iIndex2, $iState
 
 	For $p = 0 To $WO_CAT - 1
@@ -230,7 +268,7 @@ Func WO_ViewToSettings($aResult)
 				$iState = BitAND(GUICtrlRead($MM_WO_ITEMS[$iIndex].Handle), $GUI_CHECKED) ? 1 : 0
 
 				If $MM_WO_GROUPS[$p][$g].Type Then
-					$aResult[$iIndex2] = ($iIndex2 > 0 And $iIndex2 < 5) ? Not $iState : $iState
+					$aResult[$iIndex2] = Int(($iIndex2 > 0 And $iIndex2 < 5) ? Not $iState : $iState)
 				Else
 					If $iState = 1 Then $aResult[$iIndex2] = $i - 1
 				EndIf
@@ -242,18 +280,29 @@ Func WO_ViewToSettings($aResult)
 EndFunc
 
 Func WO_OnPageChange(Const $iIndex)
-	GUISetState(@SW_LOCK)
-
-	For $p = 0 To $WO_CAT - 1
-		For $g = 0 To $WO_GRP - 1
-			GUICtrlSetState($MM_WO_GROUPS[$p][$g].Handle, $p = $iIndex ? $GUI_SHOW : $GUI_HIDE)
-			For $i = 1 To $MM_WO_MAP[$p][$g][0]
-				GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[$p][$g][$i]].Handle, $p = $iIndex ? $GUI_SHOW : $GUI_HIDE)
+	If $MM_WO_CURRENT_PAGE <> $iIndex Then
+		GUISetState(@SW_LOCK)
+		$MM_WO_PREV_PAGE = $MM_WO_CURRENT_PAGE
+		If $MM_WO_PREV_PAGE <> -1 Then
+			For $g = 0 To $WO_GRP - 1
+				GUICtrlSetState($MM_WO_GROUPS[$MM_WO_PREV_PAGE][$g].Handle, $GUI_HIDE)
+				For $i = 1 To $MM_WO_MAP[$MM_WO_PREV_PAGE][$g][0]
+					GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[$MM_WO_PREV_PAGE][$g][$i]].Handle, $GUI_HIDE)
+				Next
 			Next
-		Next
-	Next
+		EndIf
 
-	GUISetState(@SW_UNLOCK)
+		$MM_WO_CURRENT_PAGE = $iIndex
+		If $MM_WO_CURRENT_PAGE <> -1 Then
+			For $g = 0 To $WO_GRP - 1
+				GUICtrlSetState($MM_WO_GROUPS[$MM_WO_CURRENT_PAGE][$g].Handle, $GUI_SHOW)
+				For $i = 1 To $MM_WO_MAP[$MM_WO_CURRENT_PAGE][$g][0]
+					GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[$MM_WO_CURRENT_PAGE][$g][$i]].Handle, $GUI_SHOW)
+				Next
+			Next
+		EndIf
+		GUISetState(@SW_UNLOCK)
+	EndIf
 EndFunc
 
 Func WO_CheckItemAvailability(Const $iPage, Const $iGroup, Const $iItem)
@@ -265,51 +314,56 @@ EndFunc
 Func WO_UpdateAccessibility(Const $hControl = 0)
 	If WO_CheckItemAvailability(0, 2, 3) And WO_CheckItemAvailability(0, 2, 4) Then
 		If $hControl = $MM_WO_ITEMS[$MM_WO_MAP[0][2][3]].Handle Or $hControl = 0 Then
-			GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[0][2][4]].Handle, BitAnd(GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[0][2][3]].Handle), $GUI_CHECKED) ? $GUI_ENABLE : BitOR($GUI_DISABLE, $GUI_UNCHECKED))
+			GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[0][2][4]].Handle, BitAND(GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[0][2][3]].Handle), $GUI_CHECKED) ? $GUI_ENABLE : BitOR($GUI_DISABLE, $GUI_UNCHECKED))
 		EndIf
 	EndIf
 
 	If WO_CheckItemAvailability(0, 2, 5) And WO_CheckItemAvailability(0, 2, 6) Then
 		If $hControl = $MM_WO_ITEMS[$MM_WO_MAP[0][2][5]].Handle Or $hControl = 0 Then
-			GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[0][2][6]].Handle, BitAnd(GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[0][2][5]].Handle), $GUI_CHECKED) ? $GUI_ENABLE : BitOR($GUI_DISABLE, $GUI_UNCHECKED))
+			GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[0][2][6]].Handle, BitAND(GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[0][2][5]].Handle), $GUI_CHECKED) ? $GUI_ENABLE : BitOR($GUI_DISABLE, $GUI_UNCHECKED))
 		EndIf
 	EndIf
 
 	If WO_CheckItemAvailability(0, 2, 11) And WO_CheckItemAvailability(0, 3, 1) Then
 		If $hControl = $MM_WO_ITEMS[$MM_WO_MAP[0][2][11]].Handle Or $hControl = 0 Then
-			If $hControl <> 0 Then GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[0][3][1]].Handle, $GUI_CHECKED)
-			GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[0][3][1]].Handle, BitAnd(GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[0][2][11]].Handle), $GUI_CHECKED) ? $GUI_ENABLE : $GUI_DISABLE)
+			GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[0][3][1]].Handle, BitAND(GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[0][2][11]].Handle), $GUI_CHECKED) ? $GUI_ENABLE : $GUI_DISABLE)
 			For $i = 2 To $MM_WO_MAP[0][3][0]
-				GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[0][3][$i]].Handle, BitAnd(GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[0][2][11]].Handle), $GUI_CHECKED) ? $GUI_ENABLE : BitOR($GUI_DISABLE, $GUI_UNCHECKED))
+				GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[0][3][$i]].Handle, BitAND(GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[0][2][11]].Handle), $GUI_CHECKED) ? $GUI_ENABLE : BitOR($GUI_DISABLE, $GUI_UNCHECKED))
 			Next
 		EndIf
+
+		Local $bIsSomethingChecked = False
+		For $i = 2 To $MM_WO_MAP[0][3][0]
+			$bIsSomethingChecked = $bIsSomethingChecked Or BitAND(GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[0][3][$i]].Handle), $GUI_CHECKED)
+		Next
+		If Not $bIsSomethingChecked Then GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[0][3][1]].Handle, $GUI_CHECKED)
 	EndIf
 
 	If WO_CheckItemAvailability(1, 0, 1) And WO_CheckItemAvailability(1, 0, 2) Then
 		If $hControl = $MM_WO_ITEMS[$MM_WO_MAP[1][0][1]].Handle Or $hControl = 0 Then
-			GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[1][0][2]].Handle, BitAnd(GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[1][0][1]].Handle), $GUI_CHECKED) ? $GUI_ENABLE : BitOR($GUI_DISABLE, $GUI_UNCHECKED))
+			GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[1][0][2]].Handle, BitAND(GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[1][0][1]].Handle), $GUI_CHECKED) ? $GUI_ENABLE : BitOR($GUI_DISABLE, $GUI_UNCHECKED))
 		EndIf
 	EndIf
 
 	If WO_CheckItemAvailability(1, 1, 1) And WO_CheckItemAvailability(1, 1, 2) And WO_CheckItemAvailability(1, 1, 3) And WO_CheckItemAvailability(1, 1, 4) And WO_CheckItemAvailability(1, 1, 5) Then
 		If $hControl = $MM_WO_ITEMS[$MM_WO_MAP[1][1][1]].Handle Or $hControl = 0 Then
-			GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[1][1][2]].Handle, BitAnd(GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[1][1][1]].Handle), $GUI_CHECKED) ? $GUI_ENABLE : BitOR($GUI_DISABLE, $GUI_UNCHECKED))
-			GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[1][1][3]].Handle, BitAnd(GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[1][1][1]].Handle), $GUI_CHECKED) ? $GUI_ENABLE : BitOR($GUI_DISABLE, $GUI_UNCHECKED))
-			GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[1][1][4]].Handle, BitAnd(GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[1][1][1]].Handle), $GUI_CHECKED) ? $GUI_ENABLE : BitOR($GUI_DISABLE, $GUI_UNCHECKED))
-			GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[1][1][5]].Handle, BitAnd(GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[1][1][1]].Handle), $GUI_CHECKED) ? $GUI_ENABLE : BitOR($GUI_DISABLE, $GUI_UNCHECKED))
+			GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[1][1][2]].Handle, BitAND(GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[1][1][1]].Handle), $GUI_CHECKED) ? $GUI_ENABLE : BitOR($GUI_DISABLE, $GUI_UNCHECKED))
+			GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[1][1][3]].Handle, BitAND(GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[1][1][1]].Handle), $GUI_CHECKED) ? $GUI_ENABLE : BitOR($GUI_DISABLE, $GUI_UNCHECKED))
+			GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[1][1][4]].Handle, BitAND(GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[1][1][1]].Handle), $GUI_CHECKED) ? $GUI_ENABLE : BitOR($GUI_DISABLE, $GUI_UNCHECKED))
+			GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[1][1][5]].Handle, BitAND(GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[1][1][1]].Handle), $GUI_CHECKED) ? $GUI_ENABLE : BitOR($GUI_DISABLE, $GUI_UNCHECKED))
 		EndIf
 
 		If $hControl = $MM_WO_ITEMS[$MM_WO_MAP[1][1][3]].Handle Then GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[1][1][4]].Handle, $GUI_UNCHECKED)
 		If $hControl = $MM_WO_ITEMS[$MM_WO_MAP[1][1][4]].Handle Then GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[1][1][3]].Handle, $GUI_UNCHECKED)
 
-		If BitOR(GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[1][1][3]].Handle), $GUI_CHECKED) Then GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[1][1][4]].Handle, $GUI_UNCHECKED)
+		If BitAND(GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[1][1][3]].Handle), $GUI_CHECKED) Then GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[1][1][4]].Handle, $GUI_UNCHECKED)
 	EndIf
 
 	If WO_CheckItemAvailability(1, 1, 6) And WO_CheckItemAvailability(1, 1, 7) Then
 		If $hControl = $MM_WO_ITEMS[$MM_WO_MAP[1][1][6]].Handle Then GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[1][1][7]].Handle, GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[1][1][6]].Handle))
 		If $hControl = $MM_WO_ITEMS[$MM_WO_MAP[1][1][7]].Handle Then GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[1][1][6]].Handle, GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[1][1][7]].Handle))
 
-		If BitOR(GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[1][1][6]].Handle), $GUI_CHECKED) Then GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[1][1][7]].Handle, $GUI_UNCHECKED)
+		If $hControl = 0 Then GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[1][1][7]].Handle, GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[1][1][6]].Handle))
 	EndIf
 
 	If WO_CheckItemAvailability(2, 0, 7) And WO_CheckItemAvailability(2, 0, 8) And WO_CheckItemAvailability(2, 0, 9) Then
@@ -328,10 +382,10 @@ Func WO_UpdateAccessibility(Const $hControl = 0)
 			GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[2][0][8]].Handle, $GUI_UNCHECKED)
 		EndIf
 
-		If BitOR(GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[2][0][7]].Handle), $GUI_CHECKED) Then
+		If BitAND(GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[2][0][7]].Handle), $GUI_CHECKED) Then
 			GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[2][0][8]].Handle, $GUI_UNCHECKED)
 			GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[2][0][9]].Handle, $GUI_UNCHECKED)
-		ElseIf BitOR(GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[2][0][7]].Handle), $GUI_CHECKED) Then
+		ElseIf BitAND(GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[2][0][7]].Handle), $GUI_CHECKED) Then
 			GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[2][0][9]].Handle, $GUI_UNCHECKED)
 		EndIf
 	EndIf
