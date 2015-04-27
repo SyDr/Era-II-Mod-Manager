@@ -82,7 +82,13 @@
 		"caption" : "WoG Options",
 		"loading" : "Please, wait...",
 		"loading_text" : "this will take only few seconds",
-		"bad_data" : "Can't load WoG options data. Check: \r\n\r\n1) Mod list (there should be mod with zsetup00.txt, usually WoG or WoG Revised) \r\n2) You have this mod installed"
+		"bad_data" : "Can't load WoG options data. Check: \r\n\r\n1) Mod list (there should be mod with zsetup00.txt, usually WoG or WoG Revised) \r\n2) You have this mod installed",
+		"save" : "Save",
+		"select_filter" : "DAT files (*.dat)|WOG files (*.wog)|All files (*.*)",
+		"load" : "Load",
+		"default" : "Default",
+		"uncheck" : "Uncheck All",
+		"check" : "Check All"
 	},
 	"plugins_list" :
 	{

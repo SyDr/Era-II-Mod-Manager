@@ -18,6 +18,8 @@ Global $mPages = MapEmpty() ; handle : page num (0 based)
 Global $mGroups = MapEmpty() ; handle : page, group (both 0 based)
 Global $mItems = MapEmpty() ; handle : page, group, item (item is 1 based, other 0 based)
 
+#include "mmanager.au3"
+
 Func WO_ClearData()
 	For $p = 0 To $WO_CAT - 1
 		$MM_WO_CAT[$p] = Null
@@ -58,9 +60,11 @@ Func WO_ManageOptions(Const $aOptions)
 	EndIf
 
 	Local Const $iWidth = 180, $iHeight = 50, $iBaseWidth = 300
+	Local Const $iButtonWidth = 90
 	Local Const $iItemSpacing = 4
 	Local Const $iGroupWidth = $iBaseWidth - 1.5 * $iItemSpacing
-	Local $bClose, $bSelected, $iMessage, $hCloseButton, $aCursoInfo
+	Local $bClose, $bSelected, $iMessage, $aCursoInfo
+	Local $hCloseButton, $hSaveButton, $hLoadButton, $hRestoreDefaultButton, $hUnchekAllButton, $hCheckAllButton
 	Local $hGUI = MM_GUICreate(Lng_Get("wog_options.caption"), $iWidth + $iBaseWidth * 2, 500)
 	Local $aSize = WinGetClientSize($hGUI)
 
@@ -109,7 +113,17 @@ Func WO_ManageOptions(Const $aOptions)
 		ProgressSet($p/$WO_CAT*100)
 	Next
 
-	$hCloseButton = GUICtrlCreateButton("OK", $aSize[0] - 90 - $iItemSpacing, $aSize[1] - 25 - $iItemSpacing, 90, 25)
+;~ 	Local $hLine = GUICtrlCreateGraphic($iItemSpacing, $aSize[1] - 25 - 2 * $iItemSpacing, $aSize[0] - 2 * $iItemSpacing, 1)
+;~ 	GUICtrlSetGraphic($hLine, $GUI_GR_LINE, $aSize[0] - 2 * $iItemSpacing, 0)
+
+	$hCheckAllButton = GUICtrlCreateButton(Lng_Get("wog_options.check"), $aSize[0] - 6 * $iButtonWidth  - 7 * $iItemSpacing, $aSize[1] - 25 - $iItemSpacing, 90, 25)
+	$hUnchekAllButton = GUICtrlCreateButton(Lng_Get("wog_options.uncheck"), GUICtrlGetPos($hCheckAllButton).NextX + $iItemSpacing, GUICtrlGetPos($hCheckAllButton).Top, $iButtonWidth, 25)
+	$hRestoreDefaultButton = GUICtrlCreateButton(Lng_Get("wog_options.default"),GUICtrlGetPos($hUnchekAllButton).NextX + $iItemSpacing, GUICtrlGetPos($hUnchekAllButton).Top, $iButtonWidth, 25)
+	$hLoadButton = GUICtrlCreateButton(Lng_Get("wog_options.load"), GUICtrlGetPos($hRestoreDefaultButton).NextX + $iItemSpacing, GUICtrlGetPos($hRestoreDefaultButton).Top, $iButtonWidth, 25)
+	$hSaveButton = GUICtrlCreateButton(Lng_Get("wog_options.save"), GUICtrlGetPos($hLoadButton).NextX + $iItemSpacing, GUICtrlGetPos($hLoadButton).Top, $iButtonWidth, 25)
+	$hCloseButton = GUICtrlCreateButton("OK", GUICtrlGetPos($hSaveButton).NextX + $iItemSpacing, GUICtrlGetPos($hSaveButton).Top, $iButtonWidth, 25)
+
+;~ 	GUICtrlSetImage($hCloseButton, @ScriptDir & "\icons\dialog-ok-apply.ico")
 
 	WO_SettingsToView($MM_WO_UI_OPTIONS)
 	WO_UpdateAccessibility()
@@ -119,6 +133,14 @@ Func WO_ManageOptions(Const $aOptions)
 	While Not $bClose And Not $bSelected
 		$iMessage = GUIGetMsg()
 		Select
+			Case $iMessage = $hSaveButton
+				Local $sDrive, $sDir, $sFileName, $sExtension
+				Local $sPath = FileSaveDialog("", _PathFull(IniRead($MM_GAME_DIR & "\wog.ini", "WoGification", "Options_File_Path", ".\"), $MM_GAME_DIR), Lng_Get("wog_options.select_filter"), _
+					Default, IniRead($MM_GAME_DIR & "\wog.ini", "WoGification", "Options_File_Name", "MM_PresetSettings.dat"), MM_GetCurrentWindow())
+				If Not @error Then
+					_PathSplit($sPath, $sDrive, $sDir, $sFileName, $sExtension)
+					Scn_SaveWogSettingsFromArray(WO_ViewToSettings($MM_WO_UI_OPTIONS), ($sDrive & $sDir = $MM_GAME_DIR) ? ".\" : ($sDrive & $sDir), $sFileName & $sExtension)
+				EndIf
 			Case $iMessage = $GUI_EVENT_CLOSE
 				$bClose = True
 			Case $iMessage = $hCloseButton
@@ -132,7 +154,6 @@ Func WO_ManageOptions(Const $aOptions)
 				$aCursoInfo = GUIGetCursorInfo($hGUI)
 				If Not @error And $aCursoInfo[4] <> 0 Then
 					$sPopup = WO_GetItemInfoByHandle($aCursoInfo[4])
-;~ 					MsgBox($MB_SYSTEMMODAL, "",  $aCursoInfo[4])
 					If $sPopup Then MsgBox($MB_SYSTEMMODAL, "",  $sPopup, Default, MM_GetCurrentWindow())
 				EndIf
 		EndSelect
@@ -280,11 +301,15 @@ Func WO_UpdateAccessibility(Const $hControl = 0)
 
 		If $hControl = $MM_WO_ITEMS[$MM_WO_MAP[1][1][3]].Handle Then GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[1][1][4]].Handle, $GUI_UNCHECKED)
 		If $hControl = $MM_WO_ITEMS[$MM_WO_MAP[1][1][4]].Handle Then GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[1][1][3]].Handle, $GUI_UNCHECKED)
+
+		If BitOR(GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[1][1][3]].Handle), $GUI_CHECKED) Then GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[1][1][4]].Handle, $GUI_UNCHECKED)
 	EndIf
 
 	If WO_CheckItemAvailability(1, 1, 6) And WO_CheckItemAvailability(1, 1, 7) Then
 		If $hControl = $MM_WO_ITEMS[$MM_WO_MAP[1][1][6]].Handle Then GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[1][1][7]].Handle, GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[1][1][6]].Handle))
 		If $hControl = $MM_WO_ITEMS[$MM_WO_MAP[1][1][7]].Handle Then GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[1][1][6]].Handle, GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[1][1][7]].Handle))
+
+		If BitOR(GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[1][1][6]].Handle), $GUI_CHECKED) Then GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[1][1][7]].Handle, $GUI_UNCHECKED)
 	EndIf
 
 	If WO_CheckItemAvailability(2, 0, 7) And WO_CheckItemAvailability(2, 0, 8) And WO_CheckItemAvailability(2, 0, 9) Then
@@ -301,6 +326,13 @@ Func WO_UpdateAccessibility(Const $hControl = 0)
 		If $hControl = $MM_WO_ITEMS[$MM_WO_MAP[2][0][9]].Handle Then
 			GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[2][0][7]].Handle, $GUI_UNCHECKED)
 			GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[2][0][8]].Handle, $GUI_UNCHECKED)
+		EndIf
+
+		If BitOR(GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[2][0][7]].Handle), $GUI_CHECKED) Then
+			GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[2][0][8]].Handle, $GUI_UNCHECKED)
+			GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[2][0][9]].Handle, $GUI_UNCHECKED)
+		ElseIf BitOR(GUICtrlRead($MM_WO_ITEMS[$MM_WO_MAP[2][0][7]].Handle), $GUI_CHECKED) Then
+			GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[2][0][9]].Handle, $GUI_UNCHECKED)
 		EndIf
 	EndIf
 EndFunc
