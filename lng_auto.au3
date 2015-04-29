@@ -78,6 +78,7 @@ If Not MapExists($MM_LNG_CACHE["wog_options"], "load") Or Not IsString($MM_LNG_C
 If Not MapExists($MM_LNG_CACHE["wog_options"], "default") Or Not IsString($MM_LNG_CACHE["wog_options"]["default"]) Then $MM_LNG_CACHE["wog_options"]["default"] = "Default"
 If Not MapExists($MM_LNG_CACHE["wog_options"], "uncheck") Or Not IsString($MM_LNG_CACHE["wog_options"]["uncheck"]) Then $MM_LNG_CACHE["wog_options"]["uncheck"] = "Uncheck All"
 If Not MapExists($MM_LNG_CACHE["wog_options"], "check") Or Not IsString($MM_LNG_CACHE["wog_options"]["check"]) Then $MM_LNG_CACHE["wog_options"]["check"] = "Check All"
+If Not MapExists($MM_LNG_CACHE["wog_options"], "filter") Or Not IsString($MM_LNG_CACHE["wog_options"]["filter"]) Then $MM_LNG_CACHE["wog_options"]["filter"] = "Filter:"
 If Not MapExists($MM_LNG_CACHE, "plugins_list") Or Not IsMap($MM_LNG_CACHE["plugins_list"]) Then $MM_LNG_CACHE["plugins_list"] = MapEmpty()
 If Not MapExists($MM_LNG_CACHE["plugins_list"], "caption") Or Not IsString($MM_LNG_CACHE["plugins_list"]["caption"]) Then $MM_LNG_CACHE["plugins_list"]["caption"] = "Plugins (%s)"
 If Not MapExists($MM_LNG_CACHE["plugins_list"], "global") Or Not IsString($MM_LNG_CACHE["plugins_list"]["global"]) Then $MM_LNG_CACHE["plugins_list"]["global"] = "Global"

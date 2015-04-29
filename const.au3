@@ -5,7 +5,7 @@
 #ce
 
 Global Const $MM_PORTABLE = False
-Global Const $MM_VERSION_NUMBER = "0.93.2.0"
+Global Const $MM_VERSION_NUMBER = "0.93.3.0"
 
 Global Const $MM_VERSION_SUBTYPE = "beta"
 Global Const $MM_VERSION_NAME = "Siege Engine"
@@ -16,6 +16,8 @@ Global Const $MM_UPDATE_URL = "http://wakeofgods.org/mm"
 Global Const $MM_TITLE = StringFormat("Era II Mod Manager [%s - %s]%s", $MM_VERSION, $MM_VERSION_NAME, $MM_PORTABLE ? "{Portable}" : "")
 Global Const $MM_WINDOW_MIN_WIDTH = 800
 Global Const $MM_WINDOW_MIN_HEIGHT = 494
+
+Global Const $MM_WOG_OPTIONS_FILE = "WoGSetupMM.dat"
 
 Global Enum $MM_VIEW_MODS, $MM_VIEW_PLUGINS, $MM_VIEW_INSTALL, $MM_VIEW_BIG_SCREEN, $MM_VIEW_SCN, $MM_VIEW_TOTAL
 Global Enum $MM_SUBVIEW_DESC, $MM_SUBVIEW_INFO, $MM_SUBVIEW_SCREENS, $MM_SUBVIEW_BLANK, $MM_SUBVIEW_TOTAL

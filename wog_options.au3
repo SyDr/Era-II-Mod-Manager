@@ -13,13 +13,12 @@ Global $MM_WO_CAT[$WO_CAT] ; text, hint, popup, handle
 Global $MM_WO_GROUPS[$WO_CAT][$WO_GRP] ; text, hint, popup, type, handle
 Global $MM_WO_ITEMS[1] ; Comment, Script, Page, Group, Item, State, MP, ERM, Text, Hint, PopUp, Handle
 Global $MM_WO_MAP[$WO_CAT][$WO_GRP][$WO_OPT + 1] ; page / group / item [1 based, 0 - count] : index in $MM_WO_ITEMS
-Global $MM_WO_UI_OPTIONS, $MM_WO_SHOW_POPUP
+Global $MM_WO_UI_OPTIONS, $MM_WO_SHOW_POPUP, $MM_WO_FILTER_REQUESTED
 Global $mPages = MapEmpty() ; handle : page num (0 based)
 Global $mGroups = MapEmpty() ; handle : page, group (both 0 based)
 Global $mItems = MapEmpty() ; handle : page, group, item (item is 1 based, other 0 based)
 Global $MM_WO_CURRENT_PAGE = -1, $MM_WO_PREV_PAGE = -1
-
-#include "mmanager.au3"
+Global $MM_WO_FILTER = "", $WO_UI, $__WO_INPUT
 
 Func WO_ClearData()
 	For $p = 0 To $WO_CAT - 1
@@ -38,6 +37,7 @@ Func WO_ClearData()
 
 	$MM_WO_PREV_PAGE = -1
 	$MM_WO_PREV_PAGE = -1
+	$MM_WO_FILTER = ""
 EndFunc
 
 Func WO_ManageOptions(Const $aOptions)
@@ -63,16 +63,17 @@ Func WO_ManageOptions(Const $aOptions)
 		Return $mAnswer
 	EndIf
 
-	Local Const $iWidth = 180, $iHeight = 50, $iBaseWidth = 300
+	Local Const $iWidth = 180, $iHeight = 50, $iBaseWidth = 350
 	Local Const $iButtonWidth = 90
 	Local Const $iItemSpacing = 4
 	Local Const $iGroupWidth = $iBaseWidth - 1.5 * $iItemSpacing
 	Local $bClose, $bSelected, $iMessage, $aCursoInfo
 	Local $hCloseButton, $hSaveButton, $hLoadButton, $hRestoreDefaultButton, $hUncheckAllButton, $hCheckAllButton
-	Local $hGUI = MM_GUICreate(Lng_Get("wog_options.caption"), $iWidth + $iBaseWidth * 2, 500)
-	Local $aSize = WinGetClientSize($hGUI)
+	Local $hFilterLabel, $hFilterInput, $hFilterApplyButton, $hFilterClearButton
+	$WO_UI = MM_GUICreate(Lng_Get("wog_options.caption"), $iWidth + $iBaseWidth * 2, 500)
+	Local $aSize = WinGetClientSize($WO_UI)
 	If Not @Compiled Then GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
-
+	GUIRegisterMsgStateful($WM_COMMAND, "__WO_WM_COMMAND")
 	GUIRegisterMsgStateful($WM_CONTEXTMENU, "__WO_WM_CONTEXTMENU")
 
 	Local $iLeft, $iTop, $hItemFunc, $iIndex, $iIndex2, $sPopup
@@ -83,16 +84,13 @@ Func WO_ManageOptions(Const $aOptions)
 		$mPages[$MM_WO_CAT[$p].Handle] = $p
 	Next
 
-	Local $bGroupWithItems
 
 	For $p = 0 To $WO_CAT - 1
-		$bGroupWithItems = False
 		For $g = 0 To $WO_GRP - 1
 			$iLeft = $iWidth + Floor(($g / 2) + 1) * $iItemSpacing + Floor(($g / 2)) * $iGroupWidth
 			$iTop = ($g = 1 Or $g = 3) ? GUICtrlGetPos($MM_WO_GROUPS[$p][$g - (($p = 4 And $g = 3) ? 3 : 1)].Handle).NextY : 0
 
 			If $MM_WO_MAP[$p][$g][0] > 0 Then
-				$bGroupWithItems = True
 				$MM_WO_GROUPS[$p][$g].Handle = GUICtrlCreateGroup($MM_WO_GROUPS[$p][$g].Text, $iLeft, $iTop, ($p = 4 And $g = 0) ? (2 * $iGroupWidth + $iItemSpacing) : $iGroupWidth, 19 * $MM_WO_MAP[$p][$g][0] + 5 * $iItemSpacing)
 				GUICtrlSetTip($MM_WO_GROUPS[$p][$g].Handle, $MM_WO_GROUPS[$p][$g].Hint)
 				$mGroups[$MM_WO_GROUPS[$p][$g].Handle] = ArraySimple($p, $g)
@@ -113,13 +111,21 @@ Func WO_ManageOptions(Const $aOptions)
 			EndIf
 		Next
 
-		If Not $bGroupWithItems Then GUICtrlSetState($MM_WO_CAT[$p].Handle, $GUI_HIDE)
 		_TracePoint("WO_PageCreated")
 		ProgressSet($p/$WO_CAT*100)
 	Next
 
 ;~ 	Local $hLine = GUICtrlCreateGraphic($iItemSpacing, $aSize[1] - 25 - 2 * $iItemSpacing, $aSize[0] - 2 * $iItemSpacing, 1)
+	Local $hLine = GUICtrlCreateLabel("", $iItemSpacing, $aSize[1] - 25 - 2 * $iItemSpacing, $aSize[0] - 2 * $iItemSpacing, 1, $SS_BLACKFRAME)
 ;~ 	GUICtrlSetGraphic($hLine, $GUI_GR_LINE, $aSize[0] - 2 * $iItemSpacing, 0)
+
+	$hFilterLabel = GUICtrlCreateLabel(Lng_Get("wog_options.filter"), 2 * $iItemSpacing, $aSize[1] - 25 - $iItemSpacing, Default, Default, $SS_CENTERIMAGE)
+	$__WO_INPUT = GUICtrlCreateInput("", GUICtrlGetPos($hFilterLabel).NextX + $iItemSpacing, GUICtrlGetPos($hFilterLabel).Top + 2, 150)
+;~ 	$hFilterApplyButton = GUICtrlCreateButton("", GUICtrlGetPos($hFilterInput).NextX + $iItemSpacing, GUICtrlGetPos($hFilterLabel).Top, 25, 25, $BS_ICON)
+	$hFilterClearButton = GUICtrlCreateButton("", GUICtrlGetPos($__WO_INPUT).NextX + $iItemSpacing, GUICtrlGetPos($hFilterLabel).Top, 25, 25, $BS_ICON)
+
+;~ 	GUICtrlSetImage($hFilterApplyButton, @ScriptDir & "\icons\view-filter.ico")
+	GUICtrlSetImage($hFilterClearButton, @ScriptDir & "\icons\edit-clear-locationbar-rtl.ico")
 
 	$hCheckAllButton = GUICtrlCreateButton(Lng_Get("wog_options.check"), $aSize[0] - 6 * $iButtonWidth  - 7 * $iItemSpacing, $aSize[1] - 25 - $iItemSpacing, $iButtonWidth, 25)
 	$hUncheckAllButton = GUICtrlCreateButton(Lng_Get("wog_options.uncheck"), GUICtrlGetPos($hCheckAllButton).NextX + $iItemSpacing, GUICtrlGetPos($hCheckAllButton).Top, $iButtonWidth, 25)
@@ -132,19 +138,22 @@ Func WO_ManageOptions(Const $aOptions)
 
 	WO_SettingsToView($MM_WO_UI_OPTIONS)
 	WO_UpdateAccessibility()
+	WO_UpdateVisibility()
 	ProgressOff()
 	GUISetState(@SW_SHOW)
 
 	While Not $bClose And Not $bSelected
 		$iMessage = GUIGetMsg()
 		Select
+			Case $iMessage = $hFilterClearButton
+				GUICtrlSetData($__WO_INPUT, "")
 			Case $iMessage = $hSaveButton
 				Local $sPath = FileSaveDialog("", _PathFull(IniRead($MM_GAME_DIR & "\wog.ini", "WoGification", "Options_File_Path", ".\"), $MM_GAME_DIR), Lng_Get("wog_options.select_filter"), _
-					Default, IniRead($MM_GAME_DIR & "\wog.ini", "WoGification", "Options_File_Name", "MM_PresetSettings.dat"), MM_GetCurrentWindow())
+					Default, IniRead($MM_GAME_DIR & "\wog.ini", "WoGification", "Options_File_Name", $MM_WOG_OPTIONS_FILE), MM_GetCurrentWindow())
 				If Not @error Then Scn_SaveWogSettings(WO_ViewToSettings($MM_WO_UI_OPTIONS), $sPath)
 			Case $iMessage = $hLoadButton
 				Local $sPath = FileOpenDialog("", _PathFull(IniRead($MM_GAME_DIR & "\wog.ini", "WoGification", "Options_File_Path", ".\"), $MM_GAME_DIR), Lng_Get("wog_options.select_filter"), _
-					$FD_FILEMUSTEXIST + $FD_PATHMUSTEXIST, IniRead($MM_GAME_DIR & "\wog.ini", "WoGification", "Options_File_Name", "MM_PresetSettings.dat"), MM_GetCurrentWindow())
+					$FD_FILEMUSTEXIST + $FD_PATHMUSTEXIST, IniRead($MM_GAME_DIR & "\wog.ini", "WoGification", "Options_File_Name", $MM_WOG_OPTIONS_FILE), MM_GetCurrentWindow())
 				If Not @error Then
 					WO_SettingsToView(Scn_LoadWogSettingsAsArray($sPath))
 					WO_UpdateAccessibility()
@@ -165,11 +174,15 @@ Func WO_ManageOptions(Const $aOptions)
 				WO_UpdateAccessibility($iMessage)
 			Case $MM_WO_SHOW_POPUP
 				$MM_WO_SHOW_POPUP = False
-				$aCursoInfo = GUIGetCursorInfo($hGUI)
+				$aCursoInfo = GUIGetCursorInfo($WO_UI)
 				If Not @error And $aCursoInfo[4] <> 0 Then
 					$sPopup = WO_GetItemInfoByHandle($aCursoInfo[4])
 					If $sPopup Then MsgBox($MB_SYSTEMMODAL, "",  $sPopup, Default, MM_GetCurrentWindow())
 				EndIf
+			Case $MM_WO_FILTER_REQUESTED
+				$MM_WO_FILTER_REQUESTED = False
+				$MM_WO_FILTER = GUICtrlRead($__WO_INPUT)
+				WO_UpdateVisibility()
 		EndSelect
 	WEnd
 
@@ -178,6 +191,7 @@ Func WO_ManageOptions(Const $aOptions)
 		$mAnswer["wog_options"] = WO_ViewToSettings($MM_WO_UI_OPTIONS)
 	EndIf
 
+	GUIRegisterMsgStateful($WM_COMMAND, "")
 	GUIRegisterMsgStateful($WM_CONTEXTMENU, "")
 	MM_GUIDelete()
 	WO_ClearData()
@@ -190,6 +204,46 @@ Func WO_ManageOptions(Const $aOptions)
 	Return $mAnswer
 EndFunc
 
+Func WO_UpdateVisibility()
+	GUISetState(@SW_LOCK)
+	Local $iFirstAvailablePage = -1
+	Local $bPageAvailble
+	Local $bGroupVisible, $iIndex, $bItemVisible
+
+	For $p = 0 To $WO_CAT - 1
+		$bPageAvailble = False
+
+		For $g = 0 To $WO_GRP - 1
+			$bGroupVisible = False
+
+			If $MM_WO_MAP[$p][$g][0] > 0 Then
+				For $i = 1 To $MM_WO_MAP[$p][$g][0]
+					$iIndex = $MM_WO_MAP[$p][$g][$i]
+					$bItemVisible = $MM_WO_CURRENT_PAGE = $p And __WO_IsItemPassFilter($iIndex)
+					$bPageAvailble = $bPageAvailble Or __WO_IsItemPassFilter($iIndex)
+					GUICtrlSetState($MM_WO_ITEMS[$iIndex].Handle, $bItemVisible ? $GUI_SHOW : $GUI_HIDE)
+					If $bItemVisible Then $bGroupVisible = True
+				Next
+			EndIf
+
+			GUICtrlSetState($MM_WO_GROUPS[$p][$g].Handle, $bGroupVisible ? $GUI_SHOW : $GUI_HIDE)
+		Next
+
+		GUICtrlSetState($MM_WO_CAT[$p].Handle, $bPageAvailble ? $GUI_SHOW : $GUI_HIDE)
+		If $iFirstAvailablePage = -1 And $bPageAvailble Then $iFirstAvailablePage = $p
+	Next
+
+	GUISetState(@SW_UNLOCK)
+	If $iFirstAvailablePage <> - 1 And ($MM_WO_CURRENT_PAGE = -1 Or ($MM_WO_CURRENT_PAGE <> -1 And BitAnd(GUICtrlGetState($MM_WO_CAT[$MM_WO_CURRENT_PAGE].Handle), $GUI_HIDE))) Then
+		GUICtrlSetState($MM_WO_CAT[$iFirstAvailablePage].Handle, $GUI_CHECKED)
+		WO_OnPageChange($iFirstAvailablePage)
+	EndIf
+EndFunc
+
+Func __WO_IsItemPassFilter(Const $iIndex)
+	Return $MM_WO_FILTER = "" Or StringInStr($MM_WO_ITEMS[$iIndex].Text, $MM_WO_FILTER) Or StringInStr($MM_WO_ITEMS[$iIndex].Hint, $MM_WO_FILTER) Or StringInStr($MM_WO_ITEMS[$iIndex].PopUp, $MM_WO_FILTER)
+EndFunc
+
 Func WO_SetState(Const $iType = -1)
 	; -1 is default, 0 - disable, 1 - enable
 	If $MM_WO_CURRENT_PAGE <> - 1 Then
@@ -200,10 +254,12 @@ Func WO_SetState(Const $iType = -1)
 				$iIndex2 = $MM_WO_ITEMS[$iIndex].ERM
 				$iState = $iType <> -1 ? $iType : $MM_WO_ITEMS[$iIndex].State
 
-				If $MM_WO_GROUPS[$MM_WO_CURRENT_PAGE][$g].Type Then
-					GUICtrlSetState($MM_WO_ITEMS[$iIndex].Handle, $iState = 1 ? $GUI_CHECKED : $GUI_UNCHECKED)
-				ElseIf $iType = -1 Then
-					GUICtrlSetState($MM_WO_ITEMS[$iIndex].Handle, $iState ? $GUI_CHECKED : $GUI_UNCHECKED)
+				If BitAND(GUICtrlGetState($MM_WO_ITEMS[$iIndex].Handle), $GUI_SHOW) Then
+					If $MM_WO_GROUPS[$MM_WO_CURRENT_PAGE][$g].Type Then
+						GUICtrlSetState($MM_WO_ITEMS[$iIndex].Handle, $iState = 1 ? $GUI_CHECKED : $GUI_UNCHECKED)
+					ElseIf $iType = -1 Then
+						GUICtrlSetState($MM_WO_ITEMS[$iIndex].Handle, $iState ? $GUI_CHECKED : $GUI_UNCHECKED)
+					EndIf
 				EndIf
 			Next
 		Next
@@ -231,6 +287,32 @@ Func __WO_WM_CONTEXTMENU($hWnd, $iMsg, $wParam, $lParam)
 	$MM_WO_SHOW_POPUP = True
 	Return $GUI_RUNDEFMSG
 EndFunc
+
+Func __WO_WM_COMMAND($hWnd, $iMsg, $wParam, $lParam)
+	#forceref $hWnd, $iMsg
+	Local $hWndFrom, $iCode
+	$hWndFrom = $lParam
+
+	$iCode = _WinAPI_HiWord($wParam)
+
+	Switch $hWndFrom
+		Case GUICtrlGetHandle($__WO_INPUT)
+			Switch $iCode
+				Case $EN_CHANGE
+					_Timer_KillAllTimers($WO_UI)
+					_Timer_SetTimer($WO_UI, 250, "__WO_FilterData") ; create timer
+			EndSwitch
+	EndSwitch
+
+	Return $GUI_RUNDEFMSG
+EndFunc   ;==>WM_COMMAND
+
+Func __WO_FilterData($hWnd, $iMsg, $iIDTimer, $iTime)
+    #forceref $hWnd, $iMsg, $iIDTimer, $iTime
+    _Timer_KillAllTimers($WO_UI)
+	$MM_WO_FILTER_REQUESTED = True
+EndFunc   ;==>_UpdateStatusBarClock
+
 
 Func WO_IsCheckboxGroup(Const $iPage, Const $iGroup)
 	Return Not (($iPage = 0 And ($iGroup = 0 Or $iGroup = 3)) Or ($iPage = 4 And $iGroup = 0))
@@ -281,27 +363,8 @@ EndFunc
 
 Func WO_OnPageChange(Const $iIndex)
 	If $MM_WO_CURRENT_PAGE <> $iIndex Then
-		GUISetState(@SW_LOCK)
-		$MM_WO_PREV_PAGE = $MM_WO_CURRENT_PAGE
-		If $MM_WO_PREV_PAGE <> -1 Then
-			For $g = 0 To $WO_GRP - 1
-				GUICtrlSetState($MM_WO_GROUPS[$MM_WO_PREV_PAGE][$g].Handle, $GUI_HIDE)
-				For $i = 1 To $MM_WO_MAP[$MM_WO_PREV_PAGE][$g][0]
-					GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[$MM_WO_PREV_PAGE][$g][$i]].Handle, $GUI_HIDE)
-				Next
-			Next
-		EndIf
-
 		$MM_WO_CURRENT_PAGE = $iIndex
-		If $MM_WO_CURRENT_PAGE <> -1 Then
-			For $g = 0 To $WO_GRP - 1
-				GUICtrlSetState($MM_WO_GROUPS[$MM_WO_CURRENT_PAGE][$g].Handle, $GUI_SHOW)
-				For $i = 1 To $MM_WO_MAP[$MM_WO_CURRENT_PAGE][$g][0]
-					GUICtrlSetState($MM_WO_ITEMS[$MM_WO_MAP[$MM_WO_CURRENT_PAGE][$g][$i]].Handle, $GUI_SHOW)
-				Next
-			Next
-		EndIf
-		GUISetState(@SW_UNLOCK)
+		WO_UpdateVisibility()
 	EndIf
 EndFunc
 

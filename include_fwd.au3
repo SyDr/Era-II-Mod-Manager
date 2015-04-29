@@ -25,6 +25,7 @@
 #include <ProgressConstants.au3>
 #include <StaticConstants.au3>
 #include <TabConstants.au3>
+#include <Timers.au3>
 #include <UpDownConstants.au3>
 #include <WindowsConstants.au3>
 #include <APIShellExConstants.au3>

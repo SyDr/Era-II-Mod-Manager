@@ -92,11 +92,10 @@ EndFunc
 Func Scn_SaveWogSettings(Const $vData, $sPath = "")
 	If Not $sPath Then
 		Local Const $sFilePath = ".\"
-		Local Const $sFileName = "MM_PresetSettings.dat"
-		Local Const $aSection[3][2] = [[2, ""],["Options_File_Path", $sFilePath],["Options_File_Name", $sFileName]]
+		Local Const $aSection[3][2] = [[2, ""],["Options_File_Path", $sFilePath],["Options_File_Name", $MM_WOG_OPTIONS_FILE]]
 		IniWriteSection($MM_GAME_DIR & "\wog.ini", "WoGification", $aSection)
 
-		$sPath = $MM_GAME_DIR & "\MM_PresetSettings.dat"
+		$sPath = $MM_GAME_DIR & "\" & $MM_WOG_OPTIONS_FILE
 	EndIf
 
 	Local Const $aData = IsArray($vData) ? $vData : Scn_StringToWS($vData)
@@ -113,7 +112,7 @@ EndFunc
 
 Func Scn_LoadWogSettingsAsArray($sFilePath = "")
 	If Not $sFilePath Then $sFilePath = _PathFull(IniRead($MM_GAME_DIR & "\wog.ini", "WoGification", "Options_File_Path", ".\"), $MM_GAME_DIR) & _
-		IniRead($MM_GAME_DIR & "\wog.ini", "WoGification", "Options_File_Name", "MM_PresetSettings.dat")
+		IniRead($MM_GAME_DIR & "\wog.ini", "WoGification", "Options_File_Name", $MM_WOG_OPTIONS_FILE)
 
 	Return Scn_LoadWogSettingsFromFile($sFilePath)
 EndFunc
