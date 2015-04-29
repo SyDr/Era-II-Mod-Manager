@@ -88,7 +88,8 @@
 		"load" : "Load",
 		"default" : "Default",
 		"uncheck" : "Uncheck All",
-		"check" : "Check All"
+		"check" : "Check All",
+		"filter" : "Filter:"
 	},
 	"plugins_list" :
 	{
