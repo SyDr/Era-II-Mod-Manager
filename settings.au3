@@ -26,24 +26,7 @@ Func __Settings_Validate()
 		$MM_SETTINGS_CACHE["window"]["height"] < $MM_WINDOW_MIN_HEIGHT Then $MM_SETTINGS_CACHE["window"]["height"] = $MM_WINDOW_MIN_HEIGHT
 	If Not MapExists($MM_SETTINGS_CACHE["window"], "maximized") Or Not IsBool($MM_SETTINGS_CACHE["window"]["maximized"]) Then $MM_SETTINGS_CACHE["window"]["maximized"] = False
 	If Not MapExists($MM_SETTINGS_CACHE, "game") Or Not IsMap($MM_SETTINGS_CACHE["game"]) Then $MM_SETTINGS_CACHE["game"] = MapEmpty()
-	If Not $MM_PORTABLE Then
-		If Not MapExists($MM_SETTINGS_CACHE["game"], "selected") Or Not IsString($MM_SETTINGS_CACHE["game"]["selected"]) Then $MM_SETTINGS_CACHE["game"]["selected"] = ""
-		If Not MapExists($MM_SETTINGS_CACHE["game"], "items") Or Not IsMap($MM_SETTINGS_CACHE["game"]["items"]) Then $MM_SETTINGS_CACHE["game"]["items"] = MapEmpty()
-
-		$aItems = MapKeys($MM_SETTINGS_CACHE["game"]["items"])
-		For $sItem In $aItems
-			If Not IsMap($MM_SETTINGS_CACHE["game"]["items"][$sItem]) Then $MM_SETTINGS_CACHE["game"]["items"][$sItem] = MapEmpty()
-			If Not MapExists($MM_SETTINGS_CACHE["game"]["items"][$sItem], "exe") Or Not IsString($MM_SETTINGS_CACHE["game"]["items"][$sItem]["exe"]) Then $MM_SETTINGS_CACHE["game"]["items"][$sItem]["exe"] = ""
-		Next
-
-		Local $sSelected = $MM_SETTINGS_CACHE["game"]["selected"]
-		If $MM_SETTINGS_CACHE["game"]["selected"] <> "" Then
-			If Not IsMap($MM_SETTINGS_CACHE["game"]["items"][$sSelected]) Then $MM_SETTINGS_CACHE["game"]["items"][$sSelected] = MapEmpty()
-			If Not MapExists($MM_SETTINGS_CACHE["game"]["items"][$sSelected], "exe") Or Not IsString($MM_SETTINGS_CACHE["game"]["items"][$sSelected]["exe"]) Then $MM_SETTINGS_CACHE["game"]["items"][$sSelected]["exe"] = ""
-		EndIf
-	Else
-		If Not MapExists($MM_SETTINGS_CACHE["game"], "exe") Or Not IsString($MM_SETTINGS_CACHE["game"]["exe"]) Then $MM_SETTINGS_CACHE["game"]["exe"] = ""
-	EndIf
+	If Not MapExists($MM_SETTINGS_CACHE["game"], "exe") Or Not IsString($MM_SETTINGS_CACHE["game"]["exe"]) Then $MM_SETTINGS_CACHE["game"]["exe"] = ""
 
 	; 0.90.4.2
 	If Not MapExists($MM_SETTINGS_CACHE["game"], "blacklist") Or Not IsArray($MM_SETTINGS_CACHE["game"]["blacklist"]) Then
@@ -63,9 +46,7 @@ Func __Settings_Validate()
 	; 0.91.5.0
 	If Not MapExists($MM_SETTINGS_CACHE, "update") Or Not IsMap($MM_SETTINGS_CACHE["update"]) Then $MM_SETTINGS_CACHE["update"] = MapEmpty()
 	If Not MapExists($MM_SETTINGS_CACHE["update"], "interval") Or Not IsInt($MM_SETTINGS_CACHE["update"]["interval"]) Then $MM_SETTINGS_CACHE["update"]["interval"] = 28
-	If Not $MM_PORTABLE Then
-		If Not MapExists($MM_SETTINGS_CACHE["update"], "auto") Or Not IsBool($MM_SETTINGS_CACHE["update"]["auto"]) Then $MM_SETTINGS_CACHE["update"]["auto"] = False
-	EndIf
+	If Not MapExists($MM_SETTINGS_CACHE["update"], "auto") Or Not IsBool($MM_SETTINGS_CACHE["update"]["auto"]) Then $MM_SETTINGS_CACHE["update"]["auto"] = False
 	If Not MapExists($MM_SETTINGS_CACHE["update"], "last_check") Or Not IsString($MM_SETTINGS_CACHE["update"]["last_check"]) Or _
 		Not _DateIsValid($MM_SETTINGS_CACHE["update"]["last_check"]) Then $MM_SETTINGS_CACHE["update"]["last_check"] = _NowCalc()
 
@@ -77,8 +58,17 @@ Func __Settings_Validate()
 	If Not MapExists($MM_SETTINGS_CACHE["list"], "only_load") Or Not IsBool($MM_SETTINGS_CACHE["list"]["only_load"]) Then $MM_SETTINGS_CACHE["list"]["only_load"] = False
 
 	; 0.93.1.0
-	If Not MapExists($MM_SETTINGS_CACHE, "preset") Or Not IsMap($MM_SETTINGS_CACHE["preset"]) Then $MM_SETTINGS_CACHE["preset"] = MapEmpty()
-	If Not MapExists($MM_SETTINGS_CACHE["preset"], "current") Or Not IsString($MM_SETTINGS_CACHE["preset"]["current"]) Then $MM_SETTINGS_CACHE["preset"]["current"] = ""
+;~ 	If Not MapExists($MM_SETTINGS_CACHE, "preset") Or Not IsMap($MM_SETTINGS_CACHE["preset"]) Then $MM_SETTINGS_CACHE["preset"] = MapEmpty()
+;~ 	If Not MapExists($MM_SETTINGS_CACHE["preset"], "current") Or Not IsString($MM_SETTINGS_CACHE["preset"]["current"]) Then $MM_SETTINGS_CACHE["preset"]["current"] = ""
+
+	; 0.93.4.0
+	If VersionCompare($MM_SETTINGS_CACHE["version"], "0.93.4.0") < 0 Then
+		If MapExists($MM_SETTINGS_CACHE, "preset") And IsMap($MM_SETTINGS_CACHE["preset"]) And _
+			MapExists($MM_SETTINGS_CACHE["preset"], "current") And IsString($MM_SETTINGS_CACHE["preset"]["current"]) Then $MM_SETTINGS_CACHE["game"]["preset"] = $MM_SETTINGS_CACHE["preset"]["current"]
+		MapRemove($MM_SETTINGS_CACHE, "preset")
+	EndIf
+	If Not MapExists($MM_SETTINGS_CACHE["game"], "preset") Or Not IsString($MM_SETTINGS_CACHE["game"]["preset"]) Then $MM_SETTINGS_CACHE["game"]["preset"] = ""
+
 
 	If VersionCompare($MM_SETTINGS_CACHE["version"], $MM_VERSION_NUMBER) < 0 Then $MM_SETTINGS_CACHE["version"] = $MM_VERSION_NUMBER
 EndFunc
@@ -94,9 +84,9 @@ Func Settings_Get(Const ByRef $sName)
 		Case "width", "height", "maximized"
 			$vReturn = $MM_SETTINGS_CACHE["window"][StringLower($sName)]
 		Case "path"
-			$vReturn = $MM_PORTABLE ? $MM_GAME_DIR : $MM_SETTINGS_CACHE["game"]["selected"]
+			$vReturn = $MM_GAME_DIR
 		Case "exe"
-			$vReturn = $MM_PORTABLE ? $MM_SETTINGS_CACHE["game"]["exe"] : ($MM_SETTINGS_CACHE["game"]["selected"] ? $MM_SETTINGS_CACHE["game"]["items"][$MM_SETTINGS_CACHE["game"]["selected"]]["exe"] : "")
+			$vReturn = $MM_SETTINGS_CACHE["game"]["exe"]
 			If Not $vReturn And FileExists(Settings_Get("path") & "\h3era.exe") Then $vReturn = "h3era.exe"
 		Case "game.blacklist"
 			$vReturn = $MM_SETTINGS_CACHE["game"]["blacklist"]
@@ -105,7 +95,7 @@ Func Settings_Get(Const ByRef $sName)
 		Case "update_interval"
 			$vReturn = $MM_SETTINGS_CACHE["update"]["interval"]
 		Case "update_auto"
-			$vReturn = Not $MM_PORTABLE ? $MM_SETTINGS_CACHE["update"]["auto"] : False
+			$vReturn = $MM_SETTINGS_CACHE["update"]["auto"]
 		Case "update_last_check"
 			$vReturn = $MM_SETTINGS_CACHE["update"]["last_check"]
 		Case "list_no_ask"
@@ -117,7 +107,7 @@ Func Settings_Get(Const ByRef $sName)
 		Case "list_only_load"
 			$vReturn = $MM_SETTINGS_CACHE["list"]["only_load"]
 		Case "current_preset"
-			$vReturn = $MM_SETTINGS_CACHE["preset"]["current"]
+			$vReturn = $MM_SETTINGS_CACHE["game"]["preset"]
 	EndSwitch
 
 	Return $vReturn
@@ -134,20 +124,12 @@ Func Settings_Set(Const ByRef $sName, Const $vValue)
 			$MM_SETTINGS_CACHE[StringLower($sName)] = $vValue
 		Case "width", "height", "maximized"
 			$MM_SETTINGS_CACHE["window"][StringLower($sName)] = $vValue
-		Case "path"
-			$MM_SETTINGS_CACHE["game"]["selected"] = $vValue
-			__Settings_Validate()
 		Case "exe"
-			If Not $MM_PORTABLE Then
-				Local $sSelected = $MM_SETTINGS_CACHE["game"]["selected"]
-				$MM_SETTINGS_CACHE["game"]["items"][$sSelected]["exe"] = $vValue
-			Else
-				$MM_SETTINGS_CACHE["game"]["exe"] = $vValue
-			EndIf
+			$MM_SETTINGS_CACHE["game"]["exe"] = $vValue
 		Case "update_interval"
 			$MM_SETTINGS_CACHE["update"]["interval"] = $vValue
 		Case "update_auto"
-			If Not $MM_PORTABLE Then $MM_SETTINGS_CACHE["update"]["auto"] = $vValue
+			$MM_SETTINGS_CACHE["update"]["auto"] = $vValue
 		Case "update_last_check"
 			$MM_SETTINGS_CACHE["update"]["last_check"] = $vValue
 		Case "list_no_ask"
@@ -159,7 +141,7 @@ Func Settings_Set(Const ByRef $sName, Const $vValue)
 		Case "list_only_load"
 			$MM_SETTINGS_CACHE["list"]["only_load"] = $vValue
 		Case "current_preset"
-			$MM_SETTINGS_CACHE["preset"]["current"] = $vValue
+			$MM_SETTINGS_CACHE["game"]["preset"] = $vValue
 	EndSwitch
 	__Settings_Save()
 EndFunc   ;==>Settings_Set
@@ -174,15 +156,5 @@ Func __Settings_Load()
 	__Settings_Validate()
 
 	$MM_SETTINGS_LANGUAGE = $MM_SETTINGS_CACHE["language"]
-
-	If Not $MM_PORTABLE Then
-		$MM_GAME_DIR = Settings_Get("path")
-		$MM_GAME_NO_DIR = $MM_GAME_DIR = ""
-		If Not $MM_GAME_NO_DIR Then
-			$MM_LIST_DIR_PATH = $MM_GAME_DIR & "\Mods"
-			$MM_LIST_FILE_PATH = $MM_LIST_DIR_PATH & "\list.txt"
-		EndIf
-	EndIf
-
 	$MM_GAME_EXE = Settings_Get("exe")
 EndFunc

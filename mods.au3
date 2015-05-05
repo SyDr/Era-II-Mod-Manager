@@ -52,7 +52,7 @@ Func Mod_ListLoad()
 		EndIf
 	Next
 
-	_TracePoint("ModList: Sort")
+	_Trace("ModList: Sort")
 	ReDim $MM_LIST_CONTENT[1 + $MM_LIST_CONTENT[0][0]][$MOD_TOTAL]
 	If $iFirstDisabled > 0 Then _ArraySort($MM_LIST_CONTENT, Default, $iFirstDisabled, Default, $MOD_CAPTION)
 	_TraceEnd()
@@ -383,7 +383,7 @@ Func Mod_ListSwap($iModIndex1, $iModIndex2, $sUpdate = True)
 EndFunc   ;==>Mod_ListSwap
 
 Func Mod_Disable($iModIndex, $sUpdate = True)
-	_TracePoint(StringFormat("Mod disable: %s", $MM_LIST_CONTENT[$iModIndex][$MOD_ID]))
+	_Trace(StringFormat("Mod disable: %s", $MM_LIST_CONTENT[$iModIndex][$MOD_ID]))
 	If Not $MM_LIST_CONTENT[$iModIndex][$MOD_IS_ENABLED] Then Return
 	$MM_LIST_CONTENT[$iModIndex][$MOD_IS_ENABLED] = False
 
@@ -404,7 +404,7 @@ Func Mod_Delete($iModIndex)
 EndFunc   ;==>Mod_Delete
 
 Func Mod_Enable($iModIndex, $bIgnorePrioirity = False, $bUpdate = True)
-	_TracePoint(StringFormat("Mod enable: %s", $MM_LIST_CONTENT[$iModIndex][$MOD_ID]))
+	_Trace(StringFormat("Mod enable: %s", $MM_LIST_CONTENT[$iModIndex][$MOD_ID]))
 	If $MM_LIST_CONTENT[$iModIndex][$MOD_IS_ENABLED] Then Return
 	$MM_LIST_CONTENT[$iModIndex][$MOD_IS_ENABLED] = True
 

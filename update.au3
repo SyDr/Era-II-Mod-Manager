@@ -10,7 +10,9 @@
 #include "utils.au3"
 
 
-Global $__MM_UPDATE[2] ; type (0 - none/wait for update, 1 - info, 2 - setup, 3 - complete), download handle
+Global $__MM_UPDATE_HANDLE
+Global $MM_UPDATE_IS_READY
+
 
 Func Update_CheckNewPorgram()
 	Local Const $iOptionGUIOnEventMode = AutoItSetOption("GUIOnEventMode", 0)
@@ -54,9 +56,8 @@ Func Update_CheckNewPorgram()
 
 	GUICtrlSetImage($hGUI.PathRefresh, @ScriptDir & "\icons\view-refresh.ico")
 	GUICtrlSetImage($hGUI.PathFromClip, @ScriptDir & "\icons\edit-copy.ico")
-	GUICtrlSetState($MM_PORTABLE ? $hGUI.RadioOnlyDownload : $hGUI.RadioDownloadAndInstall, $GUI_CHECKED)
-	$hGUI.Setup.OnlyDownloadSetup = $MM_PORTABLE ? True : False
-	$hGUI.Setup.OnlyPortable = $MM_PORTABLE
+	GUICtrlSetState($hGUI.RadioOnlyDownload, $GUI_CHECKED)
+	$hGUI.Setup.OnlyDownloadSetup = True
 
 	GUISetState(@SW_SHOW)
 
@@ -120,8 +121,7 @@ Func Update_CheckNewPorgram()
 
 		If $hGUI.Setup.Download Then
 			$hGUI.Setup.Download = False
-			Local $sType = $MM_PORTABLE ? "portable" : "setup"
-			Local $sFile = $hGUI.Info.Parsed[$hGUI.Setup.Version][$sType]
+			Local $sFile = $hGUI.Info.Parsed[$hGUI.Setup.Version]["file"]
 
 			$hGUI.Setup.Location = __Update_GetSaveToFile(GUICtrlRead($hGUI.InputSaveTo), $sFile, Not $hGUI.Setup.OnlyDownloadSetup)
 			$hGUI.Setup.Handle = InetGet($hGUI.Info.Parsed["base_path"] & $sFile, $hGUI.Setup.Location, Default, $INET_DOWNLOADBACKGROUND)
@@ -198,90 +198,6 @@ Func Update_CheckNewPorgram()
 	GUISetState(@SW_RESTORE, MM_GetCurrentWindow())
 EndFunc
 
-Func Update_Init()
-	Local Const $sUpdateFile = $MM_DATA_DIRECTORY & "\update\complete.txt"
-	Local Const $sExeName = $MM_DATA_DIRECTORY & "\update\setup.exe"
-
-	If FileExists($sExeName) And FileExists($sUpdateFile) Then
-		FileDelete($sUpdateFile)
-		ShellExecute($sExeName, "/SILENT")
-		Exit
-	EndIf
-
-	DirRemove($MM_DATA_DIRECTORY & "\update\", 1)
-
-	If Update_UpdateNeeded() Then
-		DirCreate($MM_DATA_DIRECTORY & "\update")
-		_TracePoint("Update: download info")
-		$__MM_UPDATE[0] = 1
-		$__MM_UPDATE[1] = InetGet($MM_UPDATE_URL & "/mm.json", $MM_DATA_DIRECTORY & "\update\setup.json", $INET_FORCERELOAD, $INET_DOWNLOADBACKGROUND)
-		AdlibRegister("__Update_AutoCycle", 3000)
-	EndIf
-EndFunc
-
-Func Update_UpdateNeeded()
-	Local Const $sLastUpdateCheck = Settings_Get("update_last_check")
-	Local Const $iInterval = Settings_Get("update_interval")
-	Local Const $sNow = _NowCalc()
-
-	If $iInterval = 0 Then Return False
-	Local Const $iDiff = _DateDiff("s", $sNow, _DateAdd("D", $iInterval, $sLastUpdateCheck))
-	_TracePoint(StringFormat("Update: next update in %s seconds", $iDiff))
-
-	Return $iDiff < 0
-EndFunc
-
-Func __Update_AutoCycle()
-	If $__MM_UPDATE[0] = 0 Then
-		AdlibUnRegister("__Update_AutoCycle")
-		Return
-	EndIf
-
-	If $__MM_UPDATE[0] = 1 Or $__MM_UPDATE[0] = 2 Then
-		If Not InetGetInfo($__MM_UPDATE[1], $INET_DOWNLOADCOMPLETE) Then Return
-		If Not InetGetInfo($__MM_UPDATE[1], $INET_DOWNLOADSUCCESS) Then
-			$__MM_UPDATE[0] = 0 ; will unregister itself on next function run
-			Return
-		EndIf
-	EndIf
-
-	Local $hParsedInfo
-
-	If $__MM_UPDATE[0] = 1 Then
-		_TracePoint("Update: info loaded")
-		InetClose($__MM_UPDATE[1])
-		$hParsedInfo = Jsmn_Decode(FileRead($MM_DATA_DIRECTORY & "\update\setup.json"))
-
-		If Not __Update_InfoFileValidate($hParsedInfo) Then
-			$__MM_UPDATE[0] = 0
-		ElseIf VersionCompare($hParsedInfo[$MM_VERSION_SUBTYPE]["version"], $MM_VERSION_NUMBER) = 0 Then
-			_TracePoint("Update: same version detected")
-			$__MM_UPDATE[0] = 0
-			Settings_Set("update_last_check", _NowCalc())
-		ElseIf VersionCompare($hParsedInfo[$MM_VERSION_SUBTYPE]["version"], $MM_VERSION_NUMBER) < 0 Then
-			_TracePoint("Update: installed version is newer >_<")
-			$__MM_UPDATE[0] = 0
-			Settings_Set("update_last_check", _NowCalc())
-		ElseIf Settings_Get("update_auto") Then
-			_TracePoint("Update: new version detected")
-			$__MM_UPDATE[0] = 2
-			$__MM_UPDATE[1] = InetGet($MM_UPDATE_URL & $hParsedInfo[$MM_VERSION_SUBTYPE]["setup"], $MM_DATA_DIRECTORY & "\update\setup.exe", $INET_FORCERELOAD, $INET_DOWNLOADBACKGROUND)
-		Else
-			$__MM_UPDATE[0] = 3
-		EndIf
-
-	ElseIf $__MM_UPDATE[0] = 2 Then
-		$__MM_UPDATE[0] = 0
-		_TracePoint("Update: new version downloaded")
-		FileClose(FileOpen($MM_DATA_DIRECTORY & "\update\complete.txt", $FO_OVERWRITE))
-		Settings_Set("update_last_check", _NowCalc())
-	ElseIf $__MM_UPDATE[0] = 3 Then
-		$__MM_UPDATE[0] = 0
-		Settings_Set("update_last_check", _NowCalc())
-		If MsgBox($MB_YESNO + $MB_ICONQUESTION + $MB_SYSTEMMODAL, "", Lng_Get("update.new_version_available"), Default, MM_GetCurrentWindow()) = $IDYES Then Update_CheckNewPorgram()
-	EndIf
-EndFunc
-
 Func __Update_SetupSelectionChanged(ByRef $hGUI, Const $sNewVersion)
 	$hGUI.Setup.Version = StringTrimRight(StringMid($sNewVersion, StringInStr($sNewVersion, "(") + 1), 1)
 EndFunc
@@ -290,8 +206,8 @@ Func __Update_GUIUpdateAccessibility(ByRef $hGUI)
 	GUICtrlSetState($hGUI.ButtonStart, (Not $hGUI.Setup.InProgress And $hGUI.Setup.Version <> "") ? $GUI_ENABLE : $GUI_DISABLE)
 	GUICtrlSetState($hGUI.ComboAvaVersion, (Not $hGUI.Setup.InProgress And $hGUI.Info.Valid) ? $GUI_ENABLE : $GUI_DISABLE)
 	GUICtrlSetState($hGUI.PathRefresh, (Not $hGUI.Setup.InProgress And Not $hGUI.Info.InProgress) ? $GUI_ENABLE : $GUI_DISABLE)
-	GUICtrlSetState($hGUI.RadioDownloadAndInstall, (Not $hGUI.Setup.InProgress And Not $hGUI.Setup.OnlyPortable) ? $GUI_ENABLE : $GUI_DISABLE)
-	GUICtrlSetState($hGUI.RadioOnlyDownload, (Not $hGUI.Setup.InProgress And Not $hGUI.Setup.OnlyPortable) ? $GUI_ENABLE : $GUI_DISABLE)
+	GUICtrlSetState($hGUI.RadioDownloadAndInstall, Not $hGUI.Setup.InProgress ? $GUI_ENABLE : $GUI_DISABLE)
+	GUICtrlSetState($hGUI.RadioOnlyDownload, Not $hGUI.Setup.InProgress ? $GUI_ENABLE : $GUI_DISABLE)
 	GUICtrlSetState($hGUI.PathFromClip, (Not $hGUI.Setup.InProgress And Not $hGUI.Info.InProgress And Not $hGUI.Info.Valid) ? $GUI_ENABLE : $GUI_DISABLE)
 	GUICtrlSetState($hGUI.ButtonSaveChangePath, (Not $hGUI.Setup.InProgress And $hGUI.Setup.OnlyDownloadSetup) ? $GUI_ENABLE : $GUI_DISABLE)
 EndFunc
@@ -357,3 +273,127 @@ Func __Update_InfoFileValidate($Map)
 
 	Return True
 EndFunc
+
+Func AutoUpdate_Init()
+	Local Const $sComplete = $MM_UPDATE_DIRECTORY & "\update.zip"
+
+	If FileExists($sComplete) Then
+		Settings_Set("update_last_check", _NowCalc())
+		; TODO : self update
+		; Exit
+	EndIf
+
+	DirRemove($MM_UPDATE_DIRECTORY, 1)
+	DirCreate($MM_UPDATE_DIRECTORY)
+	AutoUpdate_Check()
+EndFunc
+
+Func AutoUpdate_Check()
+	Local Const $sDowloadFrom = $MM_UPDATE_URL & "/mm.json"
+	Local Const $sDowloadTo = $MM_UPDATE_DIRECTORY & "\update.json"
+
+	If AutoUpdate_UpdateIsNeeded() Then
+		AdlibUnRegister("AutoUpdate_Check")
+		_Trace("Update, auto: download info")
+		$__MM_UPDATE_HANDLE = InetGet($sDowloadFrom, $sDowloadTo, $INET_FORCERELOAD, $INET_DOWNLOADBACKGROUND)
+		AutoUpdate_InfoCheck()
+	Else
+		AdlibRegister("AutoUpdate_Check", 4 * 60 * 60 * 1000)
+	EndIf
+EndFunc
+
+Func AutoUpdate_UpdateIsNeeded()
+	Local Const $iInterval = Settings_Get("update_interval")
+	If $iInterval = 0 Then Return False
+
+	Local Const $iDiff = _DateDiff("s", _NowCalc(), _DateAdd("D", $iInterval, Settings_Get("update_last_check")))
+	_Trace(StringFormat("Update, auto: next update in %s seconds", $iDiff))
+
+	Return $iDiff < 0
+EndFunc
+
+Func AutoUpdate_InfoCheck()
+	If Not InetGetInfo($__MM_UPDATE_HANDLE, $INET_DOWNLOADCOMPLETE) Then
+		AdlibRegister("AutoUpdate_InfoCheck", 4 * 1000)
+		Return
+	EndIf
+
+	_Trace("Update, auto: info downloaded")
+	AdlibUnRegister("AutoUpdate_InfoCheck")
+
+	Local $bError = False
+	If Not $bError Then
+		$bError = Not InetGetInfo($__MM_UPDATE_HANDLE, $INET_DOWNLOADSUCCESS)
+		If $bError Then _Trace(StringFormat("Update, auto: can't download info file (%s error)", InetGetInfo($__MM_UPDATE_HANDLE, $INET_DOWNLOADERROR)))
+	EndIf
+
+	InetClose($__MM_UPDATE_HANDLE)
+
+	Local $sFileData, $mParsedInfo
+	If Not $bError Then
+		$sFileData = FileRead($MM_UPDATE_DIRECTORY & "\update.json")
+		$bError = @error
+		If $bError Then _Trace("Update, auto: can't read info file")
+	EndIf
+
+	If Not $bError Then
+		$mParsedInfo = Jsmn_Decode($sFileData)
+		$bError = @error
+		If $bError Then _Trace("Update, auto: can't decode info file")
+	EndIf
+
+	If Not $bError Then
+		$bError = Not __Update_InfoFileValidate($mParsedInfo)
+		If $bError Then _Trace("Update, auto: bad info file")
+	EndIf
+
+	If Not $bError Then
+;~ 		$bError = VersionCompare($mParsedInfo["info_version"], "1.4")
+		If $bError Then _Trace("Update, auto: incorrect info file version")
+	EndIf
+
+	If Not $bError Then
+		$bError = VersionCompare($mParsedInfo[$MM_VERSION_SUBTYPE]["version"], $MM_VERSION_NUMBER) <= 0
+		If $bError Then _Trace("Update, auto: newest version installed")
+		Settings_Set("update_last_check", _NowCalc())
+	EndIf
+
+	If Not $bError Then
+		_Trace("Update, auto: new version detected")
+		If Settings_Get("update_auto") Then
+			$__MM_UPDATE_HANDLE = InetGet($MM_UPDATE_URL & $mParsedInfo[$MM_VERSION_SUBTYPE]["file"], $MM_UPDATE_DIRECTORY & "\update.partial", $INET_FORCERELOAD, $INET_DOWNLOADBACKGROUND)
+			AutoUpdate_MainCheck()
+		Else
+			$MM_UPDATE_IS_READY = True
+		EndIf
+	Else
+		AdlibRegister("AutoUpdate_Check", 4 * 60 * 60 * 1000)
+	EndIf
+EndFunc
+
+Func AutoUpdate_MainCheck()
+	If Not InetGetInfo($__MM_UPDATE_HANDLE, $INET_DOWNLOADCOMPLETE) Then
+		AdlibRegister("AutoUpdate_MainCheck", 4 * 1000)
+		Return
+	EndIf
+
+	_Trace("Update, auto: update downloaded")
+	AdlibUnRegister("AutoUpdate_MainCheck")
+
+	Local $bError = False
+	If Not $bError Then
+		$bError = InetGetInfo($__MM_UPDATE_HANDLE, $INET_DOWNLOADSUCCESS)
+		If $bError Then _Trace("Update, auto: can't download update file")
+	EndIf
+
+	InetClose($__MM_UPDATE_HANDLE)
+
+	If Not $bError Then
+		_Trace("Update: new version downloaded")
+		FileMove($MM_UPDATE_DIRECTORY & "\update.partial", $MM_UPDATE_DIRECTORY & "\update.zip", $FC_OVERWRITE)
+	Else
+		AdlibRegister("AutoUpdate_Check", 4 * 60 * 60 * 1000)
+	EndIf
+EndFunc
+
+

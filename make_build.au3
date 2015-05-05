@@ -12,20 +12,11 @@ Clear()
 DirCreate($sBuildDir & "\Output\")
 CopyToBuildDir()
 
-FileChangeDir($sBuildDir)
-IniWrite($sBuildDir & "\const.au3", "Data", "Global Const $MM_PORTABLE", " False")
-ShellExecuteWait(@ProgramFilesDir & "\AutoIt3\SciTE\AutoIt3Wrapper\Autoit3wrapper.exe", "/in mmanager.au3", $sBuildDir)
-CopyForOutput()
-FileChangeDir($sBuildDir)
-ShellExecuteWait(@ProgramFilesDir & "\Inno Setup 5\ISCC.exe", "setup.iss", $sBuildDir)
-
-IniWrite($sBuildDir & "\const.au3", "Data", "Global Const $MM_PORTABLE", " True")
 ShellExecuteWait(@ProgramFilesDir & "\AutoIt3\SciTE\AutoIt3Wrapper\Autoit3wrapper.exe", "/in mmanager.au3", $sBuildDir)
 CopyForOutput()
 ShellExecuteWait(@ScriptDir & '\7z\7z.exe', 'a "MM.zip" "Mod Manager\*"', $sBuildDir)
 
 FileMove($sBuildDir & "\MM.zip", @ScriptDir & "\Publish\MM_" & $MM_VERSION & ".zip", $FC_OVERWRITE)
-FileMove($sBuildDir & "\Output\setup.exe", @ScriptDir & "\Publish\MM_" & $MM_VERSION & ".exe", $FC_OVERWRITE)
 Clear()
 
 Func Clear()

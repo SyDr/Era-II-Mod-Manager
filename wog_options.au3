@@ -51,7 +51,7 @@ Func WO_ManageOptions(Const $aOptions)
 	$MM_WO_UI_OPTIONS = $aOptions
 	WO_LoadOverralInfo()
 	WO_LoadOptionsInfo()
-	_TracePoint("WO_DataLoaded")
+	_Trace("WO_DataLoaded")
 
 	If Not IsMap($MM_WO_CAT[0]) Then
 		ProgressOff()
@@ -69,7 +69,7 @@ Func WO_ManageOptions(Const $aOptions)
 	Local Const $iGroupWidth = $iBaseWidth - 1.5 * $iItemSpacing
 	Local $bClose, $bSelected, $iMessage, $aCursoInfo
 	Local $hCloseButton, $hSaveButton, $hLoadButton, $hRestoreDefaultButton, $hUncheckAllButton, $hCheckAllButton
-	Local $hFilterLabel, $hFilterInput, $hFilterApplyButton, $hFilterClearButton
+	Local $hFilterLabel, $hFilterClearButton, $sPath
 	$WO_UI = MM_GUICreate(Lng_Get("wog_options.caption"), $iWidth + $iBaseWidth * 2, 500)
 	Local $aSize = WinGetClientSize($WO_UI)
 	If Not @Compiled Then GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
@@ -111,13 +111,11 @@ Func WO_ManageOptions(Const $aOptions)
 			EndIf
 		Next
 
-		_TracePoint("WO_PageCreated")
+		_Trace("WO_PageCreated")
 		ProgressSet($p/$WO_CAT*100)
 	Next
 
-;~ 	Local $hLine = GUICtrlCreateGraphic($iItemSpacing, $aSize[1] - 25 - 2 * $iItemSpacing, $aSize[0] - 2 * $iItemSpacing, 1)
-	Local $hLine = GUICtrlCreateLabel("", $iItemSpacing, $aSize[1] - 25 - 2 * $iItemSpacing, $aSize[0] - 2 * $iItemSpacing, 1, $SS_BLACKFRAME)
-;~ 	GUICtrlSetGraphic($hLine, $GUI_GR_LINE, $aSize[0] - 2 * $iItemSpacing, 0)
+	GUICtrlCreateLabel("", $iItemSpacing, $aSize[1] - 25 - 2 * $iItemSpacing, $aSize[0] - 2 * $iItemSpacing, 1, $SS_BLACKFRAME)
 
 	$hFilterLabel = GUICtrlCreateLabel(Lng_Get("wog_options.filter"), 2 * $iItemSpacing, $aSize[1] - 25 - $iItemSpacing, Default, Default, $SS_CENTERIMAGE)
 	$__WO_INPUT = GUICtrlCreateInput("", GUICtrlGetPos($hFilterLabel).NextX + $iItemSpacing, GUICtrlGetPos($hFilterLabel).Top + 2, 150)
@@ -148,11 +146,11 @@ Func WO_ManageOptions(Const $aOptions)
 			Case $iMessage = $hFilterClearButton
 				GUICtrlSetData($__WO_INPUT, "")
 			Case $iMessage = $hSaveButton
-				Local $sPath = FileSaveDialog("", _PathFull(IniRead($MM_GAME_DIR & "\wog.ini", "WoGification", "Options_File_Path", ".\"), $MM_GAME_DIR), Lng_Get("wog_options.select_filter"), _
+				$sPath = FileSaveDialog("", _PathFull(IniRead($MM_GAME_DIR & "\wog.ini", "WoGification", "Options_File_Path", ".\"), $MM_GAME_DIR), Lng_Get("wog_options.select_filter"), _
 					Default, IniRead($MM_GAME_DIR & "\wog.ini", "WoGification", "Options_File_Name", $MM_WOG_OPTIONS_FILE), MM_GetCurrentWindow())
 				If Not @error Then Scn_SaveWogSettings(WO_ViewToSettings($MM_WO_UI_OPTIONS), $sPath)
 			Case $iMessage = $hLoadButton
-				Local $sPath = FileOpenDialog("", _PathFull(IniRead($MM_GAME_DIR & "\wog.ini", "WoGification", "Options_File_Path", ".\"), $MM_GAME_DIR), Lng_Get("wog_options.select_filter"), _
+				$sPath = FileOpenDialog("", _PathFull(IniRead($MM_GAME_DIR & "\wog.ini", "WoGification", "Options_File_Path", ".\"), $MM_GAME_DIR), Lng_Get("wog_options.select_filter"), _
 					$FD_FILEMUSTEXIST + $FD_PATHMUSTEXIST, IniRead($MM_GAME_DIR & "\wog.ini", "WoGification", "Options_File_Name", $MM_WOG_OPTIONS_FILE), MM_GetCurrentWindow())
 				If Not @error Then
 					WO_SettingsToView(Scn_LoadWogSettingsAsArray($sPath))
@@ -247,11 +245,10 @@ EndFunc
 Func WO_SetState(Const $iType = -1)
 	; -1 is default, 0 - disable, 1 - enable
 	If $MM_WO_CURRENT_PAGE <> - 1 Then
-		Local $iIndex, $iIndex2, $iState
+		Local $iIndex, $iState
 		For $g = 0 To $WO_GRP - 1
 			For $i = 1 To $MM_WO_MAP[$MM_WO_CURRENT_PAGE][$g][0]
 				$iIndex = $MM_WO_MAP[$MM_WO_CURRENT_PAGE][$g][$i]
-				$iIndex2 = $MM_WO_ITEMS[$iIndex].ERM
 				$iState = $iType <> -1 ? $iType : $MM_WO_ITEMS[$iIndex].State
 
 				If BitAND(GUICtrlGetState($MM_WO_ITEMS[$iIndex].Handle), $GUI_SHOW) Then
@@ -283,7 +280,7 @@ Func WO_GetItemInfoByHandle(Const $hHandle)
 EndFunc
 
 Func __WO_WM_CONTEXTMENU($hWnd, $iMsg, $wParam, $lParam)
-	#forceref $hWnd, $iMsg
+	#forceref $hWnd, $iMsg, $wParam, $lParam
 	$MM_WO_SHOW_POPUP = True
 	Return $GUI_RUNDEFMSG
 EndFunc
