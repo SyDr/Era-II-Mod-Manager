@@ -14,14 +14,13 @@ _FTP_FileDelete($hConnection, "MM_" & $MM_VERSION & ".zip")
 _FTP_ProgressUpload($hConnection, @ScriptDir & "\Publish\MM_" & $MM_VERSION & ".zip", "MM_" & $MM_VERSION & ".zip")
 _FTP_DirSetCurrent($hConnection, "../")
 
-If $MM_VERSION_SUBTYPE = "relase" Then
+If $MM_VERSION_SUBTYPE = "release" Then
 	_FTP_FileDelete($hConnection, "MM_Latest.zip")
 	_FTP_ProgressUpload($hConnection, @ScriptDir & "\Publish\MM_" & $MM_VERSION & ".zip", "MM_Latest.zip")
 EndIf
 
 Global $mVersion = Jsmn_Decode(FileRead(@ScriptDir & "\update_ftp.json"))
 $mVersion[$MM_VERSION_SUBTYPE]["version"] = $MM_VERSION_NUMBER
-$mVersion[$MM_VERSION_SUBTYPE]["setup"] = "/" & $MM_VERSION_SUBTYPE & "/MM_" & $MM_VERSION & ".exe"
 $mVersion[$MM_VERSION_SUBTYPE]["file"] = "/" & $MM_VERSION_SUBTYPE & "/MM_" & $MM_VERSION & ".zip"
 
 FileDelete(@ScriptDir & "\update_ftp.json")
