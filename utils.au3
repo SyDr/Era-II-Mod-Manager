@@ -161,7 +161,6 @@ Func MM_GUIDelete()
 	ReDim $__MM_UTILS_VIEWS[$__MM_UTILS_VIEWS[0] + 1]
 EndFunc
 
-
 Func Utils_InnoLangToMM(Const $sInnoLng)
 	Return $sInnoLng & ".json"
 EndFunc

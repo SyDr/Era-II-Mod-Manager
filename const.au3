@@ -4,8 +4,7 @@
 [Data]
 #ce
 
-Global Const $MM_PORTABLE = False
-Global Const $MM_VERSION_NUMBER = "0.93.3.0"
+Global Const $MM_VERSION_NUMBER = "0.93.4.0"
 
 Global Const $MM_VERSION_SUBTYPE = "beta"
 Global Const $MM_VERSION_NAME = "Siege Engine"
@@ -13,9 +12,14 @@ Global Const $MM_VERSION = $MM_VERSION_SUBTYPE == "release" ? $MM_VERSION_NUMBER
 
 Global Const $MM_UPDATE_URL = "http://wakeofgods.org/mm"
 
-Global Const $MM_TITLE = StringFormat("Era II Mod Manager [%s - %s]%s", $MM_VERSION, $MM_VERSION_NAME, $MM_PORTABLE ? "{Portable}" : "")
+Global Const $MM_TITLE = StringFormat("Era II Mod Manager [%s - %s]", $MM_VERSION, $MM_VERSION_NAME)
 Global Const $MM_WINDOW_MIN_WIDTH = 800
 Global Const $MM_WINDOW_MIN_HEIGHT = 494
+
+Global Const $MM_DATA_DIRECTORY = @ScriptDir
+Global Const $MM_UPDATE_DIRECTORY = $MM_DATA_DIRECTORY & "\Update"
+Global Const $MM_SCN_DIRECTORY = $MM_DATA_DIRECTORY & "\Presets"
+Global Const $MM_SETTINGS_PATH = $MM_DATA_DIRECTORY & "\settings.json"
 
 Global Const $MM_WOG_OPTIONS_FILE = "WoGSetupMM.dat"
 

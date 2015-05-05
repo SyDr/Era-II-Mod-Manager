@@ -3,16 +3,10 @@
 #include <File.au3>
 #include "const.au3"
 
-Global $MM_GAME_NO_DIR = False
-Global $MM_GAME_DIR = _PathFull(@ScriptDir & "\..\..")
-Global $MM_GAME_EXE = "h3era.exe"
-
+Global $MM_GAME_DIR = _PathFull($MM_DATA_DIRECTORY & "\..\..")
 Global $MM_LIST_DIR_PATH = $MM_GAME_DIR & "\Mods"
 Global $MM_LIST_FILE_PATH = $MM_LIST_DIR_PATH & "\list.txt"
-
-Global $MM_DATA_DIRECTORY = $MM_PORTABLE ? @ScriptDir : @AppDataDir & "\Era II Mod Manager"
-Global $MM_SCN_DIRECTORY = $MM_DATA_DIRECTORY & "\Presets"
-Global $MM_SETTINGS_PATH = $MM_DATA_DIRECTORY & "\settings.json"
+Global $MM_GAME_EXE = "h3era.exe"
 
 Global $MM_SETTINGS_LANGUAGE = "english.json"
 Global $MM_LANGUAGE_CODE = "en_US"

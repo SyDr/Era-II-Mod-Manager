@@ -47,7 +47,7 @@ Func UI_Settings()
 	Local $hCheckboxDontAsk = GUICtrlCreateCheckbox(Lng_Get("settings.list_load_options.dont_ask"), 2 * $iItemSpacing, GUICtrlGetPos($hCheckboxSet).NextY + $iItemSpacing, Default, 17)
 
 	GUICtrlSetState($hCheckboxAuto, Settings_Get("update_auto") ? $GUI_CHECKED : $GUI_UNCHECKED)
-	GUICtrlSetState($hCheckboxAuto, (UI_ItemToInterval(GUICtrlRead($hComboAuto)) = 0 Or $MM_PORTABLE) ? $GUI_DISABLE : $GUI_ENABLE)
+	GUICtrlSetState($hCheckboxAuto, UI_ItemToInterval(GUICtrlRead($hComboAuto)) = 0 ? $GUI_DISABLE : $GUI_ENABLE)
 	GUICtrlSetState($hCheckboxExe, Settings_Get("list_exe") ? $GUI_CHECKED : $GUI_UNCHECKED)
 	GUICtrlSetState($hCheckboxSet, Settings_Get("list_wog_settings") ? $GUI_CHECKED : $GUI_UNCHECKED)
 	GUICtrlSetState($hCheckboxDontAsk, Settings_Get("list_no_ask") ? $GUI_CHECKED : $GUI_UNCHECKED)
@@ -63,12 +63,13 @@ Func UI_Settings()
 			Case $hOk
 				$bSave = True
 			Case $hComboAuto
-				GUICtrlSetState($hCheckboxAuto, (UI_ItemToInterval(GUICtrlRead($hComboAuto)) = 0 Or $MM_PORTABLE) ? $GUI_DISABLE : $GUI_ENABLE)
+				GUICtrlSetState($hCheckboxAuto, UI_ItemToInterval(GUICtrlRead($hComboAuto)) = 0 ? $GUI_DISABLE : $GUI_ENABLE)
 		EndSwitch
 	WEnd
 
 	If $bSave Then
 		Settings_Set("update_interval", UI_ItemToInterval(GUICtrlRead($hComboAuto)))
+		Settings_Set("update_auto", BitAND(GUICtrlRead($hCheckboxAuto), $GUI_CHECKED) ? True : False)
 		Settings_Set("list_exe", GUICtrlRead($hCheckboxExe) = $GUI_CHECKED)
 		Settings_Set("list_wog_settings", GUICtrlRead($hCheckboxSet) = $GUI_CHECKED)
 		Settings_Set("list_no_ask", GUICtrlRead($hCheckboxDontAsk) = $GUI_CHECKED)
@@ -105,66 +106,6 @@ Func UI_ItemToInterval(Const $sItem)
 		Case Else
 			Return 0
 	EndSwitch
-EndFunc
-
-Func UI_SelectGameDir()
-	Local $aList = UI_GetSuggestedGameDirList()
-	GUISetState(@SW_DISABLE, MM_GetCurrentWindow())
-
-	Local Const $iOptionGUIOnEventMode = AutoItSetOption("GUIOnEventMode", 0)
-	Local Const $iItemSpacing = 4
-	Local $bClose = False
-	Local $bSelected = False
-	Local $sPath
-	Local $iAnswer
-
-	Local $hGUI = MM_GUICreate(Lng_Get("settings.game_dir.caption"), 420, $iItemSpacing + 50)
-	Local $aSize = WinGetClientSize($hGUI)
-	If Not @Compiled Then GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
-
-	Local $hCombo = GUICtrlCreateCombo("", $iItemSpacing, $iItemSpacing, $aSize[0] - 3 * $iItemSpacing - 35, 25, BitOR($CBS_DROPDOWNLIST, $CBS_AUTOHSCROLL))
-	GUICtrlSetData($hCombo, _ArrayToString($aList, Default, 1), Settings_Get("path"))
-	Local $hDir = GUICtrlCreateButton("...", GUICtrlGetPos($hCombo).NextX + $iItemSpacing, $iItemSpacing - 2, 35, 25)
-	Local $hOk = GUICtrlCreateButton("OK", $aSize[0] - $iItemSpacing - 75, GUICtrlGetPos($hDir).NextY, 75, 25)
-
-	GUISetState(@SW_SHOW)
-
-	While Not $bClose And Not $bSelected
-		Switch GUIGetMsg()
-			Case $GUI_EVENT_CLOSE
-				$bClose = True
-			Case $hOk
-				$sPath = GUICtrlRead($hCombo)
-				If Not FileExists($sPath & "\h3era.exe") Then
-					$iAnswer = MsgBox($MB_YESNO + $MB_ICONQUESTION + $MB_DEFBUTTON2 + $MB_SYSTEMMODAL, "", Lng_Get("settings.game_dir.incorrect_dir"), Default, $hGUI)
-				Else
-					$iAnswer = $IDYES
-				EndIf
-
-				If $iAnswer = $IDYES Then $bSelected = True
-			Case $hDir
-				$sPath = FileSelectFolder(Lng_Get("settings.game_dir.caption"), "", Default, GUICtrlRead($hCombo), $hGUI)
-				If Not @error Then GUICtrlSetData($hCombo, $sPath, $sPath)
-		EndSwitch
-	WEnd
-
-	MM_GUIDelete()
-
-	AutoItSetOption("GUIOnEventMode", $iOptionGUIOnEventMode)
-	GUISetState(@SW_ENABLE, MM_GetCurrentWindow())
-	GUISetState(@SW_RESTORE, MM_GetCurrentWindow())
-
-	If Not $bSelected Or Not $sPath Then
-		Return False
-	Else
-		$MM_GAME_DIR = $sPath
-		$MM_GAME_NO_DIR = $MM_GAME_DIR = ""
-		Settings_Set("path", $sPath)
-		$MM_LIST_DIR_PATH = $MM_GAME_DIR & "\Mods"
-		$MM_LIST_FILE_PATH = $MM_LIST_DIR_PATH & "\list.txt"
-		$MM_GAME_EXE = Settings_Get("exe")
-		Return True
-	EndIf
 EndFunc
 
 Func UI_Import_Scn()
