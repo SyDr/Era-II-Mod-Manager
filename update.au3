@@ -149,12 +149,7 @@ Func Update_CheckNewPorgram()
 						$iAnswer = MsgBox($MB_YESNO + $MB_ICONQUESTION + $MB_TASKMODAL, "", Lng_Get("update.cant_download"), Default, $hGUI.Form)
 						If $iAnswer = $IDYES Then Utils_LaunchInBrowser($hGUI.Info.Parsed["base_path"] & $sFile)
 					ElseIf Not $hGUI.Setup.OnlyDownloadSetup Then
-						ShellExecute($hGUI.Setup.Location, "/SILENT")
-						If @OSVersion = "WIN_XP" Then
-							Exit
-						Else
-							$hGUI.Close = True
-						EndIf
+						Update_InstallUpdate($hGUI.Setup.Location)
 					EndIf
 				EndIf
 
@@ -196,6 +191,24 @@ Func Update_CheckNewPorgram()
 
 	GUISetState(@SW_ENABLE, MM_GetCurrentWindow())
 	GUISetState(@SW_RESTORE, MM_GetCurrentWindow())
+EndFunc
+
+Func Update_InstallUpdate(Const $sFilePath)
+	Local $sDir
+	If @Compiled Then
+		$sDir = _TempFile()
+		DirCreate($sDir)
+		RunWait(@ScriptDir & '\7z\7z.exe x "' & $sFilePath & '" -o' & '"' & $sDir & '" -aoa', @ScriptDir & "\7z\", @SW_HIDE)
+		FileDelete($sFilePath)
+		ShellExecute($sDir & "\Mod Manager\mmanager.exe", '/install "' & @ScriptDir & '"')
+		Exit
+	EndIf
+EndFunc
+
+Func Update_CopySelfTo(Const $sPath)
+	DirCopy(@ScriptDir, $sPath, $FC_OVERWRITE)
+	ShellExecute($sPath & "\mmanager.exe")
+	Exit
 EndFunc
 
 Func __Update_SetupSelectionChanged(ByRef $hGUI, Const $sNewVersion)
@@ -267,8 +280,7 @@ Func __Update_InfoFileValidate($Map)
 	For $sItem In $sSetupTypes
 		If Not MapExists($Map, $sItem) Or Not IsMap($Map[$sItem]) Then Return False
 		If Not MapExists($Map[$sItem], "version") Or Not IsString($Map[$sItem]["version"]) Then Return False
-		If Not MapExists($Map[$sItem], "setup") Or Not IsString($Map[$sItem]["setup"]) Then Return False
-		If Not MapExists($Map[$sItem], "portable") Or Not IsString($Map[$sItem]["portable"]) Then Return False
+		If Not MapExists($Map[$sItem], "file") Or Not IsString($Map[$sItem]["file"]) Then Return False
 	Next
 
 	Return True
@@ -279,8 +291,7 @@ Func AutoUpdate_Init()
 
 	If FileExists($sComplete) Then
 		Settings_Set("update_last_check", _NowCalc())
-		; TODO : self update
-		; Exit
+		Update_InstallUpdate($sComplete)
 	EndIf
 
 	DirRemove($MM_UPDATE_DIRECTORY, 1)
@@ -382,7 +393,7 @@ Func AutoUpdate_MainCheck()
 
 	Local $bError = False
 	If Not $bError Then
-		$bError = InetGetInfo($__MM_UPDATE_HANDLE, $INET_DOWNLOADSUCCESS)
+		$bError = Not InetGetInfo($__MM_UPDATE_HANDLE, $INET_DOWNLOADSUCCESS)
 		If $bError Then _Trace("Update, auto: can't download update file")
 	EndIf
 
