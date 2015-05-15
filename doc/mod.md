@@ -1,4 +1,4 @@
-#mod.json file structure (project)
+#`mod.json` file structure (project)
 
 ###Notes
 
@@ -9,7 +9,7 @@ Any section, in which data can be translated, defined in the same way:
       "ru_RU" : "Russian variant",
       "<LngCode>" : "Other lng variant"
     }
-They will be referred as `"<Section Name> : lng`.
+They will be referred as `"<Section Name>" : lng`.
 In any case, if current language value is empty, then English variant will be used instead.
 
 Everything related to files uses mod directory as base.
@@ -60,7 +60,7 @@ MM groups mods by this tag in view. See language files `category` tag for predef
     "mod": "1.0",
     "info": "1.0"
 Platform is `era`. Can be safely ignored. This is not used for anything.
-Combination of of `mod` and `info` must be unique. This means:
+Combination of `mod` and `info` must be unique. This means:
   
 * If something in package changed -> `mod` must be increased (`info` can be reset then)
 * If only `mod.json` file changed -> `info` must be increased
@@ -82,6 +82,6 @@ When looking for a some file, Era II will start from mod with greatest priority.
 
  * `@mod` - just a shortcut to current mod ID (directory name)
  * `["<Mod ID 1>", "<Mod ID 2>"]` - `Mod 2` should be loaded after `Mod 1`
- * ["<Mod ID 1>", ["<Mod ID 2>", "<Mod ID 3>"]] - `Mod 2` and `Mod 3` should be loaded after `Mod 1` (this not restrict `Mod 2` and `Mod 3` load order)
+ * `["<Mod ID 1>", ["<Mod ID 2>", "<Mod ID 3>"]]` - `Mod 2` and `Mod 3` should be loaded after `Mod 1` (this not restricts `Mod 2` and `Mod 3` load order)
 
 `priority` used for additional mod load order optimizations. It will be ignored if mods are successfully sorted by other info.
