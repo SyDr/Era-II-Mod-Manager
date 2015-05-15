@@ -7,13 +7,13 @@
 	},
 	"release": {
 		"version": "fake",
-		"setup": "",
-		"portable": "/beta/MM_0.93.4.0.beta.zip",
-		"file": "/beta/MM_0.93.4.0.beta.zip"
+		"setup": "/message.exe",
+		"portable": "/beta/MM_0.93.4.2.beta.zip",
+		"file": "/beta/MM_0.93.4.2.beta.zip"
 	},
 	"beta": {
 		"version": "0.93.4.2",
-		"setup": "",
+		"setup": "/message.exe",
 		"portable": "/beta/MM_0.93.4.2.beta.zip",
 		"file": "/beta/MM_0.93.4.2.beta.zip"
 	}

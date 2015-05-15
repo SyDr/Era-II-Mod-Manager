@@ -66,7 +66,6 @@ Global $aScreens[1], $iScreenIndex, $iScreenWidth, $iScreenHeight, $sScreenPath
 Global $sFollowMod = ""
 Global $bEnableDisable, $bSelectionChanged
 Global $bInTrack = False
-Global $bMainUICycle = True, $bExit = True
 Global $bPackModHint = True
 #EndRegion Variables
 
@@ -89,16 +88,13 @@ StartUp_CheckRunningInstance()
 AutoUpdate_Init()
 
 If Not IsDeclared("__MM_NO_UI") Then
-	While True
-		$bMainUICycle = True
-		UI_Main()
-	WEnd
+	UI_InitMain()
+	MainLoop()
 EndIf
 
-Func UI_Main()
-	_TraceStart("Init UI")
+Func UI_InitMain()
+	_TraceStart("UI_InitMain")
 	_GDIPlus_Startup()
-
 	SD_GUI_LoadSize()
 	SD_GUI_Create()
 	TreeViewMain()
@@ -107,14 +103,13 @@ Func UI_Main()
 	SD_SwitchSubView()
 	GUISetState(@SW_SHOW)
 	_TraceEnd()
-	MainLoop()
 EndFunc
 
 Func MainLoop()
-	While $bMainUICycle
+	While True
 		Sleep(20)
-		SD_UI_AutoUpdate()
-		SD_UI_ModStateChange()
+		UI_AutoUpdate()
+		UI_ModStateChange()
 
 		If $MM_LIST_CANT_WORK Then
 			$MM_LIST_CANT_WORK = False
@@ -134,7 +129,7 @@ Func MainLoop()
 	WEnd
 EndFunc   ;==>MainLoop
 
-Func SD_UI_AutoUpdate()
+Func UI_AutoUpdate()
 	Local Static $bGUINeedUpdate = False
 
 	If Not $bGUINeedUpdate And Not WinActive($MM_UI_MAIN) Then
@@ -147,7 +142,7 @@ Func SD_UI_AutoUpdate()
 	EndIf
 EndFunc
 
-Func SD_UI_ModStateChange()
+Func UI_ModStateChange()
 	If $bEnableDisable Then
 		$bEnableDisable = False
 		SD_GUI_List_ChangeState()
@@ -930,9 +925,8 @@ Func SD_GUI_Close()
 	$aScreens = ArrayEmpty()
 	SD_GUI_UpdateScreen(0)
 	_GDIPlus_Shutdown()
-	$bMainUICycle = False
 	MM_GUIDelete()
-	If $bExit Then Exit
+	Exit
 EndFunc   ;==>SD_GUI_Close
 
 Func SD_GUI_Mod_Website()
