@@ -1,12 +1,8 @@
 syntax: glob
-settings.ini
-Mod Manager/
-Mod Manager_*zip
-presets/
+Presets/
 Publish/
 Build/
 ftp_pass.txt
-7z\7z.sfx
 settings.json
-7z\7z.dll
-7z\7z.exe
+7z\*
+debug*
