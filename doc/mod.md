@@ -9,10 +9,10 @@ Any section, in which data can be translated, defined in the same way:
       "ru_RU" : "Russian variant",
       "<LngCode>" : "Other lng variant"
     }
-They will be referred as `"<Section Name>" : lng`.
-In any case, if current language value is empty, then English variant will be used instead.
+These sections will be referred as `"<Section Name>" : lng`.  
+In any case, if current language value is empty, invalid or not defined, then English variant will be used instead.
 
-Everything related to files uses mod directory as base.
+Everything related to file path uses mod directory as base.
 
 ###Basic mod info
     "caption": lng,
@@ -77,7 +77,7 @@ When looking for a some file, Era II will start from mod with greatest priority.
     ]    
     "priority" : 0
 `incompatible` lists mods, with which game cannot be loaded or this action will not make any sense.  
-`required` lists mods, without which game cannot be loaded or this action will not make any sense (this will not restrict mod load order).
+`required` lists mods, without which game cannot be loaded or this action will not make any sense (this will not restrict mod load order).  
 `hints` is a list (1) of ordered lists (2) of unordered lists (3). Yep. It's simple. Read this as:
 
  * `@mod` - just a shortcut to current mod ID (directory name)
