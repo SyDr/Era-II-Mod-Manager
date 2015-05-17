@@ -45,18 +45,10 @@ EndIf
 
 #Region Variables
 Global $hGUI[]
-$hGUI.MenuScn = MapEmpty()
-$hGUI.MenuMod = MapEmpty()
-$hGUI.MenuGame = MapEmpty()
-$hGUI.MenuSettings = MapEmpty()
-$hGUI.MenuHelp = MapEmpty()
-$hGUI.ModList = MapEmpty()
-$hGUI.PluginsList = MapEmpty()
-$hGUI.ScnList = MapEmpty()
-$hGUI.Info = MapEmpty()
-$hGUI.WindowResizeInProgress = False
-$hGUI.WindowResizeLags = False
-$hGUI.Screen = MapEmpty()
+
+;~ $hGUI.WindowResizeInProgress = False
+;~ $hGUI.WindowResizeLags = False
+
 Global $hDummyF5, $hDummyLinks, $hDummyCategories, $hDummyF9
 Global Const $iItemSpacing = 4
 
@@ -72,7 +64,6 @@ Global $bPackModHint = True
 If @Compiled And @ScriptName = "installmod.exe" Then
 	StartUp_WorkAsInstallmod()
 EndIf
-
 
 Lng_LoadList()
 If $CMDLine[0] > 1 And $CMDLine[1] = '/install' Then
@@ -96,7 +87,7 @@ Func UI_InitMain()
 	_TraceStart("UI_InitMain")
 	_GDIPlus_Startup()
 	SD_GUI_LoadSize()
-	SD_GUI_Create()
+	UI_Main_Create()
 	TreeViewMain()
 	TreeViewTryFollow($MM_LIST_CONTENT[0][0] > 0 ? $MM_LIST_CONTENT[1][$MOD_ID] : "")
 	SD_SwitchView()
@@ -177,7 +168,7 @@ Func SD_GUI_Language_Change()
 	SD_GUI_Update()
 EndFunc   ;==>SD_GUI_Language_Change
 
-Func SD_GUI_Create()
+Func UI_Main_Create()
 	Local Const $iOptionGUICoordMode = AutoItSetOption("GUICoordMode", 0)
 
 	$MM_UI_MAIN = MM_GUICreate($MM_TITLE, $MM_WINDOW_MIN_WIDTH, $MM_WINDOW_MIN_HEIGHT, Default, Default, BitOR($GUI_SS_DEFAULT_GUI, $WS_SIZEBOX, $WS_MAXIMIZEBOX), $WS_EX_ACCEPTFILES)
@@ -185,9 +176,10 @@ Func SD_GUI_Create()
 	$MM_WINDOW_MIN_HEIGHT_FULL = WinGetPos($MM_UI_MAIN)[3]
 	GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
 
-	SD_GUI_MenuCreate()
+	UI_Main_MenuCreate()
 
 	; mod list
+	$hGUI.ModList = MapEmpty()
 	$hGUI.ModList.Group = GUICtrlCreateGroup("-", 0, 0)
 	$hGUI.ModList.List = GUICtrlCreateTreeView(0, 0, Default, Default, BitOR($TVS_FULLROWSELECT, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
 	$hGUI.ModList.Up = GUICtrlCreateButton("", 0, 0, 90, 25)
@@ -195,6 +187,7 @@ Func SD_GUI_Create()
 	$hGUI.ModList.ChangeState = GUICtrlCreateButton("", 0, 0, 90, 25)
 
 	; mod list context menu
+	$hGUI.MenuMod = MapEmpty()
 	$hGUI.MenuMod.Menu = GUICtrlCreateContextMenu($hGUI.ModList.List)
 	$hGUI.MenuMod.Plugins = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
 	$hGUI.MenuMod.OpenHomepage = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
@@ -205,29 +198,12 @@ Func SD_GUI_Create()
 	$hGUI.MenuMod.PackMod = GUICtrlCreateMenuItem("-", $hGUI.MenuMod.Menu)
 
 	; plugins list
+	$hGUI.PluginsList = MapEmpty()
 	$hGUI.PluginsList.Group = GUICtrlCreateGroup("-", 0, 0)
 	$hGUI.PluginsList.List = GUICtrlCreateTreeView(0, 0, Default, Default, BitOR($TVS_FULLROWSELECT, $TVS_DISABLEDRAGDROP, $TVS_SHOWSELALWAYS), $WS_EX_CLIENTEDGE)
 
-	; info tabs
-	$hGUI.Info.TabControl = GUICtrlCreateTab(0, 0, Default, Default, BitOR($TCS_FLATBUTTONS, $TCS_BUTTONS, $TCS_FOCUSNEVER))
-	$hGUI.Info.TabDesc = GUICtrlCreateTabItem("-")
-	$hGUI.Info.TabInfo = GUICtrlCreateTabItem("-")
-	$hGUI.Info.TabScreens = GUICtrlCreateTabItem("-")
-	GUICtrlCreateTabItem("")
-
-	$hGUI.Info.Edit = GUICtrlCreateEdit("", 0, 0, 0, 0, BitOR($ES_READONLY, $WS_VSCROLL, $WS_TABSTOP))
-	$hGUI.Info.Desc = _GUICtrlSysLink_Create($MM_UI_MAIN, "-", 0, 0, 0, 0)
-
-	$hGUI.Screen.Control = GUICtrlCreatePic("", 0, 0)
-	GUICtrlSetCursor($hGUI.Screen.Control, 0)
-	$hGUI.Screen.Open = GUICtrlCreateButton("", 0, 0, 25, 25, $BS_ICON)
-	$hGUI.Screen.Back = GUICtrlCreateButton("", 0, 0, 25, 25, $BS_ICON)
-	$hGUI.Screen.Forward = GUICtrlCreateButton("", 0, 0, 25, 25, $BS_ICON)
-	GUICtrlSetImage($hGUI.Screen.Open, @ScriptDir & "\icons\folder-open.ico")
-	GUICtrlSetImage($hGUI.Screen.Back, @ScriptDir & "\icons\arrow-left.ico")
-	GUICtrlSetImage($hGUI.Screen.Forward, @ScriptDir & "\icons\arrow-right.ico")
-
 	; sceanrio controls
+	$hGUI.ScnList = MapEmpty()
 	$hGUI.ScnList.Group = GUICtrlCreateGroup("-", 0, 0)
 	$hGUI.ScnList.List = GUICtrlCreateListView("1|Name", 2, 2, Default, Default, BitOR($LVS_NOCOLUMNHEADER, $LVS_SINGLESEL, $LVS_SHOWSELALWAYS), BitOR($LVS_EX_FULLROWSELECT, 0))
 	$hGUI.ScnList.Load = GUICtrlCreateButton("", 0, 0, 90, 25)
@@ -238,11 +214,30 @@ Func SD_GUI_Create()
 	GUICtrlSetState($hGUI.ScnList.Save, $GUI_DISABLE)
 	GUICtrlSetState($hGUI.ScnList.Export, $GUI_DISABLE)
 	GUICtrlSetState($hGUI.ScnList.Delete, $GUI_DISABLE)
-
 	$hGUI.ScnList.ImageList = _GUIImageList_Create(16, 16, 4, 1)
 	_GUIImageList_AddIcon($hGUI.ScnList.ImageList, @ScriptDir & "\icons\go-next.ico")
 	_GUICtrlListView_SetImageList($hGUI.ScnList.List, $hGUI.ScnList.ImageList, 1)
 
+	; info tabs
+	$hGUI.Info = MapEmpty()
+	$hGUI.Info.TabControl = GUICtrlCreateTab(0, 0, Default, Default, BitOR($TCS_FLATBUTTONS, $TCS_BUTTONS, $TCS_FOCUSNEVER))
+	$hGUI.Info.TabDesc = GUICtrlCreateTabItem("-")
+	$hGUI.Info.TabInfo = GUICtrlCreateTabItem("-")
+	$hGUI.Info.TabScreens = GUICtrlCreateTabItem("-")
+	GUICtrlCreateTabItem("")
+
+	$hGUI.Info.Edit = GUICtrlCreateEdit("", 0, 0, 0, 0, BitOR($ES_READONLY, $WS_VSCROLL, $WS_TABSTOP))
+	$hGUI.Info.Desc = _GUICtrlSysLink_Create($MM_UI_MAIN, "-", 0, 0, 0, 0)
+
+	$hGUI.Screen = MapEmpty()
+	$hGUI.Screen.Control = GUICtrlCreatePic("", 0, 0)
+	GUICtrlSetCursor($hGUI.Screen.Control, 0)
+	$hGUI.Screen.Open = GUICtrlCreateButton("", 0, 0, 25, 25, $BS_ICON)
+	$hGUI.Screen.Back = GUICtrlCreateButton("", 0, 0, 25, 25, $BS_ICON)
+	$hGUI.Screen.Forward = GUICtrlCreateButton("", 0, 0, 25, 25, $BS_ICON)
+	GUICtrlSetImage($hGUI.Screen.Open, @ScriptDir & "\icons\folder-open.ico")
+	GUICtrlSetImage($hGUI.Screen.Back, @ScriptDir & "\icons\arrow-left.ico")
+	GUICtrlSetImage($hGUI.Screen.Forward, @ScriptDir & "\icons\arrow-right.ico")
 
 	SD_UI_ScnLoadItems()
 
@@ -268,7 +263,8 @@ Func SD_GUI_Create()
 	AutoItSetOption("GUICoordMode", $iOptionGUICoordMode)
 EndFunc   ;==>SD_GUI_Create
 
-Func SD_GUI_MenuCreate()
+Func UI_Main_MenuCreate()
+	$hGUI.MenuScn = MapEmpty()
 	$hGUI.MenuScn.Menu = GUICtrlCreateMenu("-")
 	$hGUI.MenuScn.Manage = GUICtrlCreateMenuItem("-", $hGUI.MenuScn.Menu)
 	$hGUI.MenuScn.Save = GUICtrlCreateMenuItem("-", $hGUI.MenuScn.Menu)
@@ -276,6 +272,7 @@ Func SD_GUI_MenuCreate()
 	$hGUI.MenuScn.Import = GUICtrlCreateMenuItem("-", $hGUI.MenuScn.Manage)
 	$hGUI.MenuScn.Export = GUICtrlCreateMenuItem("-", $hGUI.MenuScn.Manage)
 
+	$hGUI.MenuGame = MapEmpty()
 	$hGUI.MenuGame.Menu = GUICtrlCreateMenu("-")
 	$hGUI.MenuGame.Launch = GUICtrlCreateMenuItem("-", $hGUI.MenuGame.Menu)
 	GUICtrlSetState($hGUI.MenuGame.Launch, $MM_GAME_EXE = "" ? $GUI_DISABLE : $GUI_ENABLE)
@@ -283,6 +280,7 @@ Func SD_GUI_MenuCreate()
 	$hGUI.MenuGame.Change = GUICtrlCreateMenuItem("-", $hGUI.MenuGame.Menu)
 	$hGUI.MenuGame.ChangeWO = GUICtrlCreateMenuItem("-", $hGUI.MenuGame.Menu)
 
+	$hGUI.MenuSettings = MapEmpty()
 	$hGUI.MenuSettings.Menu = GUICtrlCreateMenu("-")
 	$hGUI.MenuSettings.Add = GUICtrlCreateMenuItem("-", $hGUI.MenuSettings.Menu)
 	$hGUI.MenuSettings.Compatibility = GUICtrlCreateMenuItem("-", $hGUI.MenuSettings.Menu)
@@ -295,6 +293,7 @@ Func SD_GUI_MenuCreate()
 		If $MM_LNG_LIST[$iCount][$MM_LNG_FILE] = $MM_SETTINGS_LANGUAGE Then GUICtrlSetState($MM_LNG_LIST[$iCount][$MM_LNG_MENU_ID], $GUI_CHECKED)
 	Next
 
+	$hGUI.MenuHelp = MapEmpty()
 	$hGUI.MenuHelp.Menu = GUICtrlCreateMenu("?")
 	$hGUI.MenuHelp.CheckForUpdates = GUICtrlCreateMenuItem("-", $hGUI.MenuHelp.Menu)
 EndFunc
