@@ -12,9 +12,9 @@
 		"file": "/beta/MM_0.93.4.2.beta.zip"
 	},
 	"beta": {
-		"version": "0.93.4.2",
+		"version": "0.93.4.3",
 		"setup": "/message.exe",
 		"portable": "/beta/MM_0.93.4.2.beta.zip",
-		"file": "/beta/MM_0.93.4.2.beta.zip"
+		"file": "/beta/MM_0.93.4.3.beta.zip"
 	}
 }

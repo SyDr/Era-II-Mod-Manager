@@ -68,15 +68,16 @@ Func __Mod_LoadInfo(Const $iIndex, Const ByRef $sId, Const $bIsEnabled)
 	$MM_LIST_CONTENT[$iIndex][$MOD_IS_EXIST] = FileExists($MM_LIST_DIR_PATH & "\" & $sId & "\") ? True : False
 	If $MM_LIST_CONTENT[$iIndex][$MOD_IS_EXIST] And Not MapExists($MM_LIST_MAP, $sID) Then
 		$MM_LIST_MAP[$sId] = Jsmn_Decode(FileRead($MM_LIST_DIR_PATH & "\" & $sId & "\mod.json"))
-		__Mod_Validate($MM_LIST_MAP[$sId], $MM_LIST_DIR_PATH & "\" & $sId)
+		If Not IsMap($MM_LIST_MAP[$sId]) Then __Mod_LoadInfoFromINI($MM_LIST_MAP[$sId], $MM_LIST_DIR_PATH & "\" & $sId)
 	EndIf
+
+	If Not IsMap($MM_LIST_MAP[$sId]) Then $MM_LIST_MAP[$sId] = MapEmpty()
+	__Mod_Validate($MM_LIST_MAP[$sId])
+
 	$MM_LIST_CONTENT[$iIndex][$MOD_CAPTION] = Mod_Get("caption", $iIndex)
 EndFunc
 
-Func __Mod_Validate(ByRef $Map, Const $sDir)
-	If Not IsMap($Map) Then __Mod_LoadInfoFromINI($Map, $sDir)
-	If Not IsMap($Map) Then $Map = MapEmpty()
-
+Func __Mod_Validate(ByRef $Map)
 	Local $aItems
 	If Not MapExists($Map, "platform") Or Not IsString($Map["platform"]) Then $Map["platform"] = "era"
 	If Not MapExists($Map, "info_version") Or Not IsString($Map["info_version"]) Then $Map["info_version"] = "1.0"
