@@ -29,6 +29,9 @@ FileWriteLine(@ScriptDir & "\update_ftp.json", Jsmn_Encode($mVersion, $JSMN_PRET
 _FTP_FileDelete($hConnection, "mm.json")
 _FTP_ProgressUpload($hConnection, @ScriptDir & "\update_ftp.json", "mm.json")
 
+_FTP_FileDelete($hConnection, "mm_latest.html")
+_FTP_ProgressUpload($hConnection, @ScriptDir & "\mm_latest.html", "mm_latest.html")
+
 _FTP_Close($hConnection)
 _FTP_Close($hFTP)
 

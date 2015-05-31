@@ -10,7 +10,7 @@ this allows easy overwrite #AutoIt3Wrapper_Res_Fileversion via simple IniWrite
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseUpx=y
 #AutoIt3Wrapper_Res_Description=A mod manager for Era II
-#AutoIt3Wrapper_Res_Fileversion=0.93.4.3
+#AutoIt3Wrapper_Res_Fileversion=0.93.5.0
 #AutoIt3Wrapper_Res_LegalCopyright=Aliaksei SyDr Karalenka
 #AutoIt3Wrapper_Res_requestedExecutionLevel=asInvoker
 #AutoIt3Wrapper_AU3Check_Parameters=-d -w 1 -w 2 -w 3 -w 4 -w 5 -w 6 -w 7
@@ -22,6 +22,8 @@ AutoItSetOption("GUIOnEventMode", 1)
 AutoItSetOption("GUICloseOnESC", 1)
 If Not @Compiled Then AutoItSetOption("TrayIconHide", 0)
 If Not @Compiled Then Global $__DEBUG
+Global $__MAIN
+
 If FileExists(@ScriptDir & "\debug") Then
 	Global $__DEBUG_TO_FILE
 	FileMove(@ScriptDir & "\debug2.log", @ScriptDir & "\debug3.log", 1)
@@ -67,7 +69,6 @@ EndIf
 
 Lng_LoadList()
 If $CMDLine[0] > 1 And $CMDLine[1] = '/install' Then
-	Sleep(1000)
 	Update_CopySelfTo($CMDLine[2])
 ElseIf $CMDLine[0] > 1 And $CMDLine[1] = '/setlang' Then
 	Settings_Set("language",  Utils_InnoLangToMM($CMDLine[2]))

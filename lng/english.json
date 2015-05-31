@@ -192,7 +192,12 @@
 		"cant_check" : "Can't check program update. Open link in browser?",
 		"cant_download" : "Can't download program update. Open link in browser?",
 		"info_invalid" : "invalid format...",
-		"new_version_available" : "New program version available. Do you want to download it?"
+		"new_version_available" : "New program version available. Do you want to download it?",
+		"progress" : {
+			"caption" : "Installing update...",
+			"unpack" : "Unpacking files...",
+			"copy" : "Just a little bit more"
+		}
 	},
 	"mod_edit" :
 	{

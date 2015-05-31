@@ -1,6 +1,21 @@
 ; Author:         Aliaksei SyDr Karalenka
 
+#cs
+this allows easy overwrite #AutoIt3Wrapper_Res_Fileversion via simple IniWrite
+[Version]
+#ce
+#Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Version=Beta
+#AutoIt3Wrapper_Icon=icons\preferences-system.ico
+#AutoIt3Wrapper_Outfile=update.exe
+#AutoIt3Wrapper_Compression=4
+#AutoIt3Wrapper_UseUpx=y
+#AutoIt3Wrapper_Res_Description=A mod manager for Era II (update)
+#AutoIt3Wrapper_Res_Fileversion=0.93.5.0
+#AutoIt3Wrapper_Res_LegalCopyright=Aliaksei SyDr Karalenka
+#AutoIt3Wrapper_Res_requestedExecutionLevel=asInvoker
+#AutoIt3Wrapper_AU3Check_Parameters=-d -w 1 -w 2 -w 3 -w 4 -w 5 -w 6 -w 7
+#EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 #include-once
 
 #include "include_fwd.au3"
@@ -13,6 +28,11 @@
 Global $__MM_UPDATE_HANDLE
 Global $MM_UPDATE_IS_READY
 
+If Not IsDeclared("__MAIN") Then
+	Lng_LoadList()
+	Settings_Get("")
+	Update_CheckNewPorgram()
+EndIf
 
 Func Update_CheckNewPorgram()
 	Local Const $iOptionGUIOnEventMode = AutoItSetOption("GUIOnEventMode", 0)
@@ -196,6 +216,7 @@ EndFunc
 Func Update_InstallUpdate(Const $sFilePath)
 	Local $sDir
 	If @Compiled Then
+		__Update_ShowProgress()
 		$sDir = _TempFile()
 		DirCreate($sDir)
 		RunWait(@ScriptDir & '\7z\7z.exe x "' & $sFilePath & '" -o' & '"' & $sDir & '" -aoa', @ScriptDir & "\7z\", @SW_HIDE)
@@ -206,9 +227,21 @@ Func Update_InstallUpdate(Const $sFilePath)
 EndFunc
 
 Func Update_CopySelfTo(Const $sPath)
-	DirCopy(@ScriptDir, $sPath, $FC_OVERWRITE)
+	;DirCopy(@ScriptDir, $sPath, $FC_OVERWRITE)
+	Local $aFiles = _FileListToArrayRec(@ScriptDir, Default, Default, $FLTAR_RECUR)
+
+	__Update_ShowProgress(True)
+	For $i = 1 To $aFiles[0]
+		FileCopy(@ScriptDir & "\" & $aFiles[$i], $sPath & "\" & $aFiles[$i], $FC_CREATEPATH +  $FC_OVERWRITE)
+		ProgressSet($i/$aFiles[0]*100)
+	Next
+
 	ShellExecute($sPath & "\mmanager.exe")
 	Exit
+EndFunc
+
+Func __Update_ShowProgress(Const $bSecond = False)
+	ProgressOn(Lng_Get("update.progress.caption"), $bSecond ? Lng_Get("update.progress.unpack") : Lng_Get("update.progress.copy"))
 EndFunc
 
 Func __Update_SetupSelectionChanged(ByRef $hGUI, Const $sNewVersion)
