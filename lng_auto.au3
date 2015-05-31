@@ -161,6 +161,10 @@ If Not MapExists($MM_LNG_CACHE["update"], "cant_check") Or Not IsString($MM_LNG_
 If Not MapExists($MM_LNG_CACHE["update"], "cant_download") Or Not IsString($MM_LNG_CACHE["update"]["cant_download"]) Then $MM_LNG_CACHE["update"]["cant_download"] = "Can't download program update. Open link in browser?"
 If Not MapExists($MM_LNG_CACHE["update"], "info_invalid") Or Not IsString($MM_LNG_CACHE["update"]["info_invalid"]) Then $MM_LNG_CACHE["update"]["info_invalid"] = "invalid format..."
 If Not MapExists($MM_LNG_CACHE["update"], "new_version_available") Or Not IsString($MM_LNG_CACHE["update"]["new_version_available"]) Then $MM_LNG_CACHE["update"]["new_version_available"] = "New program version available. Do you want to download it?"
+If Not MapExists($MM_LNG_CACHE["update"], "progress") Or Not IsMap($MM_LNG_CACHE["update"]["progress"]) Then $MM_LNG_CACHE["update"]["progress"] = MapEmpty()
+If Not MapExists($MM_LNG_CACHE["update"]["progress"], "caption") Or Not IsString($MM_LNG_CACHE["update"]["progress"]["caption"]) Then $MM_LNG_CACHE["update"]["progress"]["caption"] = "Installing update..."
+If Not MapExists($MM_LNG_CACHE["update"]["progress"], "unpack") Or Not IsString($MM_LNG_CACHE["update"]["progress"]["unpack"]) Then $MM_LNG_CACHE["update"]["progress"]["unpack"] = "Unpacking files..."
+If Not MapExists($MM_LNG_CACHE["update"]["progress"], "copy") Or Not IsString($MM_LNG_CACHE["update"]["progress"]["copy"]) Then $MM_LNG_CACHE["update"]["progress"]["copy"] = "Just a little bit more"
 If Not MapExists($MM_LNG_CACHE, "mod_edit") Or Not IsMap($MM_LNG_CACHE["mod_edit"]) Then $MM_LNG_CACHE["mod_edit"] = MapEmpty()
 If Not MapExists($MM_LNG_CACHE["mod_edit"], "caption") Or Not IsString($MM_LNG_CACHE["mod_edit"]["caption"]) Then $MM_LNG_CACHE["mod_edit"]["caption"] = "Mod edit"
 If Not MapExists($MM_LNG_CACHE["mod_edit"], "save") Or Not IsString($MM_LNG_CACHE["mod_edit"]["save"]) Then $MM_LNG_CACHE["mod_edit"]["save"] = "Save"
