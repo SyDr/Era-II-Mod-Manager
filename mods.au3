@@ -120,9 +120,11 @@ Func __Mod_Validate(ByRef $Map)
 	For $i = 0 To UBound($aItems) - 1
 		If Not IsMap($Map["plugins"][$aItems[$i]]) Then $Map["plugins"][$aItems[$i]] = MapEmpty()
 		If Not MapExists($Map["plugins"][$aItems[$i]], "default") Or Not IsBool($Map["plugins"][$aItems[$i]]["default"]) Then $Map["plugins"][$aItems[$i]]["default"] = True
-		For $i = 1 To $MM_LNG_LIST[0][0]
-			If Not MapExists($Map["plugins"][$aItems[$i]]["caption"], $MM_LNG_LIST[$i][$MM_LNG_CODE]) Or Not IsString($Map["plugins"][$aItems[$i]]["caption"][$MM_LNG_LIST[$i][$MM_LNG_CODE]]) Then $Map["plugins"][$aItems[$i]]["caption"][$MM_LNG_LIST[$i][$MM_LNG_CODE]] = ""
-			If Not MapExists($Map["plugins"][$aItems[$i]]["description"], $MM_LNG_LIST[$i][$MM_LNG_CODE]) Or Not IsString($Map["plugins"][$aItems[$i]]["description"][$MM_LNG_LIST[$i][$MM_LNG_CODE]]) Then $Map["plugins"][$aItems[$i]]["description"][$MM_LNG_LIST[$i][$MM_LNG_CODE]] = ""
+		If Not MapExists($Map["plugins"][$aItems[$i]], "caption") Or Not IsMap($Map["plugins"][$aItems[$i]]["caption"]) Then $Map["plugins"][$aItems[$i]]["caption"] = MapEmpty()
+		If Not MapExists($Map["plugins"][$aItems[$i]], "description") Or Not IsMap($Map["plugins"][$aItems[$i]]["description"]) Then $Map["plugins"][$aItems[$i]]["description"] = MapEmpty()
+		For $j = 1 To $MM_LNG_LIST[0][0]
+			If Not MapExists($Map["plugins"][$aItems[$i]]["caption"], $MM_LNG_LIST[$j][$MM_LNG_CODE]) Or Not IsString($Map["plugins"][$aItems[$i]]["caption"][$MM_LNG_LIST[$j][$MM_LNG_CODE]]) Then $Map["plugins"][$aItems[$i]]["caption"][$MM_LNG_LIST[$j][$MM_LNG_CODE]] = ""
+			If Not MapExists($Map["plugins"][$aItems[$i]]["description"], $MM_LNG_LIST[$j][$MM_LNG_CODE]) Or Not IsString($Map["plugins"][$aItems[$i]]["description"][$MM_LNG_LIST[$j][$MM_LNG_CODE]]) Then $Map["plugins"][$aItems[$i]]["description"][$MM_LNG_LIST[$j][$MM_LNG_CODE]] = ""
 		Next
 	Next
 	If Not MapExists($Map, "category") Or Not IsString($Map["category"]) Then $Map["category"] = ""
