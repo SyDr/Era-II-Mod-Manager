@@ -3,7 +3,7 @@
 
 ; update mm version in main file
 IniWrite(@ScriptDir & "\mmanager.au3", "Version", "#AutoIt3Wrapper_Res_Fileversion", $MM_VERSION_NUMBER)
-IniWrite(@ScriptDir & "\update.au3", "Version", "#AutoIt3Wrapper_Res_Fileversion", $MM_VERSION_NUMBER)
+;IniWrite(@ScriptDir & "\update.au3", "Version", "#AutoIt3Wrapper_Res_Fileversion", $MM_VERSION_NUMBER)
 
 Global Const $sBuildDir = @ScriptDir & "\Build"
 
@@ -12,7 +12,7 @@ DirCreate($sBuildDir & "\Output\")
 CopyToBuildDir()
 
 ShellExecuteWait(@ProgramFilesDir & "\AutoIt3\SciTE\AutoIt3Wrapper\Autoit3wrapper.exe", "/in mmanager.au3", $sBuildDir)
-ShellExecuteWait(@ProgramFilesDir & "\AutoIt3\SciTE\AutoIt3Wrapper\Autoit3wrapper.exe", "/in update.au3", $sBuildDir)
+;ShellExecuteWait(@ProgramFilesDir & "\AutoIt3\SciTE\AutoIt3Wrapper\Autoit3wrapper.exe", "/in update.au3", $sBuildDir)
 CopyForOutput()
 ShellExecuteWait(@ScriptDir & '\7z\7z.exe', 'a "MM.zip" "Mod Manager\*"', $sBuildDir)
 
@@ -41,7 +41,7 @@ EndFunc
 Func CopyForOutput()
 	DirCreate($sBuildDir & "\Mod Manager\")
 	FileCopy($sBuildDir & "\mmanager.exe", $sBuildDir & "\Mod Manager\", 1)
-	FileCopy($sBuildDir & "\update.exe", $sBuildDir & "\Mod Manager\", 1)
+	;FileCopy($sBuildDir & "\update.exe", $sBuildDir & "\Mod Manager\", 1)
 	FileCopy($sBuildDir & "\License.txt", $sBuildDir & "\Mod Manager\")
 	DirCopy($sBuildDir & "\7z", $sBuildDir & "\Mod Manager\7z", 1)
 	DirCopy($sBuildDir & "\icons", $sBuildDir & "\Mod Manager\icons", 1)

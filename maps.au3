@@ -18,7 +18,7 @@
 ; _MapTo2DArray
 ; ===============================================================================================================================
 
-Func _MapDisplay(Const ByRef $Map, $sTitle = Default, $iFlags = Default, $vUser_Separator = Default, $sHeader = Default, $iMax_ColWidth = Default, $iAlt_Color = Default)
+Func _MapDisplay(Const ByRef $Map, $sTitle = Default, $iFlags = Default, $vUser_Separator = Default, $sHeader = Default, $iMax_ColWidth = Default)
 	If Not IsMap($Map) Then Return SetError(1, 0, "")
 	If UBound($Map) = 0 Then Return SetError(2, 0, "")
 
@@ -33,7 +33,7 @@ Func _MapDisplay(Const ByRef $Map, $sTitle = Default, $iFlags = Default, $vUser_
 		$Array[$i][1] = VarGetType($Map[$aKeys[$i]]) & ":" & $Map[$aKeys[$i]]
 	Next
 
-	Return _ArrayDisplay($Array, $sTitle, Default, $iFlags, $vUser_Separator, $sHeader, $iMax_ColWidth, $iAlt_Color)
+	Return _ArrayDisplay($Array, $sTitle, Default, $iFlags, $vUser_Separator, $sHeader, $iMax_ColWidth)
 EndFunc
 
 Func _MapEmpty()

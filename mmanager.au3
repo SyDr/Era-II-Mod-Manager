@@ -10,7 +10,7 @@ this allows easy overwrite #AutoIt3Wrapper_Res_Fileversion via simple IniWrite
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseUpx=y
 #AutoIt3Wrapper_Res_Description=A mod manager for Era II
-#AutoIt3Wrapper_Res_Fileversion=0.93.6.2
+#AutoIt3Wrapper_Res_Fileversion=0.93.6.4
 #AutoIt3Wrapper_Res_LegalCopyright=Aliaksei SyDr Karalenka
 #AutoIt3Wrapper_Res_requestedExecutionLevel=asInvoker
 #AutoIt3Wrapper_AU3Check_Parameters=-d -w 1 -w 2 -w 3 -w 4 -w 5 -w 6 -w 7
@@ -294,9 +294,9 @@ Func UI_Main_MenuCreate()
 		If $MM_LNG_LIST[$iCount][$MM_LNG_FILE] = $MM_SETTINGS_LANGUAGE Then GUICtrlSetState($MM_LNG_LIST[$iCount][$MM_LNG_MENU_ID], $GUI_CHECKED)
 	Next
 
-	$hGUI.MenuHelp = MapEmpty()
-	$hGUI.MenuHelp.Menu = GUICtrlCreateMenu("?")
-	$hGUI.MenuHelp.CheckForUpdates = GUICtrlCreateMenuItem("-", $hGUI.MenuHelp.Menu)
+	;$hGUI.MenuHelp = MapEmpty()
+	;$hGUI.MenuHelp.Menu = GUICtrlCreateMenu("?")
+	;$hGUI.MenuHelp.CheckForUpdates = GUICtrlCreateMenuItem("-", $hGUI.MenuHelp.Menu)
 EndFunc
 
 Func SD_GUI_UpdateScreen(Const $iIndex)
@@ -478,7 +478,7 @@ Func SD_GUI_Events_Register()
 	GUICtrlSetOnEvent($hGUI.MenuMod.PackMod, "SD_GUI_Mod_PackMod")
 
 	GUICtrlSetOnEvent($hGUI.Back, "SD_GUI_BackToMainView")
-	GUICtrlSetOnEvent($hGUI.MenuHelp.CheckForUpdates, "Update_CheckNewPorgram")
+	;GUICtrlSetOnEvent($hGUI.MenuHelp.CheckForUpdates, "Update_CheckNewPorgram")
 	GUICtrlSetOnEvent($hGUI.ScnList.Delete, "SD_UI_ScnDelete")
 	GUICtrlSetOnEvent($hGUI.ScnList.Load, "SD_UI_ScnLoad")
 	GUICtrlSetOnEvent($hGUI.ScnList.Save, "SD_UI_ScnSave")
@@ -704,8 +704,7 @@ Func SD_GUI_SetLng()
 	GUICtrlSetData($hGUI.MenuSettings.Menu, Lng_Get("settings.menu.caption"))
 	GUICtrlSetData($hGUI.MenuSettings.Settings, Lng_Get("settings.menu.settings"))
 
-
-	GUICtrlSetData($hGUI.MenuHelp.CheckForUpdates, Lng_Get("update.caption"))
+	;GUICtrlSetData($hGUI.MenuHelp.CheckForUpdates, Lng_Get("update.caption"))
 
 	GUICtrlSetData($hGUI.PluginsList.Group, Lng_GetF("plugins_list.caption", $MM_LIST_CONTENT[0][0] > 0 ? $MM_LIST_CONTENT[1][$MOD_ID] : ""))
 	GUICtrlSetData($hGUI.Back, Lng_Get("plugins_list.back"))
@@ -744,6 +743,7 @@ Func SD_GUI_Mod_PackMod()
 
 	Local $sSavePath = FileSaveDialog("", "", "(*.*)", $FD_PATHMUSTEXIST + $FD_PROMPTOVERWRITE, Mod_Get("caption\formatted") & ".exe", $MM_UI_MAIN)
 	If Not @error Then
+		FileDelete($sSavePath)
 		Mod_CreatePackage($iModIndex, $sSavePath)
 		If $bPackModHint Then MsgBox($MB_ICONINFORMATION, "", Lng_Get("mod_list.pack_mod_hint"))
 		$bPackModHint = False
