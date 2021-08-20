@@ -32,10 +32,8 @@ EndFunc
 
 Func CopyForOutput()
 	DirCreate($sBuildDir & "\Mod Manager\")
-	FileCopy($sBuildDir & "\mmanager.a3x", $sBuildDir & "\Mod Manager\", 1)
+	FileCopy($sBuildDir & "\mmanager.exe", $sBuildDir & "\Mod Manager\", 1)
 	FileCopy(@ScriptDir & "\License.txt", $sBuildDir & "\Mod Manager\")
-	FileCopy(@ScriptDir & "\autoit_license.txt", $sBuildDir & "\Mod Manager\")
-	FileCopy(@ProgramFilesDir & "\AutoIt3\Beta\AutoIt3.exe", $sBuildDir  & "\Mod Manager\", 1)
 	DirCopy($sBuildDir & "\7z", $sBuildDir & "\Mod Manager\7z", 1)
 	DirCopy($sBuildDir & "\icons", $sBuildDir & "\Mod Manager\icons", 1)
 	DirCopy($sBuildDir & "\lng", $sBuildDir & "\Mod Manager\lng", 1)
