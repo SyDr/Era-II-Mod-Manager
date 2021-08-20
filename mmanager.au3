@@ -5,12 +5,12 @@ this allows easy overwrite #AutoIt3Wrapper_Res_Fileversion via simple IniWrite
 #ce
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Version=Beta
+#AutoIt3Wrapper_Outfile_type=a3x
 #AutoIt3Wrapper_Icon=icons\preferences-system.ico
-#AutoIt3Wrapper_Outfile=mmanager.exe
-#AutoIt3Wrapper_Compression=4
-#AutoIt3Wrapper_UseUpx=y
+#AutoIt3Wrapper_Outfile=mmanager.a3x
+#AutoIt3Wrapper_Compression=0
 #AutoIt3Wrapper_Res_Description=A mod manager for Era II
-#AutoIt3Wrapper_Res_Fileversion=0.93.6.4
+#AutoIt3Wrapper_Res_Fileversion=0.93.6.6
 #AutoIt3Wrapper_Res_LegalCopyright=Aliaksei SyDr Karalenka
 #AutoIt3Wrapper_Res_requestedExecutionLevel=asInvoker
 #AutoIt3Wrapper_AU3Check_Parameters=-d -w 1 -w 2 -w 3 -w 4 -w 5 -w 6 -w 7
@@ -41,7 +41,6 @@ EndIf
 #include "presets.au3"
 #include "settings.au3"
 #include "startup.au3"
-#include "update.au3"
 #include "ui.au3"
 #include "wog_options.au3"
 
@@ -68,16 +67,13 @@ If @Compiled And @ScriptName = "installmod.exe" Then
 EndIf
 
 Lng_LoadList()
-If $CMDLine[0] > 1 And $CMDLine[1] = '/install' Then
-	Update_CopySelfTo($CMDLine[2])
-ElseIf $CMDLine[0] > 1 And $CMDLine[1] = '/setlang' Then
-	Settings_Set("language",  Utils_InnoLangToMM($CMDLine[2]))
+If $CMDLine[0] > 1 And $CMDLine[1] = '/setlang' Then
+	Settings_Set("language", Utils_InnoLangToMM($CMDLine[2]))
 ElseIf $CMDLine[0] > 0 Then
 	If Not SD_CLI_Mod_Add() Then Exit
 EndIf
 
 StartUp_CheckRunningInstance()
-AutoUpdate_Init()
 
 If Not IsDeclared("__MM_NO_UI") Then
 	UI_InitMain()
@@ -107,15 +103,6 @@ Func MainLoop()
 			$MM_LIST_CANT_WORK = False
 			If MsgBox($MB_SYSTEMMODAL + $MB_YESNO, "", Lng_GetF("mod_list.list_inaccessible", $MM_LIST_FILE_PATH)) = $IDYES Then
 				ShellExecute("explorer.exe", "/select," & $MM_LIST_FILE_PATH, $MM_LIST_DIR_PATH)
-			EndIf
-		EndIf
-
-		If $MM_UPDATE_IS_READY Then
-			$MM_UPDATE_IS_READY = False
-			If $IDYES = MsgBox($MB_YESNO + $MB_ICONQUESTION + $MB_SYSTEMMODAL, "", Lng_Get("update.new_version_available"), Default, MM_GetCurrentWindow()) Then
-				Update_CheckNewPorgram()
-			Else
-				Settings_Set("update_last_check", _NowCalc())
 			EndIf
 		EndIf
 	WEnd

@@ -4,13 +4,11 @@
 [Data]
 #ce
 
-Global Const $MM_VERSION_NUMBER = "0.93.6.4"
+Global Const $MM_VERSION_NUMBER = "0.93.6.6"
 
 Global Const $MM_VERSION_SUBTYPE = "beta"
 Global Const $MM_VERSION_NAME = "Siege Engine"
 Global Const $MM_VERSION = $MM_VERSION_SUBTYPE == "release" ? $MM_VERSION_NUMBER : ($MM_VERSION_NUMBER & "." & $MM_VERSION_SUBTYPE)
-
-Global Const $MM_UPDATE_URL = "http://wakeofgods.org/mm"
 
 Global Const $MM_TITLE = StringFormat("Era II Mod Manager [%s - %s]", $MM_VERSION, $MM_VERSION_NAME)
 Global Const $MM_WINDOW_MIN_WIDTH = 800

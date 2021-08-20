@@ -37,7 +37,7 @@ Func Mod_ListLoad()
 
 	For $i = 1 To $aModList_File[0]
 		_ArraySearch($MM_LIST_CONTENT, $aModList_File[$i], 1, Default, Default, Default, Default, 0)
-		If @error Then
+		If @error And StringInStr($aModList_File[$i], "_MM_") <> 1 Then
 			$MM_LIST_CONTENT[0][0] += 1
 			__Mod_LoadInfo($MM_LIST_CONTENT[0][0], $aModList_File[$i], True)
 		EndIf
@@ -45,7 +45,7 @@ Func Mod_ListLoad()
 
 	For $i = 1 To $aModList_Dir[0]
 		_ArraySearch($MM_LIST_CONTENT, $aModList_Dir[$i], 1, Default, Default, Default, Default, 0)
-		If @error Then
+		If @error And StringInStr($aModList_Dir[$i], "_MM_") <> 1 Then
 			$MM_LIST_CONTENT[0][0] += 1
 			__Mod_LoadInfo($MM_LIST_CONTENT[0][0], $aModList_Dir[$i], False)
 			If $iFirstDisabled < 1 Then $iFirstDisabled = $MM_LIST_CONTENT[0][0]

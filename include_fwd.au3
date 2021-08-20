@@ -19,7 +19,6 @@
 #include <GuiListView.au3>
 #include <GuiMenu.au3>
 #include <GuiTreeView.au3>
-#include <InetConstants.au3>
 #include <Math.au3>
 #include <Misc.au3>
 #include <ProgressConstants.au3>

@@ -32,22 +32,12 @@ Func UI_Settings()
 	Local $aSize = WinGetClientSize($hGUI)
 	If Not @Compiled Then GUISetIcon(@ScriptDir & "\icons\preferences-system.ico")
 
-	;Local $hGroupAutoUpdate = GUICtrlCreateGroup(Lng_Get("settings.auto_update.group"), $iItemSpacing, $iItemSpacing, $aSize[0] - 2 * $iItemSpacing, 75 - 3 * $iItemSpacing)
-	;Local $hLabelAuto = GUICtrlCreateLabel(Lng_Get("settings.auto_update.label"), 2 * $iItemSpacing, 5 * $iItemSpacing, Default, 17, $SS_CENTERIMAGE)
-	;Local $hComboAuto = GUICtrlCreateCombo("", GUICtrlGetPos($hLabelAuto).NextX, 5 * $iItemSpacing, $aSize[0] - GUICtrlGetPos($hLabelAuto).NextX - 2 * $iItemSpacing, 25, $CBS_DROPDOWNLIST)
-	;GUICtrlSetData($hComboAuto, Lng_Get("settings.auto_update.day") & "|" & Lng_Get("settings.auto_update.week") & "|" & Lng_Get("settings.auto_update.month") & "|" & Lng_Get("settings.auto_update.never"), _
-	;	UI_IntervalToItem(Settings_Get("update_interval")))
-
-	;Local $hCheckboxAuto = GUICtrlCreateCheckbox(Lng_Get("settings.auto_update.auto"), 6 * $iItemSpacing, GUICtrlGetPos($hLabelAuto).NextY + 2 * $iItemSpacing, Default, 17)
-
 	Local $hGroupListLoad = GUICtrlCreateGroup(Lng_Get("settings.list_load_options.group"), $iItemSpacing, $iItemSpacing + $iItemSpacing, _
 		$aSize[0] - 2 * $iItemSpacing, $aSize[1] - 3 * $iItemSpacing - 25)
 	Local $hCheckboxExe = GUICtrlCreateCheckbox(Lng_Get("settings.list_load_options.exe"), 2 * $iItemSpacing, GUICtrlGetPos($hGroupListLoad).Top + 5 * $iItemSpacing, Default, 17)
 	Local $hCheckboxSet = GUICtrlCreateCheckbox(Lng_Get("settings.list_load_options.wog_settings"), 2 * $iItemSpacing, GUICtrlGetPos($hCheckboxExe).NextY + $iItemSpacing, Default, 17)
 	Local $hCheckboxDontAsk = GUICtrlCreateCheckbox(Lng_Get("settings.list_load_options.dont_ask"), 2 * $iItemSpacing, GUICtrlGetPos($hCheckboxSet).NextY + $iItemSpacing, Default, 17)
 
-	;GUICtrlSetState($hCheckboxAuto, Settings_Get("update_auto") ? $GUI_CHECKED : $GUI_UNCHECKED)
-	;GUICtrlSetState($hCheckboxAuto, UI_ItemToInterval(GUICtrlRead($hComboAuto)) = 0 ? $GUI_DISABLE : $GUI_ENABLE)
 	GUICtrlSetState($hCheckboxExe, Settings_Get("list_exe") ? $GUI_CHECKED : $GUI_UNCHECKED)
 	GUICtrlSetState($hCheckboxSet, Settings_Get("list_wog_settings") ? $GUI_CHECKED : $GUI_UNCHECKED)
 	GUICtrlSetState($hCheckboxDontAsk, Settings_Get("list_no_ask") ? $GUI_CHECKED : $GUI_UNCHECKED)
@@ -62,14 +52,10 @@ Func UI_Settings()
 				$bClose = True
 			Case $hOk
 				$bSave = True
-			;Case $hComboAuto
-			;	GUICtrlSetState($hCheckboxAuto, UI_ItemToInterval(GUICtrlRead($hComboAuto)) = 0 ? $GUI_DISABLE : $GUI_ENABLE)
 		EndSwitch
 	WEnd
 
 	If $bSave Then
-		;Settings_Set("update_interval", UI_ItemToInterval(GUICtrlRead($hComboAuto)))
-		;Settings_Set("update_auto", BitAND(GUICtrlRead($hCheckboxAuto), $GUI_CHECKED) ? True : False)
 		Settings_Set("list_exe", GUICtrlRead($hCheckboxExe) = $GUI_CHECKED)
 		Settings_Set("list_wog_settings", GUICtrlRead($hCheckboxSet) = $GUI_CHECKED)
 		Settings_Set("list_no_ask", GUICtrlRead($hCheckboxDontAsk) = $GUI_CHECKED)
@@ -80,32 +66,6 @@ Func UI_Settings()
 	AutoItSetOption("GUIOnEventMode", $iOptionGUIOnEventMode)
 	GUISetState(@SW_ENABLE, MM_GetCurrentWindow())
 	GUISetState(@SW_RESTORE, MM_GetCurrentWindow())
-EndFunc
-
-Func UI_IntervalToItem(Const $iInterval)
-	Switch $iInterval
-		Case 1
-			Return Lng_Get("settings.auto_update.day")
-		Case 7
-			Return Lng_Get("settings.auto_update.week")
-		Case 28
-			Return Lng_Get("settings.auto_update.month")
-		Case Else
-			Return Lng_Get("settings.auto_update.never")
-	EndSwitch
-EndFunc
-
-Func UI_ItemToInterval(Const $sItem)
-	Switch $sItem
-		Case Lng_Get("settings.auto_update.day")
-			Return 1
-		Case Lng_Get("settings.auto_update.week")
-			Return 7
-		Case Lng_Get("settings.auto_update.month")
-			Return 28
-		Case Else
-			Return 0
-	EndSwitch
 EndFunc
 
 Func UI_Import_Scn()

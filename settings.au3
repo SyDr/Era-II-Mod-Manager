@@ -27,12 +27,6 @@ Func Settings_Get(Const ByRef $sName)
 			$vReturn = $MM_SETTINGS_CACHE["game"]["blacklist"]
 		Case "available_path_list"
 			$vReturn = MapKeys($MM_SETTINGS_CACHE["game"]["items"])
-		Case "update_interval"
-			$vReturn = $MM_SETTINGS_CACHE["update"]["interval"]
-		Case "update_auto"
-			$vReturn = $MM_SETTINGS_CACHE["update"]["auto"]
-		Case "update_last_check"
-			$vReturn = $MM_SETTINGS_CACHE["update"]["last_check"]
 		Case "list_no_ask"
 			$vReturn = $MM_SETTINGS_CACHE["list"]["not_again"]
 		Case "list_exe"
@@ -61,12 +55,6 @@ Func Settings_Set(Const ByRef $sName, Const $vValue)
 			$MM_SETTINGS_CACHE["window"][StringLower($sName)] = $vValue
 		Case "exe"
 			$MM_SETTINGS_CACHE["game"]["exe"] = $vValue
-		Case "update_interval"
-			$MM_SETTINGS_CACHE["update"]["interval"] = $vValue
-		Case "update_auto"
-			$MM_SETTINGS_CACHE["update"]["auto"] = $vValue
-		Case "update_last_check"
-			$MM_SETTINGS_CACHE["update"]["last_check"] = $vValue
 		Case "list_no_ask"
 			$MM_SETTINGS_CACHE["list"]["not_again"] = $vValue
 		Case "list_exe"
@@ -117,11 +105,11 @@ Func __Settings_Validate()
 	$MM_SETTINGS_CACHE["game"]["blacklist"] = $aItems
 
 	; 0.91.5.0
-	If Not MapExists($MM_SETTINGS_CACHE, "update") Or Not IsMap($MM_SETTINGS_CACHE["update"]) Then $MM_SETTINGS_CACHE["update"] = MapEmpty()
-	If Not MapExists($MM_SETTINGS_CACHE["update"], "interval") Or Not IsInt($MM_SETTINGS_CACHE["update"]["interval"]) Then $MM_SETTINGS_CACHE["update"]["interval"] = 28
-	If Not MapExists($MM_SETTINGS_CACHE["update"], "auto") Or Not IsBool($MM_SETTINGS_CACHE["update"]["auto"]) Then $MM_SETTINGS_CACHE["update"]["auto"] = False
-	If Not MapExists($MM_SETTINGS_CACHE["update"], "last_check") Or Not IsString($MM_SETTINGS_CACHE["update"]["last_check"]) Or _
-		Not _DateIsValid($MM_SETTINGS_CACHE["update"]["last_check"]) Then $MM_SETTINGS_CACHE["update"]["last_check"] = _NowCalc()
+	;If Not MapExists($MM_SETTINGS_CACHE, "update") Or Not IsMap($MM_SETTINGS_CACHE["update"]) Then $MM_SETTINGS_CACHE["update"] = MapEmpty()
+	;If Not MapExists($MM_SETTINGS_CACHE["update"], "interval") Or Not IsInt($MM_SETTINGS_CACHE["update"]["interval"]) Then $MM_SETTINGS_CACHE["update"]["interval"] = 28
+	;If Not MapExists($MM_SETTINGS_CACHE["update"], "auto") Or Not IsBool($MM_SETTINGS_CACHE["update"]["auto"]) Then $MM_SETTINGS_CACHE["update"]["auto"] = False
+	;If Not MapExists($MM_SETTINGS_CACHE["update"], "last_check") Or Not IsString($MM_SETTINGS_CACHE["update"]["last_check"]) Or _
+	;	Not _DateIsValid($MM_SETTINGS_CACHE["update"]["last_check"]) Then $MM_SETTINGS_CACHE["update"]["last_check"] = _NowCalc()
 
 	; 0.93.0.0
 	If Not MapExists($MM_SETTINGS_CACHE, "list") Or Not IsMap($MM_SETTINGS_CACHE["list"]) Then $MM_SETTINGS_CACHE["list"] = MapEmpty()
@@ -141,7 +129,6 @@ Func __Settings_Validate()
 		MapRemove($MM_SETTINGS_CACHE, "preset")
 	EndIf
 	If Not MapExists($MM_SETTINGS_CACHE["game"], "preset") Or Not IsString($MM_SETTINGS_CACHE["game"]["preset"]) Then $MM_SETTINGS_CACHE["game"]["preset"] = ""
-
 
 	If VersionCompare($MM_SETTINGS_CACHE["version"], $MM_VERSION_NUMBER) < 0 Then $MM_SETTINGS_CACHE["version"] = $MM_VERSION_NUMBER
 EndFunc
