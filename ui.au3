@@ -18,7 +18,7 @@ Func UI_GameExeLaunch()
 		If $iAnswer <> $IDYES Then Return
 	EndIf
 
-	Run($MM_GAME_DIR & "\" & $MM_GAME_EXE, $MM_GAME_DIR)
+	Run('"' & $MM_GAME_DIR & "\" & $MM_GAME_EXE & '"', $MM_GAME_DIR)
 EndFunc
 
 Func UI_Settings()
