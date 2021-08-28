@@ -4,7 +4,7 @@
 [Data]
 #ce
 
-Global Const $MM_VERSION_NUMBER = "0.93.6.10"
+Global Const $MM_VERSION_NUMBER = "0.93.6.14"
 
 Global Const $MM_VERSION_SUBTYPE = "beta"
 Global Const $MM_VERSION_NAME = "Siege Engine"

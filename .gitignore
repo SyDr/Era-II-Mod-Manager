@@ -1,6 +1,5 @@
-/7z/7z.dll
-/7z/7z.exe
-/7z/7z.sfx
-/settings.json
+/7z/
+/Build/
 /Publish/
-/mm_latest.html
+/settings.json
+/*.exe

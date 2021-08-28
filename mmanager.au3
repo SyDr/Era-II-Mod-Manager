@@ -10,12 +10,18 @@ this allows easy overwrite #AutoIt3Wrapper_Res_Fileversion via simple IniWrite
 #AutoIt3Wrapper_Compression=0
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_Res_Description=A mod manager for Era II
-#AutoIt3Wrapper_Res_Fileversion=0.93.6.10
+#AutoIt3Wrapper_Res_Fileversion=0.93.6.14
 #AutoIt3Wrapper_Res_LegalCopyright=Aliaksei SyDr Karalenka
 #AutoIt3Wrapper_Res_requestedExecutionLevel=asInvoker
 #AutoIt3Wrapper_AU3Check_Parameters=-d -w 1 -w 2 -w 3 -w 4 -w 5 -w 6 -w 7
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
+
 ; Author:         Aliaksei SyDr Karalenka
+#Au3Stripper_Ignore_Funcs=SD_GUI_*
+#Au3Stripper_Ignore_Funcs=GUIRegisterMsgStateful
+#Au3Stripper_Ignore_Funcs=WM_*
+#Au3Stripper_Ignore_Funcs=__UI_*
+#Au3Stripper_Ignore_Funcs=__WO_*
 
 AutoItSetOption("MustDeclareVars", 1)
 AutoItSetOption("GUIOnEventMode", 1)

@@ -1,1 +1,1 @@
-start AutoIt3.exe mmanager.a3x
+start AutoIt3.exe mmanager.au3
