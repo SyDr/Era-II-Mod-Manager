@@ -164,3 +164,7 @@ EndFunc
 Func Utils_InnoLangToMM(Const $sInnoLng)
 	Return $sInnoLng & ".json"
 EndFunc
+
+Func Utils_FilterFileName($sFileName)
+	Return StringRegExpReplace($sFileName, "[\\\/:*?""<>|]", "_")
+EndFunc

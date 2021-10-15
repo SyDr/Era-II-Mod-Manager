@@ -10,7 +10,7 @@ this allows easy overwrite #AutoIt3Wrapper_Res_Fileversion via simple IniWrite
 #AutoIt3Wrapper_Compression=0
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_Res_Description=A mod manager for Era II
-#AutoIt3Wrapper_Res_Fileversion=0.93.6.20
+#AutoIt3Wrapper_Res_Fileversion=0.93.6.22
 #AutoIt3Wrapper_Res_LegalCopyright=Aliaksei SyDr Karalenka
 #AutoIt3Wrapper_Res_requestedExecutionLevel=asInvoker
 #AutoIt3Wrapper_AU3Check_Parameters=-d -w 1 -w 2 -w 3 -w 4 -w 5 -w 6 -w 7
@@ -622,7 +622,7 @@ Func SD_GUI_ModCategoriesUpdate()
 
 	For $i = 1 To $MM_LIST_CONTENT[0][0]
 		If $iAnswer = $IDYES Or $MM_LIST_CONTENT[$i][$MOD_IS_ENABLED] Then
-			Local $iProcess = Mod_CreatePackage($i, $sFolder & "\" & Mod_Get("id", $i) & ".exe")
+			Local $iProcess = Mod_CreatePackage($i, $sFolder & "\" & Utils_FilterFileName(Mod_Get("caption\formatted", $i)) & ".exe")
 			ProcessWaitClose($iProcess)
 		EndIf
 		ProgressSet($i/$iTotalMods*100, StringFormat("%i from %i done", $i, $iTotalMods))
@@ -734,7 +734,7 @@ Func SD_GUI_Mod_PackMod()
 	Local $iModIndex = TreeViewGetSelectedIndex()
 	If $iModIndex = -1 Then Return -1 ; never
 
-	Local $sSavePath = FileSaveDialog("", "", "(*.*)", $FD_PATHMUSTEXIST + $FD_PROMPTOVERWRITE, Mod_Get("id") & ".exe", $MM_UI_MAIN)
+	Local $sSavePath = FileSaveDialog("", "", "(*.*)", $FD_PATHMUSTEXIST + $FD_PROMPTOVERWRITE, Utils_FilterFileName(Mod_Get("caption\formatted")) & ".exe", $MM_UI_MAIN)
 	If Not @error Then
 		FileDelete($sSavePath)
 		Mod_CreatePackage($iModIndex, $sSavePath)
