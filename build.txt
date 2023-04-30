@@ -1,0 +1,6 @@
+1. Download and install AutoIt: https://www.autoitscript.com/site/autoit/downloads/
+2. Download and install Autoit Script Editor: https://www.autoitscript.com/site/autoit-script-editor/downloads/
+3. Download and install 7-zip: https://www.7-zip.org/
+4. [OPTIONAL] Download and compile SFXWinEraMod: https://github.com/SyDr/SFXWinEraMod
+5. Create directory Publish
+6. Run make_build.au3

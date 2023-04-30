@@ -1,4 +1,4 @@
-#AutoIt3Wrapper_Version=Beta
+#AutoIt3Wrapper_Version=prod
 #include "include_fwd.au3"
 
 ; update mm version in main file
@@ -11,7 +11,7 @@ DirCreate($sBuildDir & "\Output\")
 CopyToBuildDir()
 
 ; ShellExecuteWait(@ProgramFilesDir & "\AutoIt3\SciTE\AutoIt3Wrapper\Autoit3wrapper.exe", "/in mmanager.au3", $sBuildDir)
-ShellExecuteWait(@ProgramFilesDir & "\AutoIt3\SciTE\au3Stripper\AU3Stripper", '"' & $sBuildDir & "\mmanager.au3"" /Beta /so /tl /debug", $sBuildDir)
+ShellExecuteWait(@ProgramFilesDir & "\AutoIt3\SciTE\au3Stripper\AU3Stripper", '"' & $sBuildDir & "\mmanager.au3"" /so /tl /debug", $sBuildDir)
 CopyForOutput()
 ShellExecuteWait(@ScriptDir & '\7z\7z.exe', 'a "MM.zip" "Mod Manager\*"', $sBuildDir)
 
@@ -42,5 +42,5 @@ Func CopyForOutput()
 	FileCopy(@ScriptDir & "\mmanager.cmd", $sBuildDir & "\Mod Manager\")
 	FileCopy(@ScriptDir & "\mmanager.exe", $sBuildDir & "\Mod Manager\")
 	FileCopy(@ScriptDir & "\autoit_license.txt", $sBuildDir & "\Mod Manager\")
-	FileCopy(@ProgramFilesDir & "\AutoIt3\Beta\AutoIt3.exe", $sBuildDir  & "\Mod Manager\", 1)
+	FileCopy(@ProgramFilesDir & "\AutoIt3\AutoIt3.exe", $sBuildDir  & "\Mod Manager\", 1)
 EndFunc
