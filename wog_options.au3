@@ -607,7 +607,7 @@ Func WO_GetFileData(Const $sLODPath, Const $sFileName)
 	Local $sData, $iTotalFiles, $iOffset, $iSizeOrg, $iSizeCompressed
 ;~ 	Local $iError
 
-	If BinaryToString(FileRead($hFile, 4)) = "LOD" Then
+	If StringLeft(BinaryToString(FileRead($hFile, 4)), 3) = "LOD" Then
 		Int(FileRead($hFile, 4)) ; skip this
 		$iTotalFiles = Int(FileRead($hFile, 4))
 

@@ -20,7 +20,7 @@ If Not MapExists($MM_LNG_CACHE["mod_list"]["group"], "enabled") Or Not IsString(
 If Not MapExists($MM_LNG_CACHE["mod_list"]["group"], "enabled_with_priority") Or Not IsString($MM_LNG_CACHE["mod_list"]["group"]["enabled_with_priority"]) Then $MM_LNG_CACHE["mod_list"]["group"]["enabled_with_priority"] = "Enabled (%+i)"
 If Not MapExists($MM_LNG_CACHE["mod_list"]["group"], "disabled") Or Not IsString($MM_LNG_CACHE["mod_list"]["group"]["disabled"]) Then $MM_LNG_CACHE["mod_list"]["group"]["disabled"] = "Without category"
 If Not MapExists($MM_LNG_CACHE["mod_list"]["group"], "disabled_group") Or Not IsString($MM_LNG_CACHE["mod_list"]["group"]["disabled_group"]) Then $MM_LNG_CACHE["mod_list"]["group"]["disabled_group"] = "%s"
-If Not MapExists($MM_LNG_CACHE["mod_list"], "list_inaccessible") Or Not IsString($MM_LNG_CACHE["mod_list"]["list_inaccessible"]) Then $MM_LNG_CACHE["mod_list"]["list_inaccessible"] = ""
+If Not MapExists($MM_LNG_CACHE["mod_list"], "list_inaccessible") Or Not IsString($MM_LNG_CACHE["mod_list"]["list_inaccessible"]) Then $MM_LNG_CACHE["mod_list"]["list_inaccessible"] = "Can't delete/write file ""%s"" content\n\nPossible reasons:\n 1) File is ""read-only""\n 2) Current user doesn't not have enough rights to create/delete this file \n\nOpen directory in explorer?"
 If Not MapExists($MM_LNG_CACHE["mod_list"], "plugins") Or Not IsString($MM_LNG_CACHE["mod_list"]["plugins"]) Then $MM_LNG_CACHE["mod_list"]["plugins"] = "Plugins"
 If Not MapExists($MM_LNG_CACHE["mod_list"], "homepage") Or Not IsString($MM_LNG_CACHE["mod_list"]["homepage"]) Then $MM_LNG_CACHE["mod_list"]["homepage"] = "Go to webpage"
 If Not MapExists($MM_LNG_CACHE["mod_list"], "delete") Or Not IsString($MM_LNG_CACHE["mod_list"]["delete"]) Then $MM_LNG_CACHE["mod_list"]["delete"] = "Delete"
@@ -108,7 +108,7 @@ If Not MapExists($MM_LNG_CACHE["add_new"], "caption") Or Not IsString($MM_LNG_CA
 If Not MapExists($MM_LNG_CACHE["add_new"], "filter") Or Not IsString($MM_LNG_CACHE["add_new"]["filter"]) Then $MM_LNG_CACHE["add_new"]["filter"] = "Era II Mods (*.exe; *.rar; *.zip; *.7z)|All (*.*)"
 If Not MapExists($MM_LNG_CACHE["add_new"], "progress") Or Not IsMap($MM_LNG_CACHE["add_new"]["progress"]) Then $MM_LNG_CACHE["add_new"]["progress"] = MapEmpty()
 If Not MapExists($MM_LNG_CACHE["add_new"]["progress"], "caption") Or Not IsString($MM_LNG_CACHE["add_new"]["progress"]["caption"]) Then $MM_LNG_CACHE["add_new"]["progress"]["caption"] = "Please wait... Unpacking files..."
-If Not MapExists($MM_LNG_CACHE["add_new"]["progress"], "scanned") Or Not IsString($MM_LNG_CACHE["add_new"]["progress"]["scanned"]) Then $MM_LNG_CACHE["add_new"]["progress"]["scanned"] = ""
+If Not MapExists($MM_LNG_CACHE["add_new"]["progress"], "scanned") Or Not IsString($MM_LNG_CACHE["add_new"]["progress"]["scanned"]) Then $MM_LNG_CACHE["add_new"]["progress"]["scanned"] = "Scanned (%i/%i)"
 If Not MapExists($MM_LNG_CACHE["add_new"]["progress"], "found") Or Not IsString($MM_LNG_CACHE["add_new"]["progress"]["found"]) Then $MM_LNG_CACHE["add_new"]["progress"]["found"] = "Found %i"
 If Not MapExists($MM_LNG_CACHE["add_new"]["progress"], "no_mods") Or Not IsString($MM_LNG_CACHE["add_new"]["progress"]["no_mods"]) Then $MM_LNG_CACHE["add_new"]["progress"]["no_mods"] = "There is no mod in the specified file. \n\nThe possible reasons are: \n1) You use an out-of-date program version. \n2) You're trying to add not supported mod file (probably not a mod at all)."
 If Not MapExists($MM_LNG_CACHE["add_new"], "unpacking") Or Not IsString($MM_LNG_CACHE["add_new"]["unpacking"]) Then $MM_LNG_CACHE["add_new"]["unpacking"] = "Please wait... Unpacking files..."
@@ -206,3 +206,4 @@ If Not MapExists($MM_LNG_CACHE["category"], "other") Or Not IsString($MM_LNG_CAC
 If Not MapExists($MM_LNG_CACHE["category"], "platforms") Or Not IsString($MM_LNG_CACHE["category"]["platforms"]) Then $MM_LNG_CACHE["category"]["platforms"] = "Platforms"
 If Not MapExists($MM_LNG_CACHE["category"], "personal mods") Or Not IsString($MM_LNG_CACHE["category"]["personal mods"]) Then $MM_LNG_CACHE["category"]["personal mods"] = "My personal mods"
 If Not MapExists($MM_LNG_CACHE["category"], "utilities") Or Not IsString($MM_LNG_CACHE["category"]["utilities"]) Then $MM_LNG_CACHE["category"]["utilities"] = "Utilities"
+If Not MapExists($MM_LNG_CACHE["category"], "localization") Or Not IsString($MM_LNG_CACHE["category"]["localization"]) Then $MM_LNG_CACHE["category"]["localization"] = "Localization"

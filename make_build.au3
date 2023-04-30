@@ -8,6 +8,7 @@ Global Const $sBuildDir = @ScriptDir & "\Build"
 
 Clear()
 DirCreate($sBuildDir & "\Output\")
+DirCreate(@ScriptDir & "\Publish\")
 CopyToBuildDir()
 
 ; ShellExecuteWait(@ProgramFilesDir & "\AutoIt3\SciTE\AutoIt3Wrapper\Autoit3wrapper.exe", "/in mmanager.au3", $sBuildDir)
